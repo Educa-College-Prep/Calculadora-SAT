@@ -1,122 +1,89 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+// Definimos la estructura basada en tus columnas
+interface Universidad {
+  INSTNM: string;
+  CITY: string;
+  STABBR: string;
+  SAT_AVG: number | null;
+  TUITIONFEE_OUT: number | null;
 }
 
-export default App
+function App() {
+  const [puntajeMath, setPuntajeMath] = useState<number>(0);
+  const [puntajeLectura, setPuntajeLectura] = useState<number>(0);
+  const [universidades, setUniversidades] = useState<Universidad[]>([]);
+
+  // Cargamos tu JSON real al iniciar la página
+  useEffect(() => {
+    fetch('/universidades.json')
+      .then(response => response.json())
+      .then(data => setUniversidades(data))
+      .catch(error => console.error("Error cargando la data:", error));
+  }, []);
+
+  const puntajeTotal = puntajeMath + puntajeLectura;
+
+  // Lógica de filtrado con tus columnas
+  const universidadesFiltradas = universidades.filter((uni) => {
+    // 1. Descartamos las que no piden SAT o tienen el dato en blanco
+    if (!uni.SAT_AVG) return false;
+    
+    // 2. Filtramos comparando el puntaje del usuario con el promedio de la u
+    return puntajeTotal >= uni.SAT_AVG;
+  });
+
+  return (
+    <main className="contenedor-principal">
+      <h1>Calculadora de Puntaje SAT</h1>
+      <p>Descubre a qué universidades puedes aplicar con tu data real.</p>
+      
+      <div style={{ margin: '20px 0', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Matemáticas (200-800): </label>
+          <input 
+            type="number" 
+            min="200" max="800"
+            value={puntajeMath} 
+            onChange={(e) => setPuntajeMath(Number(e.target.value))} 
+          />
+        </div>
+        <div>
+          <label>Lectura/Escritura (200-800): </label>
+          <input 
+            type="number" 
+            min="200" max="800"
+            value={puntajeLectura} 
+            onChange={(e) => setPuntajeLectura(Number(e.target.value))} 
+          />
+        </div>
+        <h2>Puntaje Total: {puntajeTotal}</h2>
+      </div>
+
+      <div style={{ marginTop: '30px', textAlign: 'left' }}>
+        <h3>Universidades que encajan con tu perfil:</h3>
+        
+        {universidadesFiltradas.length > 0 ? (
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {universidadesFiltradas.map((uni, index) => (
+              <li key={index} style={{ padding: '15px', border: '1px solid #555', margin: '10px 0', borderRadius: '5px', backgroundColor: '#222' }}>
+                <strong>{uni.INSTNM}</strong> <small>({uni.CITY}, {uni.STABBR})</small>
+                <br />
+                <small>Promedio SAT admitido: {uni.SAT_AVG}</small>
+                <br />
+                {uni.TUITIONFEE_OUT && <small>Matrícula fuera de estado: ${uni.TUITIONFEE_OUT}</small>}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p style={{ color: '#ff6b6b' }}>
+            Ajusta tus puntajes para explorar las opciones.
+          </p>
+        )}
+      </div>
+    </main>
+  );
+}
+
+export default App;
