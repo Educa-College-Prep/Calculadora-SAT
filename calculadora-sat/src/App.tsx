@@ -262,12 +262,30 @@ function App() {
         <div style={{ flex: '1 1 250px' }}>
             <h3>1. Tus Puntajes SAT</h3>
             <div style={{ marginBottom: '10px' }}>
-              <label>Matemáticas (200-800): </label><br />
-              <input type="number" min="0" max="800" value={puntajeMath} onChange={(e) => setPuntajeMath(Number(e.target.value))} style={{ width: '100%', padding: '5px' }} />
+              <label>Matemáticas (200-800): </label>
+              <br />
+              <input type="number" min="0" max="800" value={puntajeMath} onChange={(e) => {
+                if (Number(e.target.value) > 800) {
+                  setPuntajeMath(800);
+                } else if (Number(e.target.value) < 0) {
+                  setPuntajeMath(0);
+                } else {
+                  setPuntajeMath(Number(e.target.value))
+                }
+              }} style={{ width: '100%', padding: '5px' }} />
             </div>
             <div>
-              <label>Lectura (200-800): </label><br />
-              <input type="number" min="0" max="800" value={puntajeLectura} onChange={(e) => setPuntajeLectura(Number(e.target.value))} style={{ width: '100%', padding: '5px' }} />
+              <label>Lectura (200-800): </label>
+              <br />
+              <input type="number" min="0" max="800" value={puntajeLectura} onChange={(e) => {
+                if (Number(e.target.value) > 800) {
+                  setPuntajeLectura(800);
+                } else if (Number(e.target.value) < 0) {
+                  setPuntajeLectura(0);
+                } else {
+                  setPuntajeLectura(Number(e.target.value))
+                }
+              }} style={{ width: '100%', padding: '5px' }} />
             </div>
             <h4 style={{ color: '#4cc9f0' }}>Puntaje Total: {puntajeTotal}</h4>
         </div>
