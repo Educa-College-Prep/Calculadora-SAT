@@ -102,9 +102,7 @@ function App() {
       nombreCompleto: uni.INSTNM
     }));
 
-  // =======================================================
-  // MAPA ROBUSTO DE EE. UU. (Evitamos la API de Geocodificación)
-  // =======================================================
+
   const datosMapaGeo: (string | number)[][] = [["Estado", "Universidades"]];
   const conteoPorEstado: Record<string, number> = {};
   
@@ -166,7 +164,7 @@ function App() {
         
         <div style={{ backgroundColor: '#1a1a1a', padding: '30px', borderRadius: '10px', textAlign: 'left', border: '1px solid #333' }}>
           <h1 style={{ color: '#4cc9f0', margin: '0 0 10px 0', fontSize: '2.5rem' }}>{uni.INSTNM}</h1>
-          <h3 style={{ margin: '0 0 20px 0', color: '#aaa', fontWeight: 'normal' }}>📍 {uni.CITY}, {uni.STABBR} | 🏛️ {uni.CONTROL} {uni.ICLEVEL && `| 🎓 Nivel: ${uni.ICLEVEL}`}</h3>
+          <h3 style={{ margin: '0 0 20px 0', color: '#aaa', fontWeight: 'normal' }}> {uni.CITY}, {uni.STABBR} |  {uni.CONTROL} {uni.ICLEVEL && `| 🎓 Nivel: ${uni.ICLEVEL}`}</h3>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
             {(uni.UGDS || uni.UGDS_HISP) && (
@@ -179,7 +177,7 @@ function App() {
 
             {(uni.ADM_RATE || uni.ADMCON7 || uni.OPENADMP || uni.SAT_AVG) && (
               <div style={{ backgroundColor: '#2a2a2a', padding: '20px', borderRadius: '8px', borderLeft: '4px solid #7209b7' }}>
-                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}>📝 Admisiones y SAT</h4>
+                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}> Admisiones y SAT</h4>
                 {uni.ADM_RATE != null && <p><strong>Tasa de Admisión:</strong> {formatPorcentaje(uni.ADM_RATE)}</p>}
                 {uni.ADMCON7 && <p><strong>Política SAT:</strong> {uni.ADMCON7}</p>}
                 {uni.OPENADMP && <p><strong>Admisión Abierta:</strong> {uni.OPENADMP}</p>}
@@ -202,7 +200,7 @@ function App() {
 
             {(uni.TUITIONFEE_OUT || uni.COSTT4_A || uni.NPT4_PUB || uni.NPT4_PRIV) && (
               <div style={{ backgroundColor: '#2a2a2a', padding: '20px', borderRadius: '8px', borderLeft: '4px solid #4361ee' }}>
-                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}>💰 Costos Anuales</h4>
+                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}> Costos Anuales</h4>
                 {uni.TUITIONFEE_OUT && <p><strong>Matrícula (Fuera de Estado):</strong> {formatDinero(uni.TUITIONFEE_OUT)}</p>}
                 {uni.COSTT4_A && <p><strong>Costo Total Asistencia:</strong> {formatDinero(uni.COSTT4_A)}</p>}
                 {(uni.NPT4_PUB || uni.NPT4_PRIV) && (
@@ -226,7 +224,7 @@ function App() {
 
             {tieneSalarios && (
               <div style={{ backgroundColor: '#2a2a2a', padding: '20px', borderRadius: '8px', borderLeft: '4px solid #48cae4', gridColumn: '1 / -1' }}>
-                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}>📈 Retorno de Inversión (Salario Mediano)</h4>
+                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}> Retorno de Inversión (Salario Mediano)</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
                   {uni.MD_EARN_WNE_1YR && <div style={{ backgroundColor: '#333', padding: '10px', borderRadius: '5px', textAlign: 'center' }}><small>A 1 año</small><br/><strong>{formatDinero(uni.MD_EARN_WNE_1YR)}</strong></div>}
                   {uni.MD_EARN_WNE_5YR && <div style={{ backgroundColor: '#333', padding: '10px', borderRadius: '5px', textAlign: 'center' }}><small>A 5 años</small><br/><strong>{formatDinero(uni.MD_EARN_WNE_5YR)}</strong></div>}
@@ -239,7 +237,7 @@ function App() {
 
             {(uni.CIPTITLE1 || uni.PRGMOFR) && (
               <div style={{ backgroundColor: '#2a2a2a', padding: '20px', borderRadius: '8px', borderLeft: '4px solid #00b4d8', gridColumn: '1 / -1' }}>
-                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}>📚 Oferta Académica {uni.PRGMOFR && `(${uni.PRGMOFR} Programas)`}</h4>
+                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}> Oferta Académica {uni.PRGMOFR && `(${uni.PRGMOFR} Programas)`}</h4>
                 {uni.CIPTITLE1 && (
                   <>
                     <p><strong>Programas Más Populares:</strong></p>
@@ -269,7 +267,7 @@ function App() {
       
       <div style={{ margin: '20px 0', padding: '15px 20px', border: '1px solid #444', borderRadius: '8px', display: 'flex', flexWrap: 'wrap', gap: '20px', backgroundColor: '#1a1a1a' }}>
         <div style={{ flex: '1 1 200px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>📍 Estado:</label>
+          <label style={{ display: 'block', marginBottom: '8px' }}> Estado:</label>
           <select 
             value={estadoSeleccionado} 
             onChange={(e) => {
@@ -301,7 +299,7 @@ function App() {
         {estadoSeleccionado !== 'todos' && (
           <div style={{ flex: '1 1 100px', display: 'flex', alignItems: 'flex-end' }}>
              <button onClick={() => { setEstadoSeleccionado('todos'); setCiudadSeleccionada('todas'); }} style={{ padding: '8px', width: '100%', backgroundColor: '#ff6b6b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-               🗺️ Ver todo el país
+               Ver todo el país
              </button>
           </div>
         )}
@@ -368,7 +366,7 @@ function App() {
         
         <div style={{ padding: '20px', backgroundColor: '#222', borderRadius: '8px' }}>
           <h3>Concentración de Universidades {estadoSeleccionado !== 'todos' && `en ${estadoSeleccionado}`}</h3>
-          <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 10px 0' }}>💡 Haz clic en el mapa para aplicar un filtro geográfico</p>
+          <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 10px 0' }}> Haz clic en el mapa para aplicar un filtro geográfico</p>
           {datosMapaGeo.length > 1 ? (
             <Chart
               chartEvents={chartEvents}
