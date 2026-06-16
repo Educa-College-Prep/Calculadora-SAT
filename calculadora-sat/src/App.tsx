@@ -446,7 +446,7 @@ function App() {
               <select value={exigirSAT} onChange={(e) => setExigirSAT(e.target.value)} style={{ width: '100%', padding: '5px' }}>
                 <option value="todos">Mostrar todas</option>
                 <option value="requerido">El SAT es obligatorio</option>
-                <option value="opcional">No exigen SAT</option>
+                <option value="opcional">SAT es opcional</option>
               </select>
             </div>
             <div style={{ marginBottom: '15px' }}>
