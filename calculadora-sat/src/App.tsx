@@ -61,7 +61,7 @@ function App() {
   const [universidadSeleccionada, setUniversidadSeleccionada] = useState<Universidad | null>(null);
 
   useEffect(() => {
-    fetch('/universidades.json')
+    fetch('/Calculadora-SAT/universidades.json')
       .then(response => response.json())
       .then(data => setUniversidades(data))
       .catch(error => console.error("Error cargando la data:", error));
