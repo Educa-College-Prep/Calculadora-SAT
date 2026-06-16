@@ -164,12 +164,12 @@ function App() {
         
         <div style={{ backgroundColor: '#1a1a1a', padding: '30px', borderRadius: '10px', textAlign: 'left', border: '1px solid #333' }}>
           <h1 style={{ color: '#4cc9f0', margin: '0 0 10px 0', fontSize: '2.5rem' }}>{uni.INSTNM}</h1>
-          <h3 style={{ margin: '0 0 20px 0', color: '#aaa', fontWeight: 'normal' }}> {uni.CITY}, {uni.STABBR} |  {uni.CONTROL} {uni.ICLEVEL && `| 🎓 Nivel: ${uni.ICLEVEL}`}</h3>
+          <h3 style={{ margin: '0 0 20px 0', color: '#aaa', fontWeight: 'normal' }}> {uni.CITY}, {uni.STABBR} |  {uni.CONTROL} {uni.ICLEVEL && `|  Nivel: ${uni.ICLEVEL}`}</h3>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
             {(uni.UGDS || uni.UGDS_HISP) && (
               <div style={{ backgroundColor: '#2a2a2a', padding: '20px', borderRadius: '8px', borderLeft: '4px solid #f72585' }}>
-                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}>👥 Perfil Estudiantil</h4>
+                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}> Perfil Estudiantil</h4>
                 {uni.UGDS && <p><strong>Total Pregrado (UGDS):</strong> {uni.UGDS.toLocaleString()}</p>}
                 {uni.UGDS_HISP && <p><strong>Estudiantes Hispanos:</strong> {uni.UGDS_HISP.toLocaleString()}</p>}
               </div>
@@ -214,7 +214,7 @@ function App() {
 
             {(uni.C150_4 || uni.C150_L4 || uni.C150_4_HISP || uni.C150_L4_HISP) && (
               <div style={{ backgroundColor: '#2a2a2a', padding: '20px', borderRadius: '8px', borderLeft: '4px solid #4cc9f0' }}>
-                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}>🎓 Tasas de Graduación</h4>
+                <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}> Tasas de Graduación</h4>
                 {uni.C150_4 != null && <p><strong>General (4-Year):</strong> {formatPorcentaje(uni.C150_4)}</p>}
                 {uni.C150_L4 != null && <p><strong>General (&lt;4-Year):</strong> {formatPorcentaje(uni.C150_L4)}</p>}
                 {uni.C150_4_HISP != null && <p><strong>Hispanos (4-Year):</strong> {formatPorcentaje(uni.C150_4_HISP)}</p>}
@@ -283,7 +283,7 @@ function App() {
           </select>
         </div>
         <div style={{ flex: '1 1 200px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>🏙️ Ciudad:</label>
+          <label style={{ display: 'block', marginBottom: '8px' }}> Ciudad:</label>
           <select 
             value={ciudadSeleccionada} 
             onChange={(e) => setCiudadSeleccionada(e.target.value)} 
