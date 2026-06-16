@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; // NUEVO: Añadido useRef
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { Chart } from "react-google-charts"; 
 import './App.css';
@@ -57,14 +57,31 @@ function App() {
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>('todos');
   const [ciudadSeleccionada, setCiudadSeleccionada] = useState<string>('todas');
 
+  const [busquedaNombre, setBusquedaNombre] = useState<string>('');
+  const [mostrarSugerencias, setMostrarSugerencias] = useState<boolean>(false);
+  const contenedorSugerenciasRef = useRef<HTMLDivElement>(null);
+
   const [universidades, setUniversidades] = useState<Universidad[]>([]);
   const [universidadSeleccionada, setUniversidadSeleccionada] = useState<Universidad | null>(null);
+  
+  const [ordenarPor, setOrdenarPor] = useState<string>('ninguno');
+  const [ordenDireccion, setOrdenDireccion] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     fetch('/Calculadora-SAT/universidades.json')
       .then(response => response.json())
       .then(data => setUniversidades(data))
       .catch(error => console.error("Error cargando la data:", error));
+  }, []);
+
+  useEffect(() => {
+    function manejarClicFuera(evento: MouseEvent) {
+      if (contenedorSugerenciasRef.current && !contenedorSugerenciasRef.current.contains(evento.target as Node)) {
+        setMostrarSugerencias(false);
+      }
+    }
+    document.addEventListener("mousedown", manejarClicFuera);
+    return () => document.removeEventListener("mousedown", manejarClicFuera);
   }, []);
 
   const estadosUnicos = Array.from(new Set(universidades.map(u => u.STABBR).filter(Boolean))).sort();
@@ -78,7 +95,15 @@ function App() {
 
   const puntajeTotal = puntajeMath + puntajeLectura;
 
+  const sugerenciasNombres = universidades
+    .filter(uni => 
+      uni.INSTNM.toLowerCase().includes(busquedaNombre.toLowerCase())
+    )
+    .slice(0, 8);
+
   const universidadesFiltradas = universidades.filter((uni) => {
+    if (busquedaNombre && !uni.INSTNM.toLowerCase().includes(busquedaNombre.toLowerCase())) return false;
+
     if (estadoSeleccionado !== 'todos' && uni.STABBR !== estadoSeleccionado) return false;
     if (ciudadSeleccionada !== 'todas' && uni.CITY !== ciudadSeleccionada) return false;
 
@@ -92,6 +117,20 @@ function App() {
     }
     return true;
   });
+
+  const universidadesOrdenadas = [...universidadesFiltradas].sort((a, b) => {
+  if (ordenarPor === 'ninguno') return 0;
+
+  const valA = (a as any)[ordenarPor] ?? (ordenDireccion === 'asc' ? Infinity : -Infinity);
+  const valB = (b as any)[ordenarPor] ?? (ordenDireccion === 'asc' ? Infinity : -Infinity);
+
+  if (typeof valA === 'string') return ordenDireccion === 'asc'
+    ? valA.localeCompare(valB)
+    : valB.localeCompare(valA);
+
+  return ordenDireccion === 'asc' ? valA - valB : valB - valA;
+  });
+  
 
   const datosGrafico = universidadesFiltradas
     .filter(uni => uni.TUITIONFEE_OUT !== null)
@@ -115,12 +154,12 @@ function App() {
   });
 
   const mapOptions = {
-    region: 'US', // Mantenemos siempre la vista del país
+    region: 'US', 
     displayMode: 'regions',
     resolution: 'provinces',
     colorAxis: { colors: ['#90e0ef', '#0077b6', '#03045e'] },
     backgroundColor: 'transparent',
-    datalessRegionColor: '#222', // Color de fondo si el estado no tiene universidades
+    datalessRegionColor: '#222', 
     defaultColor: '#555',
   };
 
@@ -144,7 +183,6 @@ function App() {
       }
     }
   ];
-  // =======================================================
 
   const formatDinero = (valor: number | null | undefined) => valor ? `$${valor.toLocaleString()}` : null;
   const formatPorcentaje = (valor: number | null | undefined) => valor ? `${(valor * 100).toFixed(1)}%` : null;
@@ -265,6 +303,62 @@ function App() {
       <h1>Buscador y Calculadora SAT</h1>
       <p>Aplica filtros para explorar nuestra base de datos de universidades en EE.UU.</p>
       
+      <div 
+        ref={contenedorSugerenciasRef} 
+        style={{ position: 'relative', margin: '20px 0', padding: '15px 20px', border: '1px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a' }}
+      >
+        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}> Buscar por Nombre de Universidad:</label>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input 
+            type="text"
+            value={busquedaNombre}
+            placeholder="Escribe el nombre de la universidad... (ej: Harvard, Texas, Miami)"
+            onFocus={() => setMostrarSugerencias(true)}
+            onChange={(e) => {
+              setBusquedaNombre(e.target.value);
+              setMostrarSugerencias(true);
+            }}
+            style={{ flex: 1, padding: '10px', borderRadius: '4px', border: '1px solid #555', backgroundColor: '#222', color: '#fff' }}
+          />
+          {busquedaNombre && (
+            <button 
+              onClick={() => { setBusquedaNombre(''); setMostrarSugerencias(false); }} 
+              style={{ padding: '10px 15px', backgroundColor: '#ff6b6b', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
+
+        {mostrarSugerencias && busquedaNombre.length > 0 && (
+          <ul style={{ 
+            position: 'absolute', top: '100%', left: '20px', right: '20px', zIndex: 1000,
+            backgroundColor: '#222', border: '1px solid #444', borderRadius: '0 0 8px 8px',
+            listStyle: 'none', padding: 0, margin: 0, maxHeight: '250px', overflowY: 'auto',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+          }}>
+            {sugerenciasNombres.length > 0 ? (
+              sugerenciasNombres.map((uni, idx) => (
+                <li 
+                  key={idx}
+                  onClick={() => {
+                    setBusquedaNombre(uni.INSTNM);
+                    setMostrarSugerencias(false);
+                  }}
+                  style={{ padding: '10px 15px', borderBottom: '1px solid #333', cursor: 'pointer', textAlign: 'left', transition: '0.2s' }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#333'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#222'}
+                >
+                  <strong style={{ color: '#4cc9f0' }}>{uni.INSTNM}</strong> <small style={{ color: '#aaa' }}>({uni.CITY}, {uni.STABBR})</small>
+                </li>
+              ))
+            ) : (
+              <li style={{ padding: '10px 15px', color: '#aaa', textAlign: 'left' }}>No se encontraron coincidencias</li>
+            )}
+          </ul>
+        )}
+      </div>
+
       <div style={{ margin: '20px 0', padding: '15px 20px', border: '1px solid #444', borderRadius: '8px', display: 'flex', flexWrap: 'wrap', gap: '20px', backgroundColor: '#1a1a1a' }}>
         <div style={{ flex: '1 1 200px' }}>
           <label style={{ display: 'block', marginBottom: '8px' }}> Estado:</label>
@@ -403,30 +497,106 @@ function App() {
         )}
       </div>
 
-      <div style={{ marginTop: '30px', textAlign: 'left' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '5px' }}>
-          <h3 style={{ margin: 0 }}>Universidades Encontradas</h3>
+       <div style={{ marginTop: '30px', textAlign: 'left' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '5px', flexWrap: 'wrap' }}>
+        <h3 style={{ margin: 0 }}>Universidades Encontradas</h3>
 
-          <span style={{ 
-            backgroundColor: '#4cc9f0', 
-            color: '#000', 
-            padding: '5px 15px', 
-            borderRadius: '20px', 
-            fontWeight: 'bold', 
-            fontSize: '14px',
-            boxShadow: '0 0 10px rgba(76, 201, 240, 0.3)'
-          }}>
-            {universidadesFiltradas.length} de {universidades.length}
-          </span>
+        <span style={{
+          backgroundColor: '#4cc9f0',
+          color: '#000',
+          padding: '5px 15px',
+          borderRadius: '20px',
+          fontWeight: 'bold',
+          fontSize: '14px',
+          boxShadow: '0 0 10px rgba(76, 201, 240, 0.3)'
+        }}>
+          {universidadesFiltradas.length} de {universidades.length}
+        </span>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
+          <select
+            value={ordenarPor}
+            onChange={(e) => setOrdenarPor(e.target.value)}
+            style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #555', fontSize: '13px' }}
+          >
+            <option value="ninguno">Ordenar por...</option>
+            <optgroup label=" Identificación">
+              <option value="INSTNM">Nombre (A-Z)</option>
+              <option value="CITY">Ciudad</option>
+              <option value="STABBR">Estado</option>
+            </optgroup>
+            <optgroup label=" Admisiones">
+              <option value="ADM_RATE">Tasa de Admisión</option>
+              <option value="SAT_AVG">Promedio SAT</option>
+            </optgroup>
+            <optgroup label=" Estudiantes">
+              <option value="UGDS">Total Estudiantes Pregrado</option>
+              <option value="UGDS_HISP">Estudiantes Hispanos</option>
+            </optgroup>
+            <optgroup label=" Costos">
+              <option value="TUITIONFEE_OUT">Matrícula (Fuera de Estado)</option>
+              <option value="COSTT4_A">Costo Total de Asistencia</option>
+              <option value="NPT4_PUB">Costo Neto (Pública)</option>
+              <option value="NPT4_PRIV">Costo Neto (Privada)</option>
+            </optgroup>
+            <optgroup label=" Graduación">
+              <option value="C150_4">Tasa Graduación (4-Year)</option>
+              <option value="C150_4_HISP">Tasa Graduación Hispanos</option>
+            </optgroup>
+            <optgroup label=" Salarios Graduados">
+              <option value="MD_EARN_WNE_1YR">Salario Mediano (1 año)</option>
+              <option value="MD_EARN_WNE_5YR">Salario Mediano (5 años)</option>
+              <option value="MD_EARN_WNE_P6">Salario Mediano (6 años)</option>
+              <option value="MD_EARN_WNE_P8">Salario Mediano (8 años)</option>
+              <option value="MD_EARN_WNE_P10">Salario Mediano (10 años)</option>
+            </optgroup>
+            <optgroup label=" Retorno vs Secundaria">
+              <option value="GT_THRESHOLD_P6">% Supera Salario Secundaria (6 años)</option>
+              <option value="GT_THRESHOLD_P10">% Supera Salario Secundaria (10 años)</option>
+              <option value="GT_THRESHOLD_5YR">% Supera Salario Secundaria (5 años)</option>
+            </optgroup>
+            <optgroup label=" Programas">
+              <option value="PRGMOFR">Cantidad de Programas Ofrecidos</option>
+            </optgroup>
+          </select>
+
+          <button
+            onClick={() => setOrdenDireccion(d => d === 'asc' ? 'desc' : 'asc')}
+            title={ordenDireccion === 'asc' ? 'Ascendente' : 'Descendente'}
+            style={{
+              padding: '6px 12px',
+              backgroundColor: '#333',
+              color: '#fff',
+              border: '1px solid #555',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '16px'
+            }}
+          >
+            {ordenDireccion === 'asc' ? '↑' : '↓'}
+          </button>
         </div>
-        
+      </div>
+
+
+
+
+
+
+
+
+
+
+
+
         <p style={{ color: '#aaa', fontSize: '14px', marginTop: '5px' }}>
-          Explorando nuestra base de datos completa. Mostrando un máximo de 50 resultados en pantalla para agilizar tu búsqueda.
+          Explorando nuestra base de datos completa. 
+          {/*Mostrando un máximo de 50 resultados en pantalla para agilizar tu búsqueda.*/}
         </p>
 
         {universidadesFiltradas.length > 0 ? (
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {universidadesFiltradas.slice(0, 50).map((uni, index) => ( 
+            {universidadesFiltradas.slice(0, 3500).map((uni, index) => ( 
               <li 
                 key={index} 
                 onClick={() => setUniversidadSeleccionada(uni)}
