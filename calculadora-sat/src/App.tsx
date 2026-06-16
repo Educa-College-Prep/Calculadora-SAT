@@ -119,20 +119,28 @@ function App() {
   });
 
   const universidadesOrdenadas = [...universidadesFiltradas].sort((a, b) => {
-  if (ordenarPor === 'ninguno') return 0;
+    if (ordenarPor === 'ninguno') return 0;
 
-  const valA = (a as any)[ordenarPor] ?? (ordenDireccion === 'asc' ? Infinity : -Infinity);
-  const valB = (b as any)[ordenarPor] ?? (ordenDireccion === 'asc' ? Infinity : -Infinity);
+    const valA = (a as any)[ordenarPor];
+    const valB = (b as any)[ordenarPor];
 
-  if (typeof valA === 'string') return ordenDireccion === 'asc'
-    ? valA.localeCompare(valB)
-    : valB.localeCompare(valA);
+    if (valA == null && valB == null) return 0;
+    if (valA == null) return 1;
+    if (valB == null) return -1;
 
-  return ordenDireccion === 'asc' ? valA - valB : valB - valA;
+    if (typeof valA === 'string' && typeof valB === 'string') {
+      return ordenDireccion === 'asc'
+        ? valA.localeCompare(valB)
+        : valB.localeCompare(valA);
+    }
+
+    return ordenDireccion === 'asc'
+      ? Number(valA) - Number(valB)
+      : Number(valB) - Number(valA);
   });
   
 
-  const datosGrafico = universidadesFiltradas
+  const datosGrafico = universidadesOrdenadas
     .filter(uni => uni.TUITIONFEE_OUT !== null)
     .slice(0, 10)
     .map(uni => ({
@@ -578,17 +586,6 @@ function App() {
         </div>
       </div>
 
-
-
-
-
-
-
-
-
-
-
-
         <p style={{ color: '#aaa', fontSize: '14px', marginTop: '5px' }}>
           Explorando nuestra base de datos completa. 
           {/*Mostrando un máximo de 50 resultados en pantalla para agilizar tu búsqueda.*/}
@@ -596,7 +593,7 @@ function App() {
 
         {universidadesFiltradas.length > 0 ? (
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {universidadesFiltradas.slice(0, 3500).map((uni, index) => ( 
+            {universidadesOrdenadas.slice(0, 3500).map((uni, index) => ( 
               <li 
                 key={index} 
                 onClick={() => setUniversidadSeleccionada(uni)}
