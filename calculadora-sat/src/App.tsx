@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { Chart } from "react-google-charts"; 
 import './App.css';
 
 interface Universidad {
@@ -78,11 +79,9 @@ function App() {
   const puntajeTotal = puntajeMath + puntajeLectura;
 
   const universidadesFiltradas = universidades.filter((uni) => {
-
     if (estadoSeleccionado !== 'todos' && uni.STABBR !== estadoSeleccionado) return false;
     if (ciudadSeleccionada !== 'todas' && uni.CITY !== ciudadSeleccionada) return false;
 
-    // Filtros Generales
     if (tipoUniversidad === 'publica' && uni.CONTROL !== 'Pública') return false;
     if (tipoUniversidad === 'privada' && (!uni.CONTROL || !uni.CONTROL.includes('Privada'))) return false;
     if (uni.TUITIONFEE_OUT && uni.TUITIONFEE_OUT > precioMaximo) return false;
@@ -103,13 +102,57 @@ function App() {
       nombreCompleto: uni.INSTNM
     }));
 
+  // =======================================================
+  // MAPA ROBUSTO DE EE. UU. (Evitamos la API de Geocodificación)
+  // =======================================================
+  const datosMapaGeo: (string | number)[][] = [["Estado", "Universidades"]];
+  const conteoPorEstado: Record<string, number> = {};
+  
+  universidadesFiltradas.forEach(uni => {
+    if (uni.STABBR) conteoPorEstado[uni.STABBR] = (conteoPorEstado[uni.STABBR] || 0) + 1;
+  });
+
+  Object.keys(conteoPorEstado).forEach(estado => {
+    datosMapaGeo.push([`US-${estado}`, conteoPorEstado[estado]]);
+  });
+
+  const mapOptions = {
+    region: 'US', // Mantenemos siempre la vista del país
+    displayMode: 'regions',
+    resolution: 'provinces',
+    colorAxis: { colors: ['#90e0ef', '#0077b6', '#03045e'] },
+    backgroundColor: 'transparent',
+    datalessRegionColor: '#222', // Color de fondo si el estado no tiene universidades
+    defaultColor: '#555',
+  };
+
+  const chartEvents = [
+    {
+      eventName: "select" as const,
+      callback: ({ chartWrapper }: any) => {
+        const chart = chartWrapper.getChart();
+        const selection = chart.getSelection();
+        
+        if (selection.length === 0 || selection[0].row == null) return;
+
+        const dataTable = chartWrapper.getDataTable();
+        const valorSeleccionado = dataTable.getValue(selection[0].row, 0);
+
+        if (valorSeleccionado && valorSeleccionado.startsWith('US-')) {
+          const estadoAbbr = valorSeleccionado.split('-')[1];
+          setEstadoSeleccionado(estadoAbbr);
+          setCiudadSeleccionada('todas');
+        }
+      }
+    }
+  ];
+  // =======================================================
+
   const formatDinero = (valor: number | null | undefined) => valor ? `$${valor.toLocaleString()}` : null;
   const formatPorcentaje = (valor: number | null | undefined) => valor ? `${(valor * 100).toFixed(1)}%` : null;
 
-
   if (universidadSeleccionada) {
     const uni = universidadSeleccionada;
-    
     const tieneSalarios = uni.MD_EARN_WNE_1YR || uni.MD_EARN_WNE_5YR || uni.MD_EARN_WNE_P6 || uni.MD_EARN_WNE_P8 || uni.MD_EARN_WNE_P10;
 
     return (
@@ -126,7 +169,6 @@ function App() {
           <h3 style={{ margin: '0 0 20px 0', color: '#aaa', fontWeight: 'normal' }}>📍 {uni.CITY}, {uni.STABBR} | 🏛️ {uni.CONTROL} {uni.ICLEVEL && `| 🎓 Nivel: ${uni.ICLEVEL}`}</h3>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-
             {(uni.UGDS || uni.UGDS_HISP) && (
               <div style={{ backgroundColor: '#2a2a2a', padding: '20px', borderRadius: '8px', borderLeft: '4px solid #f72585' }}>
                 <h4 style={{ margin: '0 0 15px 0', color: '#fff' }}>👥 Perfil Estudiantil</h4>
@@ -256,6 +298,13 @@ function App() {
             ))}
           </select>
         </div>
+        {estadoSeleccionado !== 'todos' && (
+          <div style={{ flex: '1 1 100px', display: 'flex', alignItems: 'flex-end' }}>
+             <button onClick={() => { setEstadoSeleccionado('todos'); setCiudadSeleccionada('todas'); }} style={{ padding: '8px', width: '100%', backgroundColor: '#ff6b6b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+               🗺️ Ver todo el país
+             </button>
+          </div>
+        )}
       </div>
 
       <div style={{ margin: '0 0 20px 0', padding: '20px', border: '1px solid #444', borderRadius: '8px', display: 'flex', flexWrap: 'wrap', gap: '30px', backgroundColor: '#1a1a1a' }}>
@@ -315,28 +364,48 @@ function App() {
         </div>
       </div>
 
-      {datosGrafico.length > 0 && (
-        <div style={{ marginTop: '40px', padding: '20px', backgroundColor: '#222', borderRadius: '8px' }}>
-          <h3>Comparativa de Costos de Matrícula (Top 10 resultantes)</h3>
-          <div style={{ width: '100%', height: 300 }}>
-            <ResponsiveContainer>
-              <BarChart data={datosGrafico} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                <XAxis dataKey="nombre" stroke="#ccc" tick={{ fontSize: 12 }} />
-                <YAxis stroke="#ccc" />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }}
-                  formatter={(value: any) => [`$${value}`, 'Costo Anual']}
-                  labelFormatter={(label, payload) => payload?.[0]?.payload?.nombreCompleto || label}
-                />
-                <Bar dataKey="costo" fill="#4cc9f0" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px', marginTop: '20px' }}>
+        
+        <div style={{ padding: '20px', backgroundColor: '#222', borderRadius: '8px' }}>
+          <h3>Concentración de Universidades {estadoSeleccionado !== 'todos' && `en ${estadoSeleccionado}`}</h3>
+          <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 10px 0' }}>💡 Haz clic en el mapa para aplicar un filtro geográfico</p>
+          {datosMapaGeo.length > 1 ? (
+            <Chart
+              chartEvents={chartEvents}
+              chartType="GeoChart"
+              width="100%"
+              height="300px"
+              data={datosMapaGeo}
+              options={mapOptions}
+            />
+          ) : (
+            <p style={{ color: '#aaa', textAlign: 'center', marginTop: '50px' }}>No hay datos suficientes para dibujar el mapa en este nivel.</p>
+          )}
         </div>
-      )}
 
-<div style={{ marginTop: '30px', textAlign: 'left' }}>
+        {datosGrafico.length > 0 && (
+          <div style={{ padding: '20px', backgroundColor: '#222', borderRadius: '8px' }}>
+            <h3>Comparativa de Costos de Matrícula (Top 10 resultantes)</h3>
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <BarChart data={datosGrafico} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                  <XAxis dataKey="nombre" stroke="#ccc" tick={{ fontSize: 12 }} />
+                  <YAxis stroke="#ccc" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }}
+                    formatter={(value: any) => [`$${value}`, 'Costo Anual']}
+                    labelFormatter={(label, payload) => payload?.[0]?.payload?.nombreCompleto || label}
+                  />
+                  <Bar dataKey="costo" fill="#4cc9f0" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginTop: '30px', textAlign: 'left' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '5px' }}>
           <h3 style={{ margin: 0 }}>Universidades Encontradas</h3>
 
