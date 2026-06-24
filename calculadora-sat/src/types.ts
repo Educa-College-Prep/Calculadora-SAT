@@ -34,9 +34,4 @@ export interface Universidad {
   MD_EARN_WNE_P10?: number | null;
   MD_EARN_WNE_1YR?: number | null;
   MD_EARN_WNE_5YR?: number | null;
-  GT_THRESHOLD_P6?: number | null;
-  GT_THRESHOLD_P8?: number | null;
-  GT_THRESHOLD_P10?: number | null;
-  GT_THRESHOLD_1YR?: number | null;
-  GT_THRESHOLD_5YR?: number | null;
 }

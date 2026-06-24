@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import type { Universidad } from '../types';
+
 interface Props {
   busquedaNombre: string;
   setBusquedaNombre: (valor: string) => void;
@@ -28,27 +29,24 @@ export function Buscador({ busquedaNombre, setBusquedaNombre, mostrarSugerencias
   return (
     <div
       ref={contenedorRef}
-      style={{ position: 'relative', margin: '20px 0', padding: '15px 20px', border: '1px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a' }}
+      style={{ position: 'relative', padding: '15px 20px', border: '1px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a' }}
     >
       <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-        Buscar por Nombre de Universidad:
+        🔍 Buscar por Nombre de Universidad:
       </label>
       <div style={{ display: 'flex', gap: '10px' }}>
         <input
           type="text"
           value={busquedaNombre}
-          placeholder="Escribe el nombre de la universidad... (ej: Harvard, Texas, Miami)"
+          onChange={(e) => { setBusquedaNombre(e.target.value); setMostrarSugerencias(true); }}
           onFocus={() => setMostrarSugerencias(true)}
-          onChange={(e) => {
-            setBusquedaNombre(e.target.value);
-            setMostrarSugerencias(true);
-          }}
+          placeholder="Ej. Harvard University, California..."
           style={{ flex: 1, padding: '10px', borderRadius: '4px', border: '1px solid #555', backgroundColor: '#222', color: '#fff' }}
         />
         {busquedaNombre && (
           <button
             onClick={() => { setBusquedaNombre(''); setMostrarSugerencias(false); }}
-            style={{ padding: '10px 15px', backgroundColor: '#ff6b6b', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            style={{ padding: '10px 15px', backgroundColor: '#e63946', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
           >
             Limpiar
           </button>
@@ -76,7 +74,7 @@ export function Buscador({ busquedaNombre, setBusquedaNombre, mostrarSugerencias
               </li>
             ))
           ) : (
-            <li style={{ padding: '10px 15px', color: '#aaa', textAlign: 'left' }}>No se encontraron coincidencias</li>
+            <li style={{ padding: '10px 15px', color: '#888', fontStyle: 'italic', textAlign: 'left' }}>No se encontraron coincidencias</li>
           )}
         </ul>
       )}
