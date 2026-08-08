@@ -55,17 +55,23 @@ export function ListaUniversidades({
             </optgroup>
             <optgroup label="Estudiantes">
               <option value="UGDS">Total Estudiantes Pregrado</option>
-              <option value="UGDS_HISP">Estudiantes Hispanos</option>
+              <option value="UGDS_HISP">% Estudiantes Hispanos</option>
+              <option value="STUFACR">Ratio Estudiante-Facultad</option>
             </optgroup>
             <optgroup label="Costos">
+              <option value="TUITIONFEE_IN">Matrícula (Dentro de Estado)</option>
               <option value="TUITIONFEE_OUT">Matrícula (Fuera de Estado)</option>
               <option value="COSTT4_A">Costo Total de Asistencia</option>
               <option value="NPT4_PUB">Costo Neto (Pública)</option>
               <option value="NPT4_PRIV">Costo Neto (Privada)</option>
             </optgroup>
-            <optgroup label="Graduación">
-              <option value="C150_4">Tasa Graduación (4-Year)</option>
-              <option value="C150_4_HISP">Tasa Graduación Hispanos</option>
+            <optgroup label="Precio Neto por Ingreso Familiar">
+              <option value="NPT41_PUB">Ingreso Bajo (Pública)</option>
+              <option value="NPT41_PRIV">Ingreso Bajo (Privada)</option>
+              <option value="NPT43_PUB">Ingreso Medio (Pública)</option>
+              <option value="NPT43_PRIV">Ingreso Medio (Privada)</option>
+              <option value="NPT45_PUB">Ingreso Alto (Pública)</option>
+              <option value="NPT45_PRIV">Ingreso Alto (Privada)</option>
             </optgroup>
             <optgroup label="Salarios Graduados">
               <option value="MD_EARN_WNE_1YR">Salario Mediano (1 año)</option>
@@ -77,7 +83,6 @@ export function ListaUniversidades({
             <optgroup label="Retorno vs Secundaria">
               <option value="GT_THRESHOLD_P6">% Supera Salario Secundaria (6 años)</option>
               <option value="GT_THRESHOLD_P10">% Supera Salario Secundaria (10 años)</option>
-              <option value="GT_THRESHOLD_5YR">% Supera Salario Secundaria (5 años)</option>
             </optgroup>
             <optgroup label="Programas">
               <option value="PRGMOFR">Cantidad de Programas Ofrecidos</option>
@@ -115,6 +120,11 @@ export function ListaUniversidades({
                 <span style={{ display: 'inline-block', padding: '4px 10px', marginRight: '10px', backgroundColor: uni.CONTROL === 'Pública' ? '#2d6a4f' : '#5c4d7d', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
                   {uni.CONTROL}
                 </span>
+                {uni.ICLEVEL && (
+                  <span style={{ display: 'inline-block', padding: '4px 10px', marginRight: '10px', backgroundColor: '#264653', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                    {uni.ICLEVEL}
+                  </span>
+                )}
                 <span style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: uni.ADMCON7 === 'Requerido' ? '#9b2226' : '#005f73', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
                   SAT: {uni.ADMCON7 || 'No especificado'}
                 </span>
