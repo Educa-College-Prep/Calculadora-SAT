@@ -40,8 +40,8 @@ export function MiniBarChart({ datos, color = '#4cc9f0', formato = 'numero', alt
           />
           <Tooltip
             contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '6px' }}
-            labelStyle={{ color: '#fff' }}
-            itemStyle={{ color: '#fff' }}
+            labelStyle={{ color: '#131111' }}
+            itemStyle={{ color: '#0d0d0d' }}
             formatter={(value: any) => [formatearValor(Number(value)), 'Valor']}
           />
           <Bar dataKey="valor" fill={color} radius={[4, 4, 0, 0]} />
