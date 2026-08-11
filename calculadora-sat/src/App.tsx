@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Universidad } from './types';
+import { NOMBRES_ESTADOS } from './utils/estados';
 
 import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
@@ -74,24 +75,38 @@ export default function App() {
     return ordenDireccion === 'asc' ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
   });
   
-  const datosGrafico = universidadesOrdenadas
+  const datosGrafico = universidadesFiltradas
     .filter(uni => uni.TUITIONFEE_OUT !== null && uni.TUITIONFEE_OUT !== undefined)
+    .sort((a, b) => (b.TUITIONFEE_OUT || 0) - (a.TUITIONFEE_OUT || 0))
     .slice(0, 10)
     .map(uni => ({
-      nombre: uni.INSTNM.length > 12 ? uni.INSTNM.substring(0, 12) + '...' : uni.INSTNM,
+      nombre: uni.INSTNM.length > 15 ? uni.INSTNM.substring(0, 15) + '...' : uni.INSTNM,
       costo: uni.TUITIONFEE_OUT,
       nombreCompleto: uni.INSTNM
     }));
-
-  const datosMapaGeo: (string | number)[][] = [["Estado", "Universidades"]];
-  const conteoPorEstado: Record<string, number> = {};
   
+  console.log('📊 Datos para gráfico:', datosGrafico.length, datosGrafico);
+
+  // --- PREPARACIÓN DE DATOS DEL MAPA GEO ---
+  type TooltipCell = { role: 'tooltip'; p: { html: true } };
+  const datosMapaGeoEstados: (string | number | TooltipCell)[][] = [
+    ["Estado", "Universidades", { role: 'tooltip', p: { html: true } }]
+  ];
+
+  const conteoPorEstado: Record<string, number> = {};
+
   universidadesFiltradas.forEach(uni => {
     if (uni.STABBR) conteoPorEstado[uni.STABBR] = (conteoPorEstado[uni.STABBR] || 0) + 1;
   });
 
-  Object.keys(conteoPorEstado).forEach(estado => {
-    datosMapaGeo.push([`US-${estado}`, conteoPorEstado[estado]]);
+  Object.keys(conteoPorEstado).sort().forEach(estado => {
+    const nombreEstado = NOMBRES_ESTADOS[estado] ?? estado;
+    const tooltip = `<div style="padding:8px; line-height:1.35; color:#111;">
+      <strong style="font-size:1rem;">${nombreEstado}</strong><br />
+      <span style="font-size:0.9rem; color:#555;">${conteoPorEstado[estado]} universidades</span>
+    </div>`;
+
+    datosMapaGeoEstados.push([`US-${estado}`, conteoPorEstado[estado], tooltip]);
   });
 
   if (universidadSeleccionada) {
@@ -123,11 +138,6 @@ export default function App() {
             Métricas de admisión, costos y distribución regional de instituciones académicas.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button className="btn-saas-secondary" style={{ fontSize: '12px' }} onClick={() => window.location.reload()}>
-            Sincronizar Datos
-          </button>
-        </div>
       </header>
 
       {/* 2. ESTRUCTURA PRINCIPAL DE DOS COLUMNAS */}
@@ -157,7 +167,7 @@ export default function App() {
             <label style={{ color: 'var(--text-muted)', fontSize: '11px', display: 'block', marginBottom: '6px', fontWeight: 600 }}>UBICACIÓN GEOGRÁFICA</label>
             <select value={estadoSeleccionado} onChange={(e) => { setEstadoSeleccionado(e.target.value); setCiudadSeleccionada('todas'); }} style={{ marginBottom: '10px' }}>
               <option value="todos">Todos los estados</option>
-              {estadosUnicos.map(st => <option key={st} value={st}>{st}</option>)}
+              {estadosUnicos.map(st => <option key={st} value={st}>{NOMBRES_ESTADOS[st] ?? st}</option>)}
             </select>
             <button className="btn-saas-secondary" style={{ width: '100%', padding: '6px', fontSize: '12px' }} onClick={() => { setEstadoSeleccionado('todos'); setCiudadSeleccionada('todas'); }}>
               Restablecer Mapa
@@ -176,6 +186,7 @@ export default function App() {
             puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
             tipoUniversidad={tipoUniversidad} setTipoUniversidad={setTipoUniversidad}
             precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
+            nombresEstados={NOMBRES_ESTADOS}
           />
         </aside>
 
@@ -195,11 +206,16 @@ export default function App() {
           <div style={{ height: '1px', backgroundColor: 'var(--border-subtle)', margin: '4px 0' }} />
 
           {/* REPORTES GRÁFICOS INTERACTIVOS (LADO A LADO) */}
-          <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
-            <div className="saas-panel" style={{ padding: '20px' }}>
-              <MapaGeo datosMapaGeo={datosMapaGeo} estadoSeleccionado={estadoSeleccionado} onSeleccionarEstado={(st) => { setEstadoSeleccionado(st); setCiudadSeleccionada('todas'); }} />
+          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(450px, 1.3fr) minmax(350px, 1fr)', gap: '20px', alignItems: 'stretch' }}>
+            <div className="saas-panel" style={{ padding: '0' }}>
+              <MapaGeo
+                datosMapaGeoEstados={datosMapaGeoEstados}
+                universidadesFiltradas={universidadesFiltradas}
+                estadoSeleccionado={estadoSeleccionado}
+                onSeleccionarEstado={(st) => { setEstadoSeleccionado(st); setCiudadSeleccionada('todas'); }}
+              />
             </div>
-            <div className="saas-panel" style={{ padding: '20px' }}>
+            <div className="saas-panel" style={{ padding: '0', display: 'flex' }}>
               <GraficoBarras datosGrafico={datosGrafico} />
             </div>
           </section>

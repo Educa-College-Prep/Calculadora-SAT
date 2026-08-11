@@ -6,6 +6,7 @@ interface Props {
   setCiudadSeleccionada: (v: string) => void;
   estadosUnicos: string[];
   ciudadesUnicas: string[];
+  nombresEstados: Record<string, string>;
   // SAT
   puntajeMath: number;
   setPuntajeMath: (v: number) => void;
@@ -25,6 +26,7 @@ export function Filtros({
   estadoSeleccionado, setEstadoSeleccionado,
   ciudadSeleccionada, setCiudadSeleccionada,
   estadosUnicos, ciudadesUnicas,
+  nombresEstados,
   puntajeMath, setPuntajeMath,
   puntajeLectura, setPuntajeLectura,
   puntajeTotal,
@@ -53,7 +55,7 @@ export function Filtros({
             >
               <option value="todos">Todos los estados</option>
               {estadosUnicos.map(estado => (
-                <option key={estado} value={estado}>{estado}</option>
+                <option key={estado} value={estado}>{nombresEstados[estado] ?? estado}</option>
               ))}
             </select>
           </div>
@@ -108,7 +110,7 @@ export function Filtros({
               <label style={{ fontSize: '13px', color: '#ccc' }}>Lectura Evidencial (200-800): </label>
               <input type="number" min="0" max="800" value={puntajeLectura} onChange={(e) => {
                 const val = Number(e.target.value);
-                setOriginalValue: setPuntajeLectura(val > 800 ? 800 : val < 0 ? 0 : val);
+                setPuntajeLectura(val > 800 ? 800 : val < 0 ? 0 : val);
               }} style={{ width: '100%', padding: '8px', marginTop: '4px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #444' }} />
             </div>
             <h4 style={{ color: '#4cc9f0', margin: '5px 0 0 0' }}>Tu Puntaje Ingresado: {puntajeTotal} pts</h4>
