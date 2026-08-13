@@ -1,8 +1,12 @@
+import { memo, useEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { Universidad } from '../types';
 
 interface Props {
   universidadesFiltradas: Universidad[];
   universidadesOrdenadas: Universidad[];
+  /** id -> motivos por los que no se pudo evaluar con los filtros activos */
+  faltantesPorId: Map<number, string[]>;
   totalUniversidades: number;
   ordenarPor: string;
   setOrdenarPor: (v: string) => void;
@@ -11,9 +15,81 @@ interface Props {
   onSeleccionar: (uni: Universidad) => void;
 }
 
+const OPCIONES_POR_PAGINA = [25, 50, 100, 200];
+
+const estiloBotonPagina: CSSProperties = {
+  padding: '6px 12px',
+  backgroundColor: '#333',
+  color: '#fff',
+  border: '1px solid #555',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  fontSize: '13px',
+};
+
+/**
+ * Cada tarjeta va memoizada: al cambiar de página o de orden, React solo
+ * re-renderiza las filas cuyos datos cambiaron, no las 4300.
+ */
+const FilaUniversidad = memo(function FilaUniversidad({
+  uni,
+  faltantes,
+  onSeleccionar,
+}: {
+  uni: Universidad;
+  faltantes?: string[];
+  onSeleccionar: (uni: Universidad) => void;
+}) {
+  const incompleta = !!faltantes?.length;
+  return (
+    <li
+      onClick={() => onSeleccionar(uni)}
+      title={incompleta ? `No se pudo evaluar con los filtros activos: ${faltantes!.join(', ')}` : undefined}
+      style={{ padding: '15px', border: incompleta ? '1px dashed #fcd34d' : '1px solid #444', margin: '10px 0', borderRadius: '8px', backgroundColor: '#2a2a2a', cursor: 'pointer', transition: '0.3s', opacity: incompleta ? 0.82 : 1 }}
+      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3a3a3a'}
+      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2a2a2a'}
+    >
+      <strong style={{ fontSize: '1.2em' }}>{uni.INSTNM}</strong>{' '}
+      <small>({uni.CITY}, {uni.STABBR})</small>
+      <div style={{ marginTop: '10px' }}>
+        <span style={{ display: 'inline-block', padding: '4px 10px', marginRight: '10px', backgroundColor: uni.CONTROL === 'Pública' ? '#2d6a4f' : '#5c4d7d', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+          {uni.CONTROL}
+        </span>
+        {uni.ICLEVEL && (
+          <span style={{ display: 'inline-block', padding: '4px 10px', marginRight: '10px', backgroundColor: '#264653', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+            {uni.ICLEVEL}
+          </span>
+        )}
+        <span style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: uni.ADMCON7 === 'Requerido' ? '#9b2226' : '#005f73', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+          SAT: {uni.ADMCON7 || 'No especificado'}
+        </span>
+      </div>
+
+      {/* Etiquetas de datos faltantes para los filtros que el usuario activó */}
+      {incompleta && (
+        <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+          {faltantes!.map(motivo => (
+            <span
+              key={motivo}
+              style={{
+                display: 'inline-block', padding: '3px 9px', borderRadius: '4px',
+                fontSize: '11px', fontWeight: 600, color: '#92400e',
+                background: '#fef3c7', border: '1px solid #fcd34d',
+              }}
+            >
+              ⚠ {motivo}
+            </span>
+          ))}
+        </div>
+      )}
+    </li>
+  );
+});
+
 export function ListaUniversidades({
   universidadesFiltradas,
   universidadesOrdenadas,
+  faltantesPorId,
   totalUniversidades,
   ordenarPor,
   setOrdenarPor,
@@ -21,6 +97,27 @@ export function ListaUniversidades({
   setOrdenDireccion,
   onSeleccionar,
 }: Props) {
+  const [porPagina, setPorPagina] = useState<number>(50);
+  const [pagina, setPagina] = useState<number>(1);
+
+  const totalPaginas = Math.max(1, Math.ceil(universidadesOrdenadas.length / porPagina));
+
+  // Al cambiar filtros u orden se vuelve al inicio del listado.
+  useEffect(() => {
+    setPagina(1);
+  }, [universidadesOrdenadas, porPagina]);
+
+  const paginaSegura = Math.min(pagina, totalPaginas);
+
+  // Solo se pintan los resultados de la página actual, no los 3500 de golpe.
+  const universidadesVisibles = useMemo(() => {
+    const inicio = (paginaSegura - 1) * porPagina;
+    return universidadesOrdenadas.slice(inicio, inicio + porPagina);
+  }, [universidadesOrdenadas, paginaSegura, porPagina]);
+
+  const primerResultado = universidadesOrdenadas.length === 0 ? 0 : (paginaSegura - 1) * porPagina + 1;
+  const ultimoResultado = Math.min(paginaSegura * porPagina, universidadesOrdenadas.length);
+
   return (
     <div style={{ marginTop: '30px', textAlign: 'left' }}>
 
@@ -100,38 +197,80 @@ export function ListaUniversidades({
       </div>
 
       <p style={{ color: '#aaa', fontSize: '14px', marginTop: '5px' }}>
-        Explorando nuestra base de datos completa.
+        {universidadesOrdenadas.length > 0
+          ? `Mostrando ${primerResultado}–${ultimoResultado} de ${universidadesOrdenadas.length} resultados.`
+          : 'Explorando nuestra base de datos completa.'}
       </p>
+
+      {faltantesPorId.size > 0 && (
+        <p style={{ color: '#92400e', fontSize: '13px', margin: '4px 0 10px 0' }}>
+          ⚠ {faltantesPorId.size} de estos resultados no tienen los datos que piden tus filtros.
+          No se descartaron, pero van al final de la lista y aparecen marcados.
+        </p>
+      )}
 
       {/* Lista */}
       {universidadesFiltradas.length > 0 ? (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {universidadesOrdenadas.slice(0, 3500).map((uni, index) => (
-            <li
-              key={index}
-              onClick={() => onSeleccionar(uni)}
-              style={{ padding: '15px', border: '1px solid #444', margin: '10px 0', borderRadius: '8px', backgroundColor: '#2a2a2a', cursor: 'pointer', transition: '0.3s' }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3a3a3a'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2a2a2a'}
+        <>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {universidadesVisibles.map((uni, index) => (
+              <FilaUniversidad
+                key={uni._id ?? `${uni.INSTNM}-${uni.CITY}-${index}`}
+                uni={uni}
+                faltantes={uni._id != null ? faltantesPorId.get(uni._id) : undefined}
+                onSeleccionar={onSeleccionar}
+              />
+            ))}
+          </ul>
+
+          {/* Controles de paginación */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '10px 0 20px 0' }}>
+            <button
+              style={{ ...estiloBotonPagina, opacity: paginaSegura === 1 ? 0.4 : 1, cursor: paginaSegura === 1 ? 'default' : 'pointer' }}
+              onClick={() => setPagina(1)}
+              disabled={paginaSegura === 1}
             >
-              <strong style={{ fontSize: '1.2em' }}>{uni.INSTNM}</strong>{' '}
-              <small>({uni.CITY}, {uni.STABBR})</small>
-              <div style={{ marginTop: '10px' }}>
-                <span style={{ display: 'inline-block', padding: '4px 10px', marginRight: '10px', backgroundColor: uni.CONTROL === 'Pública' ? '#2d6a4f' : '#5c4d7d', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-                  {uni.CONTROL}
-                </span>
-                {uni.ICLEVEL && (
-                  <span style={{ display: 'inline-block', padding: '4px 10px', marginRight: '10px', backgroundColor: '#264653', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-                    {uni.ICLEVEL}
-                  </span>
-                )}
-                <span style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: uni.ADMCON7 === 'Requerido' ? '#9b2226' : '#005f73', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-                  SAT: {uni.ADMCON7 || 'No especificado'}
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
+              « Primera
+            </button>
+            <button
+              style={{ ...estiloBotonPagina, opacity: paginaSegura === 1 ? 0.4 : 1, cursor: paginaSegura === 1 ? 'default' : 'pointer' }}
+              onClick={() => setPagina(p => Math.max(1, p - 1))}
+              disabled={paginaSegura === 1}
+            >
+              ‹ Anterior
+            </button>
+
+            <span style={{ color: '#aaa', fontSize: '13px' }}>
+              Página <strong style={{ color: '#4cc9f0' }}>{paginaSegura}</strong> de {totalPaginas}
+            </span>
+
+            <button
+              style={{ ...estiloBotonPagina, opacity: paginaSegura >= totalPaginas ? 0.4 : 1, cursor: paginaSegura >= totalPaginas ? 'default' : 'pointer' }}
+              onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
+              disabled={paginaSegura >= totalPaginas}
+            >
+              Siguiente ›
+            </button>
+            <button
+              style={{ ...estiloBotonPagina, opacity: paginaSegura >= totalPaginas ? 0.4 : 1, cursor: paginaSegura >= totalPaginas ? 'default' : 'pointer' }}
+              onClick={() => setPagina(totalPaginas)}
+              disabled={paginaSegura >= totalPaginas}
+            >
+              Última »
+            </button>
+
+            <label style={{ color: '#aaa', fontSize: '13px', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Por página:
+              <select
+                value={porPagina}
+                onChange={(e) => setPorPagina(Number(e.target.value))}
+                style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #555', fontSize: '13px' }}
+              >
+                {OPCIONES_POR_PAGINA.map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+          </div>
+        </>
       ) : (
         <p style={{ color: '#ff6b6b', padding: '20px', backgroundColor: '#331a1a', borderRadius: '8px' }}>
           No se encontraron universidades con esa combinación exacta de filtros. Intenta ampliar tu presupuesto o cambiar la ubicación.

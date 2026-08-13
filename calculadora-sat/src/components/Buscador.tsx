@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { memo, useDeferredValue, useEffect, useMemo, useRef } from 'react';
 import type { Universidad } from '../types';
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
   universidades: Universidad[];
 }
 
-export function Buscador({ busquedaNombre, setBusquedaNombre, mostrarSugerencias, setMostrarSugerencias, universidades }: Props) {
+export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNombre, mostrarSugerencias, setMostrarSugerencias, universidades }: Props) {
   const contenedorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,11 +20,24 @@ export function Buscador({ busquedaNombre, setBusquedaNombre, mostrarSugerencias
     }
     document.addEventListener('mousedown', manejarClicFuera);
     return () => document.removeEventListener('mousedown', manejarClicFuera);
-  }, []);
+  }, [setMostrarSugerencias]);
 
-  const sugerencias = universidades
-    .filter(uni => uni.INSTNM.toLowerCase().includes(busquedaNombre.toLowerCase()))
-    .slice(0, 8);
+  // El cálculo de sugerencias recorre las 4300 universidades: se difiere y se
+  // memoiza para que escribir en el input no bloquee la interfaz.
+  const busquedaDiferida = useDeferredValue(busquedaNombre);
+
+  const sugerencias = useMemo(() => {
+    if (busquedaDiferida.length === 0) return [];
+    const texto = busquedaDiferida.toLowerCase();
+    const encontradas: Universidad[] = [];
+    for (const uni of universidades) {
+      if (uni.INSTNM.toLowerCase().includes(texto)) {
+        encontradas.push(uni);
+        if (encontradas.length === 8) break; // corta apenas junta 8, no recorre el resto
+      }
+    }
+    return encontradas;
+  }, [universidades, busquedaDiferida]);
 
   return (
     <div
@@ -63,7 +76,7 @@ export function Buscador({ busquedaNombre, setBusquedaNombre, mostrarSugerencias
           {sugerencias.length > 0 ? (
             sugerencias.map((uni, idx) => (
               <li
-                key={idx}
+                key={uni._id ?? idx}
                 onClick={() => { setBusquedaNombre(uni.INSTNM); setMostrarSugerencias(false); }}
                 style={{ padding: '10px 15px', borderBottom: '1px solid #333', cursor: 'pointer', textAlign: 'left', transition: '0.2s' }}
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#333'}
@@ -80,4 +93,4 @@ export function Buscador({ busquedaNombre, setBusquedaNombre, mostrarSugerencias
       )}
     </div>
   );
-}
+});

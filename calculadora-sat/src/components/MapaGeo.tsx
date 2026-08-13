@@ -1,6 +1,7 @@
+import { memo, useMemo } from 'react';
 import { Chart } from 'react-google-charts';
 import { NOMBRES_ESTADOS } from '../utils/estados';
-import { MapaCiudades } from './MapaCiudades';
+import { MapaCondados } from './MapaCondados';
 import type { Universidad } from '../types';
 
 type TooltipCell = { role: 'tooltip'; p: { html: true } };
@@ -11,28 +12,31 @@ interface Props {
   universidadesFiltradas: Universidad[];
   estadoSeleccionado: string;
   onSeleccionarEstado: (estado: string) => void;
+  onSeleccionarCiudad?: (ciudad: string) => void;
 }
 
-export function MapaGeo({ datosMapaGeoEstados, universidadesFiltradas, estadoSeleccionado, onSeleccionarEstado }: Props) {
+// Fuera del componente: si se recrearan en cada render, Google Charts
+// redibujaría el mapa entero en cada tecla que se escribe en el buscador.
+const stateMapOptions = {
+  region: 'US',
+  displayMode: 'regions',
+  resolution: 'provinces',
+  colorAxis: {
+    colors: ['#e0f2fe', '#38bdf8', '#0284c7']
+  },
+  backgroundColor: '#ffffff',
+  datalessRegionColor: '#f1f5f9',
+  defaultColor: '#cbd5e1',
+  keepAspectRatio: true,
+  enableRegionInteractivity: true,
+  tooltip: { isHtml: true, trigger: 'focus' },
+  legend: { textStyle: { color: '#334155' } },
+};
+
+export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidadesFiltradas, estadoSeleccionado, onSeleccionarEstado, onSeleccionarCiudad }: Props) {
   const esNacional = estadoSeleccionado === 'todos';
 
-  const stateMapOptions = {
-    region: 'US',
-    displayMode: 'regions',
-    resolution: 'provinces',
-    colorAxis: {
-      colors: ['#e0f2fe', '#38bdf8', '#0284c7']
-    },
-    backgroundColor: '#ffffff',
-    datalessRegionColor: '#f1f5f9',
-    defaultColor: '#cbd5e1',
-    keepAspectRatio: true,
-    enableRegionInteractivity: true,
-    tooltip: { isHtml: true, trigger: 'focus' },
-    legend: { textStyle: { color: '#334155' } },
-  };
-
-  const chartEvents = [
+  const chartEvents = useMemo(() => [
     {
       eventName: 'select' as const,
       callback: ({ chartWrapper }: any) => {
@@ -41,13 +45,13 @@ export function MapaGeo({ datosMapaGeoEstados, universidadesFiltradas, estadoSel
         if (selection.length === 0 || selection[0].row == null) return;
         const dataTable = chartWrapper.getDataTable();
         const valorSeleccionado = dataTable.getValue(selection[0].row, 0);
-        
+
         if (typeof valorSeleccionado === 'string' && valorSeleccionado.startsWith('US-')) {
           onSeleccionarEstado(valorSeleccionado.split('-')[1]);
         }
       }
     }
-  ];
+  ], [onSeleccionarEstado]);
 
   const nombreEstado = !esNacional ? (NOMBRES_ESTADOS[estadoSeleccionado] ?? estadoSeleccionado) : null;
 
@@ -60,11 +64,11 @@ export function MapaGeo({ datosMapaGeoEstados, universidadesFiltradas, estadoSel
         </h3>
         <p style={{ fontSize: '11px', color: '#888', margin: '0' }}>
           {esNacional
-            ? 'Haz clic en un estado para ver sus ciudades'
-            : 'Densidad de universidades por ciudad'}
+            ? 'Haz clic en un estado para ver el detalle por condado'
+            : 'Densidad de universidades por condado'}
         </p>
       </div>
-      
+
       <div style={{ padding: '20px', paddingTop: '12px', flex: 1 }}>
 
       {datosMapaGeoEstados.length > 1 ? (
@@ -86,11 +90,12 @@ export function MapaGeo({ datosMapaGeoEstados, universidadesFiltradas, estadoSel
 
       {!esNacional && (
         <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-          <h4 style={{ margin: '0 0 12px 0', color: '#fff', fontSize: '0.95rem', fontWeight: 600 }}>🏙️ Ciudades Dentro de {nombreEstado}</h4>
+          <h4 style={{ margin: '0 0 12px 0', color: '#fff', fontSize: '0.95rem', fontWeight: 600 }}>🏙️ Universidades por Condado en {nombreEstado}</h4>
           {universidadesFiltradas.length > 0 ? (
-            <MapaCiudades
+            <MapaCondados
               universidades={universidadesFiltradas}
               estadoSeleccionado={estadoSeleccionado}
+              onSeleccionarCiudad={onSeleccionarCiudad}
             />
           ) : (
             <p style={{ color: '#aaa', textAlign: 'center', marginTop: '20px' }}>
@@ -102,4 +107,4 @@ export function MapaGeo({ datosMapaGeoEstados, universidadesFiltradas, estadoSel
       </div>
     </div>
   );
-}
+});

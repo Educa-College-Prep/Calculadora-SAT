@@ -1,4 +1,7 @@
 export interface Universidad {
+  /** Identificador estable asignado al cargar la data. Se usa como key de React
+   *  para que ordenar/filtrar no obligue a re-renderizar toda la lista. */
+  _id?: number;
   INSTNM: string;
   CITY: string;
   STABBR: string;

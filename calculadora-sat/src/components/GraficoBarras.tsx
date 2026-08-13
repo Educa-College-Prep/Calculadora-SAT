@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 interface DatoGrafico {
@@ -10,9 +11,7 @@ interface Props {
   datosGrafico: DatoGrafico[];
 }
 
-export function GraficoBarras({ datosGrafico }: Props) {
-  console.log('🔍 GraficoBarras recibió:', datosGrafico.length, 'datos');
-
+export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props) {
   if (datosGrafico.length === 0) {
     return (
       <div style={{ 
@@ -50,24 +49,28 @@ export function GraficoBarras({ datosGrafico }: Props) {
         </p>
       </div>
       
-      <div style={{ 
-        width: '100%', 
-        height: '400px',
-        flex: 1
+      {/* Alto fijo, sin `flex: 1`. Con flex-basis 0 dentro de una columna cuya
+          altura la define el contenido, este contenedor colapsaba a 0px y
+          ResponsiveContainer dibujaba un gráfico vacío. */}
+      <div style={{
+        width: '100%',
+        height: '300px',
+        minHeight: '300px',
+        flexShrink: 0
       }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart 
             data={datosGrafico} 
-            margin={{ top: 10, right: 20, left: 0, bottom: 60 }}
+            margin={{ top: 6, right: 16, left: 0, bottom: 40 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
             <XAxis 
               dataKey="nombre" 
               stroke="#999" 
               tick={{ fontSize: 10 }} 
-              angle={-45} 
+              angle={-40}
               textAnchor="end"
-              height={100}
+              height={72}
             />
             <YAxis 
               stroke="#999" 
@@ -96,4 +99,4 @@ export function GraficoBarras({ datosGrafico }: Props) {
       </div>
     </div>
   );
-}
+});
