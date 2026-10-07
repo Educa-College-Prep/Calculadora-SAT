@@ -208,9 +208,9 @@ export default function App() {
 
     Object.keys(conteoPorEstado).sort().forEach(estado => {
       const nombreEstado = NOMBRES_ESTADOS[estado] ?? estado;
-      const tooltip = `<div style="padding:8px; line-height:1.35; color:#111;">
-      <strong style="font-size:1rem;">${nombreEstado}</strong><br />
-      <span style="font-size:0.9rem; color:#555;">${conteoPorEstado[estado]} universidades</span>
+      const tooltip = `<div style="padding:8px 10px; line-height:1.35; color:#26292b; font-family:Archivo, sans-serif;">
+      <strong style="font-size:15px;">${nombreEstado}</strong><br />
+      <span style="font-size:13px; color:#5d6467;">${conteoPorEstado[estado]} universidades · clic para ver condados</span>
     </div>`;
 
       // Con un estado elegido, el valor solo marca "elegido (1) / resto (0)" para
@@ -290,126 +290,83 @@ export default function App() {
     );
   }
 
-  return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+  const hayFiltrosUbicacion = estadoSeleccionado !== 'todos';
 
-      {/* 1. CABECERA GLOBAL IMPECABLE */}
-      <header style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderBottom: '1px solid var(--border-subtle)',
-        paddingBottom: '16px',
-        marginBottom: '10px'
-      }}>
+  return (
+    <>
+      <header className="cabecera">
         <div>
-          <h1 style={{ fontSize: '1.8rem', color: 'var(--text-main)', fontWeight: 700, letterSpacing: '-0.5px' }}>
-            Calculadora SAT
-          </h1>
-          <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0', fontSize: '0.9rem' }}>
-            Métricas de admisión, costos y distribución regional de instituciones académicas.
+          <h1>Calculadora SAT</h1>
+          <p className="cabecera-bajada">
+            Encuentra universidades de EE.&nbsp;UU. que encajan con tu puntaje, tu presupuesto y el lugar donde quieres estudiar.
           </p>
         </div>
+        <Buscador
+          busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
+          mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
+          sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
+          onSeleccionar={seleccionarUniversidad}
+        />
       </header>
 
-      {/* 2. ESTRUCTURA PRINCIPAL DE DOS COLUMNAS */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '300px 1fr',
-        gap: '30px',
-        alignItems: 'start'
-      }}>
+      <div className="cuerpo">
+        <Filtros
+          estadoSeleccionado={estadoSeleccionado} setEstadoSeleccionado={setEstadoSeleccionado}
+          ciudadSeleccionada={ciudadSeleccionada} setCiudadSeleccionada={setCiudadSeleccionada}
+          estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
+          puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
+          puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
+          puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
+          tipoUniversidad={tipoUniversidad} setTipoUniversidad={setTipoUniversidad}
+          precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
+          nombresEstados={NOMBRES_ESTADOS}
+        />
 
-        {/* COLUMNA IZQUIERDA: PANEL DE FILTROS LATERAL (SIDEBAR) */}
-        <aside className="saas-panel" style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-          position: 'sticky',
-          top: '20px'
-        }}>
-          <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
-            <h3 style={{ margin: 0, fontSize: '14px', color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Filtros de Control
-            </h3>
+        <main className="columna-principal">
+          {/* Lo primero que se lee: cuántas universidades quedan con lo que marcaste. */}
+          <div className="resultado" aria-live="polite">
+            <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
+            <span className="resultado-texto">
+              {universidadesFiltradas.length === 1 ? 'universidad encaja' : 'universidades encajan'} con lo que marcaste
+            </span>
+            <span className="resultado-nota">
+              de {universidades.length.toLocaleString()} en la base de datos
+              {hayFiltrosUbicacion && ` · en ${NOMBRES_ESTADOS[estadoSeleccionado] ?? estadoSeleccionado}`}
+              {ciudadSeleccionada !== 'todas' && `, ${ciudadSeleccionada}`}
+            </span>
           </div>
 
-          {/* Subcomponente Filtros (Rangos, SAT, Precios) */}
-          <Filtros
-            estadoSeleccionado={estadoSeleccionado} setEstadoSeleccionado={setEstadoSeleccionado}
-            ciudadSeleccionada={ciudadSeleccionada} setCiudadSeleccionada={setCiudadSeleccionada}
-            estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
-            puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
-            puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
-            puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
-            tipoUniversidad={tipoUniversidad} setTipoUniversidad={setTipoUniversidad}
-            precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
-            nombresEstados={NOMBRES_ESTADOS}
-          />
-        </aside>
-
-        {/* COLUMNA DERECHA: PANEL PRINCIPAL CENTRAL */}
-        <main style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
-          {/* BUSCADOR COMPACTO SUPERIOR */}
-          <section className="saas-panel" style={{ padding: '16px 20px' }}>
-            <Buscador
-              busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
-              mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
-              sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
-              onSeleccionar={seleccionarUniversidad}
+          <section className="tablero">
+            <MapaGeo
+              datosMapaGeoEstados={datosMapaGeoEstados}
+              universidadesFiltradas={universidadesFiltradas}
+              estadoSeleccionado={estadoSeleccionado}
+              onSeleccionarEstado={seleccionarEstadoDesdeMapa}
+              onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
             />
-          </section>
 
-          {/* SEPARADOR VISUAL */}
-          <div style={{ height: '1px', backgroundColor: 'var(--border-subtle)', margin: '4px 0' }} />
-
-          {/* REPORTES GRÁFICOS INTERACTIVOS (LADO A LADO) */}
-          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(450px, 1.3fr) minmax(350px, 1fr)', gap: '20px', alignItems: 'start' }}>
-            <div className="saas-panel" style={{ padding: '0' }}>
-              <MapaGeo
-                datosMapaGeoEstados={datosMapaGeoEstados}
-                universidadesFiltradas={universidadesFiltradas}
-                estadoSeleccionado={estadoSeleccionado}
-                onSeleccionarEstado={seleccionarEstadoDesdeMapa}
-                onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
-              />
-            </div>
-
-            {/* Columna derecha: el gráfico conserva su alto natural y, cuando se abre
-                el mapa del estado, el espacio de abajo lo llena el resumen en vez de
-                estirar las barras. */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div className="saas-panel" style={{ padding: '0', display: 'flex' }}>
-                <GraficoBarras datosGrafico={datosGrafico} />
-              </div>
-              {estadoSeleccionado !== 'todos' && (
-                <div className="saas-panel" style={{ padding: '0', flex: 1 }}>
-                  <ResumenEstado
-                    universidades={universidadesFiltradas}
-                    estadoSeleccionado={estadoSeleccionado}
-                  />
-                </div>
+            {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
+                va el resumen en vez de estirar las barras. */}
+            <div className="tablero-lateral">
+              <GraficoBarras datosGrafico={datosGrafico} />
+              {hayFiltrosUbicacion && (
+                <ResumenEstado
+                  universidades={universidadesFiltradas}
+                  estadoSeleccionado={estadoSeleccionado}
+                />
               )}
             </div>
           </section>
 
-          {/* SEPARADOR VISUAL ANTES DE LOS RESULTADOS */}
-          <div style={{ height: '1px', backgroundColor: 'var(--border-subtle)', margin: '4px 0' }} />
-
-          {/* TABLA DE RESULTADOS TOTALMENTE VISIBLE ABAJO */}
-          <section className="saas-panel" style={{ padding: '8px' }}>
-            <ListaUniversidades
-              universidadesFiltradas={universidadesFiltradas} universidadesOrdenadas={universidadesOrdenadas}
-              faltantesPorId={faltantesPorId}
-              totalUniversidades={universidades.length} ordenarPor={ordenarPor} setOrdenarPor={setOrdenarPor}
-              ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
-              onSeleccionar={seleccionarUniversidad}
-            />
-          </section>
-
+          <ListaUniversidades
+            universidadesFiltradas={universidadesFiltradas} universidadesOrdenadas={universidadesOrdenadas}
+            faltantesPorId={faltantesPorId}
+            totalUniversidades={universidades.length} ordenarPor={ordenarPor} setOrdenarPor={setOrdenarPor}
+            ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
+            onSeleccionar={seleccionarUniversidad}
+          />
         </main>
       </div>
-    </div>
+    </>
   );
 }

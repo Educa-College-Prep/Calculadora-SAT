@@ -1,156 +1,242 @@
+/* =========================================================
+   Concepto "Hoja de respuestas": papel blanco, tinta verde de
+   formulario, grafito de lápiz y un resaltador para lo que
+   encaja contigo. Los colores tienen significado fijo:
+     verde tinta  → público / activo / estructura
+     azul bolígrafo → privado sin fines de lucro
+     ámbar        → avisos (con fines de lucro, datos faltantes)
+     resaltador   → tu puntaje y lo que encaja contigo
+   ========================================================= */
 :root {
-  /* Paleta SaaS Limpia (Blanco y Azul Corporativo) */
-  --bg-main: #f8fafc;        /* Gris ultra claro de fondo general */
-  --bg-card: #ffffff;        /* Blanco puro para paneles y tarjetas */
-  --bg-input: #ffffff;       /* Fondo para selects e inputs */
-  --border-subtle: #e2e8f0;   /* Líneas divisorias finas gris claro */
-  
-  /* Textos */
-  --text-main: #0f172a;      /* Azul oscuro/Negro ejecutivo para títulos */
-  --text-muted: #64748b;     /* Gris slate para subtítulos y descripciones */
-  
-  /* Acento e Interactivos */
-  --brand-blue: #0284c7;     /* Azul brillante corporativo */
-  --brand-blue-hover: #0369a1;
-  --bg-hover: #f1f5f9;       /* Color gris al pasar el mouse por encima */
+  --papel: #f1f4ef;          /* fondo de página, papel de formulario */
+  --hoja: #ffffff;           /* superficies */
+  --tinta: #2e7d62;          /* tinta verde de formulario */
+  --tinta-fuerte: #1f5a46;
+  --tinta-suave: #cfe3d8;    /* reglas y bordes */
+  --tinta-fondo: #e8f2ec;    /* relleno de lo seleccionado */
+  --grafito: #26292b;        /* texto y burbujas rellenas */
+  --grafito-suave: #5d6467;  /* texto secundario (6:1 sobre blanco) */
+  --linea: #dde4df;          /* divisores neutros */
+  --boligrafo: #2d5ba8;      /* privadas sin fines de lucro */
+  --boligrafo-fondo: #e7eef9;
+  --alerta: #8f4f00;
+  --alerta-fondo: #fff3d6;
+  --alerta-borde: #f0c96a;
+  --resaltador: #ffe14d;
+  --error: #b42318;
 
-  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  font: 15px/160% var(--sans);
-  background-color: var(--bg-main);
-  color: var(--text-main);
+  --radio: 14px;
+  --radio-chico: 8px;
+
+  --fuente: 'Archivo', 'Avenir Next', 'Segoe UI', sans-serif;
+
+  font: 15px/1.55 var(--fuente);
+  font-optical-sizing: auto;
+  color: var(--grafito);
+  background: var(--papel);
   -webkit-font-smoothing: antialiased;
 }
 
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
-  padding: 0;
-  background-color: var(--bg-main);
+  background: var(--papel);
 }
 
 #root {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1320px;
   margin: 0 auto;
   min-height: 100vh;
-  box-sizing: border-box;
-  padding: 40px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-/* Paneles Estilo Dashboard SaaS Blanco */
-.saas-panel {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-  box-sizing: border-box;
-}
-
-/* Inputs y Selects Ejecutivos en Modo Claro */
-input[type="text"], select, input[type="number"] {
-  background-color: var(--bg-input) !important;
-  border: 1px solid #cbd5e1 !important;
-  color: var(--text-main) !important;
-  border-radius: 6px !important;
-  padding: 10px 14px !important;
-  font-size: 14px !important;
-  outline: none !important;
-  width: 100%;
-  box-sizing: border-box;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-input[type="text"]:focus, select:focus {
-  border-color: var(--brand-blue) !important;
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1) !important;
-}
-
-/* Botones Azules SaaS */
-.btn-saas-primary {
-  background-color: var(--brand-blue);
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.btn-saas-primary:hover {
-  background-color: var(--brand-blue-hover);
-}
-
-.btn-saas-secondary {
-  background-color: #ffffff;
-  color: var(--text-muted);
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-saas-secondary:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-main);
-  border-color: #94a3b8;
+  padding: 32px 24px 64px;
 }
 
 h1, h2, h3, h4 {
-  color: var(--text-main);
-  font-weight: 600;
   margin: 0;
+  color: var(--grafito);
+  font-weight: 700;
+  line-height: 1.15;
 }
 
-/* ========================================================= */
-/* 🔥 ANULACIÓN ATÓMICA DE ESTILOS VIEJOS EN COMPONENTES     */
-/* ========================================================= */
-div[style*="background-color"], li[style*="background-color"] {
-  background-color: var(--bg-card) !important;
-  border-color: var(--border-subtle) !important;
-  color: var(--text-main) !important;
+p { margin: 0 0 0.6em; }
+
+a { color: var(--tinta-fuerte); text-underline-offset: 3px; }
+
+:focus-visible {
+  outline: 2px solid var(--tinta);
+  outline-offset: 2px;
 }
 
-h3 {
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  color: var(--text-main) !important;
-  margin-bottom: 12px !important;
+.numero { font-variant-numeric: tabular-nums; }
+
+/* ---------- Controles ---------- */
+input[type="text"],
+input[type="search"],
+input[type="number"],
+select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--grafito);
+  background: var(--hoja);
+  border: 1.5px solid var(--linea);
+  border-radius: var(--radio-chico);
+  transition: border-color 0.15s ease;
+}
+input:hover, select:hover { border-color: var(--tinta-suave); }
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--tinta);
+  box-shadow: 0 0 0 3px var(--tinta-fondo);
+}
+select:disabled { color: var(--grafito-suave); background: var(--papel); cursor: not-allowed; }
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tinta-fuerte);
+  background: var(--hoja);
+  border: 1.5px solid var(--tinta-suave);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.boton:hover:not(:disabled) { background: var(--tinta-fondo); border-color: var(--tinta); }
+.boton:disabled { opacity: 0.4; cursor: default; }
+
+.boton-primario {
+  color: #fff;
+  background: var(--tinta);
+  border-color: var(--tinta);
+}
+.boton-primario:hover:not(:disabled) { background: var(--tinta-fuerte); border-color: var(--tinta-fuerte); }
+
+/* ---------- Superficies ---------- */
+.panel {
+  background: var(--hoja);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  min-width: 0;
 }
 
-/* Ajuste de etiquetas de texto en componentes hijos */
-label {
-  color: var(--text-muted) !important;
-  font-weight: 500 !important;
+.panel-cabecera {
+  padding: 18px 20px 12px;
+}
+.panel-cuerpo { padding: 0 20px 20px; }
+
+/* Títulos de sección: ancho expandido, como impresos en un formulario. */
+.titulo-seccion {
+  font-size: 18px;
+  font-stretch: 112%;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-/* Badges de las Universidades (Pública / Privada / SAT) */
-span[style*="background-color"] {
-  background-color: #e0f2fe !important; /* Fondo azul cielo suave */
-  color: #0369a1 !important;            /* Texto azul oscuro */
-  border: 1px solid #bae6fd !important;
-  border-radius: 4px !important;
-  font-weight: 600 !important;
+.ayuda {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--grafito-suave);
+  margin: 4px 0 0;
 }
 
-/* Filas de la lista de universidades */
-li {
-  border-bottom: 1px solid var(--border-subtle) !important;
-  border-radius: 0px !important;
-  margin: 0 !important;
-  padding: 16px 20px !important;
-  background-color: #ffffff !important;
+/* ---------- Estructura de la página principal ---------- */
+.cabecera {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);
+  gap: 16px 40px;
+  align-items: end;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--grafito);
 }
-li:hover {
-  background-color: var(--bg-hover) !important;
+
+.cabecera h1 {
+  font-size: clamp(30px, 4.4vw, 52px);
+  font-stretch: 125%;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
-li strong {
-  color: var(--text-main) !important;
+
+.cabecera-bajada {
+  max-width: 52ch;
+  margin: 10px 0 0;
+  font-size: 16px;
+  color: var(--grafito-suave);
 }
-li small {
-  color: var(--text-muted) !important;
+
+.cuerpo {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.columna-principal {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Línea de resultado: lo primero que se lee a la derecha. */
+.resultado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.resultado-cifra {
+  font-size: 30px;
+  font-stretch: 118%;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(transparent 58%, var(--resaltador) 58%, var(--resaltador) 92%, transparent 92%);
+  padding: 0 2px;
+}
+.resultado-texto { font-size: 17px; font-weight: 600; }
+.resultado-nota { flex-basis: 100%; font-size: 13px; color: var(--grafito-suave); }
+
+.tablero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.tablero-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .tablero { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 960px) {
+  .cabecera { grid-template-columns: minmax(0, 1fr); }
+  .cuerpo { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 600px) {
+  #root { padding: 20px 16px 48px; }
+  .panel-cabecera { padding: 16px 16px 10px; }
+  .panel-cuerpo { padding: 0 16px 16px; }
+  .resultado-cifra { font-size: 26px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
 }
