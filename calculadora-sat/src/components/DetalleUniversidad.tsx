@@ -98,10 +98,10 @@ export function DetalleUniversidad({ uni, onVolver }: Props) {
 
       {/* Lo más importante, legible en pocos segundos. */}
       <dl className="esenciales" aria-label="Lo esencial">
-        <Esencial etiqueta="Admisión" valor={formatPorcentaje(uni.ADM_RATE)} ayuda={glosarioCampos.ADM_RATE} />
-        <Esencial etiqueta="SAT promedio" valor={uni.SAT_AVG != null ? String(uni.SAT_AVG) : null} ayuda={glosarioCampos.SAT_AVG} />
+        <Esencial etiqueta="Tasa de admisión" valor={formatPorcentaje(uni.ADM_RATE)} ayuda={glosarioCampos.ADM_RATE} />
+        <Esencial etiqueta="Puntaje SAT promedio" valor={uni.SAT_AVG != null ? String(uni.SAT_AVG) : null} ayuda={glosarioCampos.SAT_AVG} />
         <Esencial etiqueta="Matrícula anual" valor={formatDinero(matricula)} ayuda={glosarioCampos.TUITIONFEE_OUT} />
-        <Esencial etiqueta="Salario a 4 años" valor={formatDinero(uni.MD_EARN_WNE_4YR)} ayuda={glosarioCampos.MD_EARN_4YR} />
+        <Esencial etiqueta="Salario a 4 años de graduarse" valor={formatDinero(uni.MD_EARN_WNE_4YR)} ayuda={glosarioCampos.MD_EARN_4YR} />
       </dl>
 
       <div className="ficha-grilla">
