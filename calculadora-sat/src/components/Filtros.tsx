@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import type { CSSProperties } from 'react';
+
 interface Props {
   // Ubicación
   estadoSeleccionado: string;
@@ -7,7 +10,7 @@ interface Props {
   estadosUnicos: string[];
   ciudadesUnicas: string[];
   nombresEstados: Record<string, string>;
-  // SAT
+  // SAT (0 = vacío, sin filtrar)
   puntajeMath: number;
   setPuntajeMath: (v: number) => void;
   puntajeLectura: number;
@@ -22,6 +25,81 @@ interface Props {
   setPrecioMaximo: (v: number) => void;
 }
 
+const SAT_MIN = 200;
+const SAT_MAX = 800;
+
+// Mismo estilo para todos los títulos de sección del sidebar.
+const estiloSeccion: CSSProperties = {
+  color: 'var(--text-muted)',
+  fontSize: '11px',
+  display: 'block',
+  marginBottom: '8px',
+  fontWeight: 600,
+  letterSpacing: '0.5px',
+  textTransform: 'uppercase',
+};
+
+const estiloCampo: CSSProperties = {
+  display: 'block',
+  fontSize: '13px',
+  marginBottom: '4px',
+};
+
+const estiloAyuda: CSSProperties = {
+  fontSize: '11px',
+  color: 'var(--text-muted)',
+  margin: '4px 0 0 0',
+  lineHeight: 1.4,
+};
+
+function Separador() {
+  return <div style={{ height: '1px', background: 'var(--border-subtle)' }} />;
+}
+
+/**
+ * Input de una sección del SAT. Deja escribir libremente y, al salir del campo,
+ * ajusta el valor al rango oficial (200–800) en múltiplos de 10.
+ * Vacío = sin filtrar (se guarda como 0).
+ */
+function InputSeccionSAT({ etiqueta, valor, setValor }: { etiqueta: string; valor: number; setValor: (v: number) => void }) {
+  const [texto, setTexto] = useState(valor ? String(valor) : '');
+
+  const numero = Number(texto);
+  const fueraDeRango = texto !== '' && (numero < SAT_MIN || numero > SAT_MAX);
+
+  const confirmar = () => {
+    if (texto === '') {
+      setValor(0);
+      return;
+    }
+    const ajustado = Math.min(SAT_MAX, Math.max(SAT_MIN, Math.round(numero / 10) * 10));
+    setTexto(String(ajustado));
+    setValor(ajustado);
+  };
+
+  return (
+    <div style={{ marginBottom: '10px' }}>
+      <label style={estiloCampo}>{etiqueta}</label>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={SAT_MIN}
+        max={SAT_MAX}
+        step={10}
+        placeholder={`${SAT_MIN} – ${SAT_MAX}`}
+        value={texto}
+        onChange={(e) => setTexto(e.target.value.replace(/\D/g, '').slice(0, 3))}
+        onBlur={confirmar}
+        onKeyDown={(e) => { if (e.key === 'Enter') confirmar(); }}
+        style={fueraDeRango ? { borderColor: '#dc2626' } : undefined}
+      />
+      {fueraDeRango && (
+        <p style={{ ...estiloAyuda, color: '#dc2626' }}>Debe estar entre {SAT_MIN} y {SAT_MAX}.</p>
+      )}
+    </div>
+  );
+}
+
 export function Filtros({
   estadoSeleccionado, setEstadoSeleccionado,
   ciudadSeleccionada, setCiudadSeleccionada,
@@ -34,127 +112,104 @@ export function Filtros({
   tipoUniversidad, setTipoUniversidad,
   precioMaximo, setPrecioMaximo,
 }: Props) {
+  const satIncompleto = (puntajeMath > 0) !== (puntajeLectura > 0);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '10px' }}>
-      
-      {/* SECCIÓN FILTRO: UBICACIÓN */}
-      <div style={{ padding: '20px', border: '1px solid #333', borderRadius: '8px', backgroundColor: '#161616' }}>
-        <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1rem', color: '#4cc9f0', borderBottom: '1px solid #333', paddingBottom: '5px' }}>
-          📍 Filtro por Ubicación
-        </h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>Seleccionar Estado:</label>
-            <select 
-              value={estadoSeleccionado} 
-              onChange={(e) => {
-                setEstadoSeleccionado(e.target.value);
-                setCiudadSeleccionada('todas'); 
-              }} 
-              style={{ width: '100%', padding: '10px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #444' }}
-            >
-              <option value="todos">Todos los estados</option>
-              {estadosUnicos.map(estado => (
-                <option key={estado} value={estado}>{nombresEstados[estado] ?? estado}</option>
-              ))}
-            </select>
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>Seleccionar Ciudad:</label>
-            <select 
-              value={ciudadSeleccionada} 
-              onChange={(e) => setCiudadSeleccionada(e.target.value)} 
-              style={{ width: '100%', padding: '10px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #444' }}
-              disabled={estadoSeleccionado === 'todos'}
-            >
-              <option value="todas">Todas las ciudades</option>
-              {ciudadesUnicas.map(ciudad => (
-                <option key={ciudad} value={ciudad}>{ciudad}</option>
-              ))}
-            </select>
-          </div>
+      {/* UBICACIÓN */}
+      <div>
+        <span style={estiloSeccion}>Ubicación</span>
+        <label style={estiloCampo}>Estado</label>
+        <select
+          value={estadoSeleccionado}
+          onChange={(e) => {
+            setEstadoSeleccionado(e.target.value);
+            setCiudadSeleccionada('todas');
+          }}
+          style={{ marginBottom: '10px' }}
+        >
+          <option value="todos">Todos los estados</option>
+          {estadosUnicos.map(estado => (
+            <option key={estado} value={estado}>{nombresEstados[estado] ?? estado}</option>
+          ))}
+        </select>
 
-          {estadoSeleccionado !== 'todos' && (
-            <div style={{ flex: '1 1 150px', display: 'flex', alignItems: 'flex-end' }}>
-               <button 
-                 onClick={() => { setEstadoSeleccionado('todos'); setCiudadSeleccionada('todas'); }} 
-                 style={{ padding: '10px', width: '100%', backgroundColor: '#ff6b6b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-               >
-                 Ver todo el país
-               </button>
-            </div>
-          )}
+        <label style={estiloCampo}>Ciudad</label>
+        <select
+          value={ciudadSeleccionada}
+          onChange={(e) => setCiudadSeleccionada(e.target.value)}
+          disabled={estadoSeleccionado === 'todos'}
+        >
+          <option value="todas">{estadoSeleccionado === 'todos' ? 'Elige un estado primero' : 'Todas las ciudades'}</option>
+          {ciudadesUnicas.map(ciudad => (
+            <option key={ciudad} value={ciudad}>{ciudad}</option>
+          ))}
+        </select>
+
+        {estadoSeleccionado !== 'todos' && (
+          <button
+            className="btn-saas-secondary"
+            style={{ width: '100%', marginTop: '10px', padding: '6px', fontSize: '12px' }}
+            onClick={() => { setEstadoSeleccionado('todos'); setCiudadSeleccionada('todas'); }}
+          >
+            Ver todo el país
+          </button>
+        )}
+        <p style={estiloAyuda}>También puedes hacer clic en el mapa para filtrar.</p>
+      </div>
+
+      <Separador />
+
+      {/* PUNTAJE SAT (orden: Verbal, Math, Total) */}
+      <div>
+        <span style={estiloSeccion}>Tu puntaje SAT</span>
+        <InputSeccionSAT etiqueta="Verbal" valor={puntajeLectura} setValor={setPuntajeLectura} />
+        <InputSeccionSAT etiqueta="Math" valor={puntajeMath} setValor={setPuntajeMath} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
+          <span>Total</span>
+          <strong style={{ fontVariantNumeric: 'tabular-nums' }}>{puntajeTotal > 0 ? `${puntajeTotal} pts` : '—'}</strong>
         </div>
-        <p style={{ margin: '12px 0 0 0', fontSize: '12px', color: '#aaa', fontStyle: 'italic' }}>
-          💡 También puedes hacer clic directamente en el mapa interactivo para filtrar geográficamente.
+        <p style={estiloAyuda}>
+          {satIncompleto
+            ? 'Ingresa ambos puntajes para filtrar.'
+            : 'Muestra universidades cuyo promedio SAT es igual o menor a tu total.'}
         </p>
       </div>
 
-      {/* SECCIÓN FILTROS: REQUISITOS ACADÉMICOS Y FINANCIEROS */}
-      <div style={{ padding: '20px', border: '1px solid #333', borderRadius: '8px', display: 'flex', flexWrap: 'wrap', gap: '30px', backgroundColor: '#161616' }}>
-        
-        {/* FILTRO: PUNTAJE SAT REQUERIDO */}
-        <div style={{ flex: '1 1 280px' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1rem', color: '#4cc9f0', borderBottom: '1px solid #333', paddingBottom: '5px' }}>
-              📊 Puntaje SAT Requerido
-            </h3>
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ fontSize: '13px', color: '#ccc' }}>Matemáticas (200-800): </label>
-              <input type="number" min="0" max="800" value={puntajeMath} onChange={(e) => {
-                const val = Number(e.target.value);
-                setPuntajeMath(val > 800 ? 800 : val < 0 ? 0 : val);
-              }} style={{ width: '100%', padding: '8px', marginTop: '4px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #444' }} />
-            </div>
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ fontSize: '13px', color: '#ccc' }}>Lectura Evidencial (200-800): </label>
-              <input type="number" min="0" max="800" value={puntajeLectura} onChange={(e) => {
-                const val = Number(e.target.value);
-                setPuntajeLectura(val > 800 ? 800 : val < 0 ? 0 : val);
-              }} style={{ width: '100%', padding: '8px', marginTop: '4px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #444' }} />
-            </div>
-            <h4 style={{ color: '#4cc9f0', margin: '5px 0 0 0' }}>Tu Puntaje Ingresado: {puntajeTotal} pts</h4>
+      <Separador />
+
+      {/* POLÍTICA Y TIPO */}
+      <div>
+        <span style={estiloSeccion}>Admisión e institución</span>
+        <label style={estiloCampo}>Política SAT</label>
+        <select value={exigirSAT} onChange={(e) => setExigirSAT(e.target.value)} style={{ marginBottom: '10px' }}>
+          <option value="todos">Cualquiera</option>
+          <option value="requerido">SAT obligatorio</option>
+          <option value="opcional">SAT opcional</option>
+        </select>
+
+        <label style={estiloCampo}>Tipo de institución</label>
+        <select value={tipoUniversidad} onChange={(e) => setTipoUniversidad(e.target.value)}>
+          <option value="todos">Públicas y privadas</option>
+          <option value="publica">Solo públicas</option>
+          <option value="privada">Solo privadas</option>
+        </select>
+      </div>
+
+      <Separador />
+
+      {/* MATRÍCULA */}
+      <div>
+        <span style={estiloSeccion}>Matrícula máxima anual</span>
+        <div style={{ fontSize: '13px' }}>
+          Hasta <strong>${precioMaximo.toLocaleString()} USD</strong>
         </div>
-
-        {/* FILTROS ADICIONALES (POLÍTICA, INSTITUCIÓN, MATRÍCULA) */}
-        <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <h3 style={{ margin: '0 0 5px 0', fontSize: '1.1rem', color: '#4cc9f0', borderBottom: '1px solid #333', paddingBottom: '5px' }}>
-              ⚙️ Delimitaciones Adicionales
-            </h3>
-            
-            {/* FILTRO: POLÍTICA SAT */}
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>Política de Admisión SAT: </label>
-              <select value={exigirSAT} onChange={(e) => setExigirSAT(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #444' }}>
-                <option value="todos">Mostrar todas (Cualquiera)</option>
-                <option value="requerido">El SAT es obligatorio</option>
-                <option value="opcional">SAT Opcional</option>
-              </select>
-            </div>
-
-            {/* FILTRO: TIPO DE INSTITUCIÓN */}
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>Tipo de Institución: </label>
-              <select value={tipoUniversidad} onChange={(e) => setTipoUniversidad(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #444' }}>
-                <option value="todos">Públicas y Privadas</option>
-                <option value="publica">Solo Públicas</option>
-                <option value="privada">Solo Privadas</option>
-              </select>
-            </div>
-
-            {/* FILTRO: MATRÍCULA */}
-            <div>
-              <label style={{ display: 'block', marginBottom: '2px', fontSize: '14px' }}>
-                Matrícula Máxima Anual: <strong style={{ color: '#4cc9f0' }}>${precioMaximo.toLocaleString()} USD</strong>
-              </label>
-              <input 
-                type="range" min="1000" max="90000" step="1000" value={precioMaximo} 
-                onChange={(e) => setPrecioMaximo(Number(e.target.value))} 
-                style={{ width: '100%', marginTop: '8px', cursor: 'pointer' }} 
-              />
-            </div>
-        </div>
-
+        <input
+          type="range" min="1000" max="90000" step="1000" value={precioMaximo}
+          onChange={(e) => setPrecioMaximo(Number(e.target.value))}
+          style={{ width: '100%', marginTop: '8px', cursor: 'pointer', accentColor: 'var(--brand-blue)' }}
+        />
       </div>
     </div>
   );

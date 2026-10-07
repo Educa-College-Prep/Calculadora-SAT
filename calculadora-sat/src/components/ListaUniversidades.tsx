@@ -1,6 +1,7 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { Universidad } from '../types';
+import { formatNivel } from '../utils/formatters';
 
 interface Props {
   universidadesFiltradas: Universidad[];
@@ -57,7 +58,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
         </span>
         {uni.ICLEVEL && (
           <span style={{ display: 'inline-block', padding: '4px 10px', marginRight: '10px', backgroundColor: '#264653', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-            {uni.ICLEVEL}
+            {formatNivel(uni.ICLEVEL)}
           </span>
         )}
         <span style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: uni.ADMCON7 === 'Requerido' ? '#9b2226' : '#005f73', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
@@ -158,17 +159,17 @@ export function ListaUniversidades({
             <optgroup label="Costos">
               <option value="TUITIONFEE_IN">Matrícula (Dentro de Estado)</option>
               <option value="TUITIONFEE_OUT">Matrícula (Fuera de Estado)</option>
-              <option value="COSTT4_A">Costo Total de Asistencia</option>
+              <option value="COSTT4_A">Costo Total Anual</option>
               <option value="NPT4_PUB">Costo Neto (Pública)</option>
               <option value="NPT4_PRIV">Costo Neto (Privada)</option>
             </optgroup>
             <optgroup label="Precio Neto por Ingreso Familiar">
-              <option value="NPT41_PUB">Ingreso Bajo (Pública)</option>
-              <option value="NPT41_PRIV">Ingreso Bajo (Privada)</option>
-              <option value="NPT43_PUB">Ingreso Medio (Pública)</option>
-              <option value="NPT43_PRIV">Ingreso Medio (Privada)</option>
-              <option value="NPT45_PUB">Ingreso Alto (Pública)</option>
-              <option value="NPT45_PRIV">Ingreso Alto (Privada)</option>
+              <option value="NPT41_PUB">Ingreso hasta $30k (Pública)</option>
+              <option value="NPT41_PRIV">Ingreso hasta $30k (Privada)</option>
+              <option value="NPT43_PUB">Ingreso $48k–$75k (Pública)</option>
+              <option value="NPT43_PRIV">Ingreso $48k–$75k (Privada)</option>
+              <option value="NPT45_PUB">Ingreso más de $110k (Pública)</option>
+              <option value="NPT45_PRIV">Ingreso más de $110k (Privada)</option>
             </optgroup>
             <optgroup label="Salarios Graduados">
               <option value="MD_EARN_WNE_1YR">Salario Mediano (1 año)</option>

@@ -71,7 +71,7 @@ export const ResumenEstado = memo(function ResumenEstado({ universidades, estado
         <Cifra
           valor={resumen.total.toLocaleString()}
           etiqueta="Universidades"
-          nota={`${resumen.cuatroAnios} de 4 años · ${resumen.total - resumen.cuatroAnios} de 2 años`}
+          nota={`${resumen.cuatroAnios} Grado Bachiller · ${resumen.total - resumen.cuatroAnios} Grado Associate`}
         />
         <Cifra
           valor={resumen.total ? `${Math.round((resumen.publicas / resumen.total) * 100)}%` : '—'}
