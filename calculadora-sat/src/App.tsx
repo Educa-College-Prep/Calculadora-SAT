@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useDeferredValue, useRef } from 'react';
 import type { Universidad } from './types';
 import { NOMBRES_ESTADOS } from './utils/estados';
+import { crearIndiceBusqueda, buscarUniversidades } from './utils/busqueda';
 
 import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
@@ -46,6 +47,14 @@ export default function App() {
   // El texto que se usa para filtrar va "un paso atrás" del que se ve en el input.
   // Así el tecleo nunca se congela aunque el filtrado de 4300 registros tarde.
   const busquedaDiferida = useDeferredValue(busquedaNombre);
+
+  // Búsqueda con alias ("MIT") y tolerancia a errores ("Hrvrd"). El índice se arma una sola vez.
+  const indiceBusqueda = useMemo(() => crearIndiceBusqueda(universidades), [universidades]);
+  const resultadoBusqueda = useMemo(
+    () => buscarUniversidades(indiceBusqueda, busquedaDiferida),
+    [indiceBusqueda, busquedaDiferida]
+  );
+  const sugerencias = useMemo(() => resultadoBusqueda?.ordenadas.slice(0, 8) ?? [], [resultadoBusqueda]);
 
   useEffect(() => {
     const base = import.meta.env.BASE_URL;
@@ -98,8 +107,6 @@ export default function App() {
    * y no se puede saber (se queda, pero marcada y ordenada al final).
    */
   const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId } = useMemo(() => {
-    const textoBusqueda = busquedaDiferida.toLowerCase();
-
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
     const filtroSATActivo = puntajeTotal > 0;
     const filtroPrecioActivo = precioMaximo < PRECIO_MAXIMO_SLIDER;
@@ -113,7 +120,7 @@ export default function App() {
 
     const lista = universidades.filter((uni) => {
       // Filtros duros: aquí no hay ambigüedad, el dato siempre existe.
-      if (textoBusqueda && !uni.INSTNM.toLowerCase().includes(textoBusqueda)) return false;
+      if (resultadoBusqueda && (uni._id == null || !resultadoBusqueda.posicion.has(uni._id))) return false;
       if (tipoUniversidad === 'publica' && uni.CONTROL !== 'Pública') return false;
       if (tipoUniversidad === 'privada' && (!uni.CONTROL || !uni.CONTROL.includes('Privada'))) return false;
 
@@ -144,11 +151,13 @@ export default function App() {
     });
 
     return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes };
-  }, [universidades, busquedaDiferida, estadoSeleccionado, ciudadSeleccionada, tipoUniversidad, precioMaximo, exigirSAT, puntajeTotal]);
+  }, [universidades, resultadoBusqueda, estadoSeleccionado, ciudadSeleccionada, tipoUniversidad, precioMaximo, exigirSAT, puntajeTotal]);
 
   const universidadesOrdenadas = useMemo(() => {
     const hayFaltantes = faltantesPorId.size > 0;
-    if (!hayFaltantes && ordenarPor === 'ninguno') return universidadesFiltradas;
+    // Sin orden elegido pero con búsqueda activa, se ordena por relevancia (MIT antes que Smith College).
+    const posicion = resultadoBusqueda?.posicion;
+    if (!hayFaltantes && ordenarPor === 'ninguno' && !posicion) return universidadesFiltradas;
 
     const sinDato = (u: Universidad) => (u._id != null && faltantesPorId.has(u._id) ? 1 : 0);
 
@@ -157,7 +166,9 @@ export default function App() {
       const diferencia = sinDato(a) - sinDato(b);
       if (diferencia !== 0) return diferencia;
 
-      if (ordenarPor === 'ninguno') return 0;
+      if (ordenarPor === 'ninguno') {
+        return posicion ? (posicion.get(a._id ?? -1) ?? 0) - (posicion.get(b._id ?? -1) ?? 0) : 0;
+      }
       const valA = (a as any)[ordenarPor];
       const valB = (b as any)[ordenarPor];
       if (valA == null && valB == null) return 0;
@@ -168,7 +179,7 @@ export default function App() {
       }
       return ordenDireccion === 'asc' ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
     });
-  }, [universidadesFiltradas, faltantesPorId, ordenarPor, ordenDireccion]);
+  }, [universidadesFiltradas, faltantesPorId, ordenarPor, ordenDireccion, resultadoBusqueda]);
 
   const datosGrafico = useMemo(
     () => universidadesFiltradas
@@ -345,7 +356,8 @@ export default function App() {
             <Buscador
               busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
               mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
-              universidades={universidades}
+              sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
+              onSeleccionar={seleccionarUniversidad}
             />
           </section>
 
