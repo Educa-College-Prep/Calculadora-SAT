@@ -268,13 +268,10 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   opacity: 0.85;
 }
 
-@media (min-width: 961px) {
-  .hoja {
-    position: sticky;
-    top: 16px;
-    max-height: calc(100vh - 32px);
-    overflow-y: auto;
-  }
+/* Fija al hacer scroll solo si la hoja entera cabe en la pantalla
+   (sin scroll interno, que cortaría los tooltips). */
+@media (min-width: 961px) and (min-height: 1060px) {
+  .hoja { position: sticky; top: 16px; }
 }
 
 .hoja-cabecera { padding-bottom: 14px; border-bottom: 1.5px solid var(--tinta-suave); }
@@ -672,3 +669,4 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   box-shadow: 0 10px 24px rgba(38, 41, 43, 0.22);
   pointer-events: none;
 }
+.ayuda-globo-abajo { bottom: auto; top: calc(100% + 10px); }

@@ -19,11 +19,14 @@ export function InfoTooltip({ texto }: Props) {
 
   const abierto = visible || fijado;
 
-  // Se mide antes de pintar y se corre el globo hacia adentro si se sale de la pantalla.
+  // Se mide antes de pintar y se acomoda el globo si se sale de la pantalla.
   useLayoutEffect(() => {
     const globo = globoRef.current;
     if (!abierto || !globo) return;
     globo.style.transform = 'translateX(-50%)';
+    globo.classList.remove('ayuda-globo-abajo');
+    // Sin espacio arriba (ej. al tope de la pantalla): se abre hacia abajo.
+    if (globo.getBoundingClientRect().top < MARGEN) globo.classList.add('ayuda-globo-abajo');
     const caja = globo.getBoundingClientRect();
     let ajuste = 0;
     if (caja.left < MARGEN) ajuste = MARGEN - caja.left;
