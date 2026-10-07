@@ -240,3 +240,234 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* =========================================================
+   Hoja de filtros: el elemento con más carácter de la página.
+   Las marcas del borde izquierdo imitan las marcas de lectura
+   de una hoja de respuestas.
+   ========================================================= */
+.hoja {
+  position: relative;
+  padding: 20px 20px 24px 36px;
+  background: var(--hoja);
+  border: 1.5px solid var(--tinta);
+  border-radius: var(--radio);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.hoja::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 12px;
+  width: 8px;
+  background: repeating-linear-gradient(to bottom, var(--grafito) 0 9px, transparent 9px 24px);
+  border-radius: 1px;
+  opacity: 0.85;
+}
+
+@media (min-width: 961px) {
+  .hoja {
+    position: sticky;
+    top: 16px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+  }
+}
+
+.hoja-cabecera { padding-bottom: 14px; border-bottom: 1.5px solid var(--tinta-suave); }
+
+.hoja-seccion {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.hoja-titulo {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tinta-fuerte);
+}
+
+/* Casillas del puntaje: grandes, como las del recuadro de respuestas. */
+.casillas-sat {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.casilla-sat { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.casilla-etiqueta { font-size: 13px; font-weight: 600; color: var(--grafito-suave); }
+.casilla-sat input {
+  min-height: 56px;
+  padding: 6px 8px;
+  font-size: 28px;
+  font-stretch: 110%;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  border: 1.5px solid var(--tinta-suave);
+  -moz-appearance: textfield;
+}
+.casilla-sat input::-webkit-outer-spin-button,
+.casilla-sat input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.casilla-sat input[aria-invalid="true"] { border-color: var(--error); }
+.casilla-escala { font-size: 12px; color: var(--grafito-suave); text-align: center; }
+.casilla-error { font-size: 12px; color: var(--error); font-weight: 600; }
+
+.total-sat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1.5px dashed var(--tinta-suave);
+  border-radius: var(--radio-chico);
+  font-size: 14px;
+  font-weight: 600;
+}
+.total-sat strong {
+  margin-left: auto;
+  font-size: 26px;
+  font-stretch: 110%;
+  font-weight: 800;
+  line-height: 1;
+}
+.total-sat-escala { color: var(--grafito-suave); font-weight: 500; }
+.total-sat-listo { border-style: solid; border-color: var(--grafito); }
+.total-sat-listo strong {
+  background: linear-gradient(transparent 55%, var(--resaltador) 55%, var(--resaltador) 95%, transparent 95%);
+  padding: 0 3px;
+}
+
+.ayuda-aviso { color: var(--alerta); font-weight: 600; }
+
+.campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.campo-etiqueta { font-size: 13px; font-weight: 600; color: var(--grafito-suave); }
+.boton-ancho { width: 100%; }
+
+/* Burbujas de opción: el círculo se rellena de grafito al elegirla. */
+.burbujas { display: flex; flex-direction: column; gap: 2px; }
+.burbuja {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 4px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radio-chico);
+  font-size: 15px;
+  cursor: pointer;
+}
+.burbuja:hover { background: var(--tinta-fondo); }
+.burbuja input {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 1.5px solid var(--tinta);
+  border-radius: 50%;
+  background: var(--hoja);
+  cursor: pointer;
+  transition: background-color 0.12s ease, box-shadow 0.12s ease;
+}
+.burbuja input:checked {
+  background: var(--grafito);
+  border-color: var(--grafito);
+  box-shadow: inset 0 0 0 3px var(--hoja);
+}
+.burbuja input:checked + span { font-weight: 700; }
+.burbuja input:focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; }
+
+.precio-valor { margin: 0 0 6px; font-size: 15px; }
+.deslizador { width: 100%; accent-color: var(--tinta); cursor: pointer; min-height: 28px; }
+.deslizador-escala {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--grafito-suave);
+}
+
+/* ---------- Buscador ---------- */
+.buscador { position: relative; }
+.buscador-etiqueta {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.buscador-campo { position: relative; }
+.buscador-icono {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--grafito-suave);
+  pointer-events: none;
+}
+.buscador-campo input {
+  min-height: 50px;
+  padding-left: 42px;
+  padding-right: 44px;
+  font-size: 16px;
+  border: 1.5px solid var(--grafito);
+  border-radius: 999px;
+}
+.buscador-borrar {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--grafito-suave);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.buscador-borrar:hover { background: var(--tinta-fondo); color: var(--grafito); }
+
+.sugerencias {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 340px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--hoja);
+  border: 1.5px solid var(--grafito);
+  border-radius: var(--radio);
+  box-shadow: 0 12px 28px rgba(38, 41, 43, 0.16);
+}
+.sugerencias-nota { padding: 8px 12px; font-size: 13px; color: var(--grafito-suave); }
+.sugerencia {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 9px 12px;
+  font: inherit;
+  text-align: left;
+  color: var(--grafito);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+}
+.sugerencia:hover, .sugerencia:focus-visible { background: var(--tinta-fondo); }
+.sugerencia-nombre { font-weight: 700; }
+.sugerencia-lugar { font-size: 13px; color: var(--grafito-suave); }

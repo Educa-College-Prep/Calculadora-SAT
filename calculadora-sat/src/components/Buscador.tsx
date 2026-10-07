@@ -27,65 +27,65 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
     return () => document.removeEventListener('mousedown', manejarClicFuera);
   }, [setMostrarSugerencias]);
 
+  const abierto = mostrarSugerencias && busquedaNombre.length > 0;
+
   return (
-    <div
-      ref={contenedorRef}
-      style={{ position: 'relative', padding: '15px 20px', border: '1px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a' }}
-    >
-      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-        🔍 Buscar por Nombre de Universidad:
-      </label>
-      <div style={{ display: 'flex', gap: '10px' }}>
+    <div ref={contenedorRef} className="buscador">
+      <label htmlFor="buscador-universidad" className="buscador-etiqueta">Busca una universidad</label>
+      <div className="buscador-campo">
+        <svg className="buscador-icono" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
         <input
+          id="buscador-universidad"
           type="text"
+          autoComplete="off"
           value={busquedaNombre}
           onChange={(e) => { setBusquedaNombre(e.target.value); setMostrarSugerencias(true); }}
           onFocus={() => setMostrarSugerencias(true)}
-          placeholder="Ej. Harvard, MIT, UCLA, California..."
-          style={{ flex: 1, padding: '10px', borderRadius: '4px', border: '1px solid #555', backgroundColor: '#222', color: '#fff' }}
+          onKeyDown={(e) => { if (e.key === 'Escape') setMostrarSugerencias(false); }}
+          placeholder="Nombre o sigla: Harvard, MIT, UCLA…"
+          aria-expanded={abierto}
+          aria-controls="buscador-sugerencias"
         />
         {busquedaNombre && (
           <button
+            type="button"
+            className="buscador-borrar"
             onClick={() => { setBusquedaNombre(''); setMostrarSugerencias(false); }}
-            style={{ padding: '10px 15px', backgroundColor: '#e63946', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            aria-label="Borrar búsqueda"
           >
-            Limpiar
+            ×
           </button>
         )}
       </div>
 
-      {mostrarSugerencias && busquedaNombre.length > 0 && (
-        <ul style={{
-          position: 'absolute', top: '100%', left: '20px', right: '20px', zIndex: 1000,
-          backgroundColor: '#222', border: '1px solid #444', borderRadius: '0 0 8px 8px',
-          listStyle: 'none', padding: 0, margin: 0, maxHeight: '250px', overflowY: 'auto',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
-        }}>
+      {abierto && (
+        <ul id="buscador-sugerencias" className="sugerencias">
           {sugerencias.length > 0 && sonAproximadas && (
-            <li style={{ padding: '8px 15px', color: '#888', fontSize: '0.85em', fontStyle: 'italic', textAlign: 'left', borderBottom: '1px solid #333' }}>
-              ¿Quisiste decir…?
-            </li>
+            <li className="sugerencias-nota">¿Quisiste decir…?</li>
           )}
           {sugerencias.length > 0 ? (
             sugerencias.map((uni, idx) => (
-              <li
-                key={uni._id ?? idx}
-                onClick={() => {
-                  // El nombre queda en el buscador: al volver del detalle, la lista ya está filtrada.
-                  setBusquedaNombre(uni.INSTNM);
-                  setMostrarSugerencias(false);
-                  onSeleccionar(uni);
-                }}
-                style={{ padding: '10px 15px', borderBottom: '1px solid #333', cursor: 'pointer', textAlign: 'left', transition: '0.2s' }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#333'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#222'}
-              >
-                <strong style={{ color: '#4cc9f0' }}>{uni.INSTNM}</strong>{' '}
-                <small style={{ color: '#aaa' }}>({uni.CITY}, {uni.STABBR})</small>
+              <li key={uni._id ?? idx}>
+                <button
+                  type="button"
+                  className="sugerencia"
+                  onClick={() => {
+                    // El nombre queda en el buscador: al volver del detalle, la lista ya está filtrada.
+                    setBusquedaNombre(uni.INSTNM);
+                    setMostrarSugerencias(false);
+                    onSeleccionar(uni);
+                  }}
+                >
+                  <span className="sugerencia-nombre">{uni.INSTNM}</span>
+                  <span className="sugerencia-lugar">{uni.CITY}, {uni.STABBR}</span>
+                </button>
               </li>
             ))
           ) : (
-            <li style={{ padding: '10px 15px', color: '#888', fontStyle: 'italic', textAlign: 'left' }}>No se encontraron coincidencias</li>
+            <li className="sugerencias-nota">Sin coincidencias. Prueba con otra palabra o una sigla.</li>
           )}
         </ul>
       )}
