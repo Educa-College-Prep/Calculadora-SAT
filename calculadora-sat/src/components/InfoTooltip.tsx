@@ -1,82 +1,68 @@
-import { useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 
 interface Props {
   texto: string;
 }
 
+const MARGEN = 12;
+
 /**
- * Bolita pequeña con "?" que muestra un texto de ayuda al pasar el mouse (hover)
- * o al hacer clic/tap (para que funcione bien en móvil también).
+ * Burbuja "?" (como las de la hoja de respuestas) que muestra un texto de ayuda.
+ * Se abre con el mouse encima, con el foco del teclado o con un toque (móvil),
+ * y se cierra con Escape. Si el globo se saldría de la pantalla, se corre hacia adentro.
  */
 export function InfoTooltip({ texto }: Props) {
   const [visible, setVisible] = useState(false);
+  const [fijado, setFijado] = useState(false);
+  const globoRef = useRef<HTMLSpanElement>(null);
+  const id = useId();
+
+  const abierto = visible || fijado;
+
+  // Se mide antes de pintar y se corre el globo hacia adentro si se sale de la pantalla.
+  useLayoutEffect(() => {
+    const globo = globoRef.current;
+    if (!abierto || !globo) return;
+    globo.style.transform = 'translateX(-50%)';
+    const caja = globo.getBoundingClientRect();
+    let ajuste = 0;
+    if (caja.left < MARGEN) ajuste = MARGEN - caja.left;
+    else if (caja.right > window.innerWidth - MARGEN) ajuste = window.innerWidth - MARGEN - caja.right;
+    if (ajuste) globo.style.transform = `translateX(calc(-50% + ${ajuste}px))`;
+  }, [abierto]);
 
   return (
     <span
-      style={{ position: 'relative', display: 'inline-flex', marginLeft: '6px', verticalAlign: 'middle' }}
+      className="ayuda-tooltip"
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
     >
-      <span
+      <button
+        type="button"
+        className="ayuda-boton"
+        aria-label="Más información"
+        aria-describedby={abierto ? id : undefined}
+        aria-expanded={abierto}
         onClick={(e) => {
           e.stopPropagation();
-          setVisible((v) => !v);
+          e.preventDefault();
+          setFijado((v) => !v);
         }}
-        style={{
-          width: '15px',
-          height: '15px',
-          borderRadius: '50%',
-          backgroundColor: '#94a3b8',
-          color: '#fff',
-          fontSize: '10px',
-          fontWeight: 'bold',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'help',
-          userSelect: 'none',
-          flexShrink: 0,
-        }}
+        onFocus={() => setVisible(true)}
+        onBlur={() => { setVisible(false); setFijado(false); }}
+        onKeyDown={(e) => { if (e.key === 'Escape') { setVisible(false); setFijado(false); } }}
       >
         ?
-      </span>
+      </button>
 
-      {visible && (
+      {abierto && (
         <span
-          style={{
-            position: 'absolute',
-            bottom: '135%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: '#0f172a',
-            color: '#fff',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: 'normal',
-            lineHeight: 1.4,
-            width: 'max-content',
-            maxWidth: '230px',
-            textAlign: 'left',
-            zIndex: 50,
-            boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-            whiteSpace: 'normal',
-          }}
+          id={id}
+          ref={globoRef}
+          role="tooltip"
+          className="ayuda-globo"
         >
           {texto}
-          <span
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 0,
-              height: 0,
-              borderLeft: '5px solid transparent',
-              borderRight: '5px solid transparent',
-              borderTop: '5px solid #0f172a',
-            }}
-          />
         </span>
       )}
     </span>
