@@ -154,7 +154,7 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
               <p className="con-ayuda"><strong>Precio neto según ingreso familiar</strong>
                 <InfoTooltip texto={glosarioCampos.NPT_INGRESO} />
               </p>
-              <MiniBarChart datos={p.netoPorIngreso} color="#2e7d62" formato="dinero" pisoCero />
+              <MiniBarChart datos={p.netoPorIngreso} color="#1b5fa8" formato="dinero" pisoCero />
             </div>
           )}
 

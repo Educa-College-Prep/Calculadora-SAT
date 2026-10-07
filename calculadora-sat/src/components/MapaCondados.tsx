@@ -22,8 +22,8 @@ type PropiedadesCondado = { nombre: string };
  * tramos contiguos se nota: el peor par adyacente pasa de ΔE 5,9 a 14,9 en
  * visión normal y de 4,4 a 13,8 en protanopía.
  */
-const ESCALA = ['#cfe6da', '#8cc2a8', '#4f9c7d', '#2e7d62', '#174535'];
-const SIN_DATOS = '#eef1ee';
+const ESCALA = ['#cddcf0', '#8fb3e0', '#4f86c9', '#1b5fa8', '#0d2f5c'];
+const SIN_DATOS = '#eef2f6';
 const TRAMOS = ESCALA.length;
 
 /**
@@ -324,7 +324,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
                       style={{
                         marginTop: '10px', width: '100%', padding: '6px 10px',
                         fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                        background: '#2e7d62', color: '#ffffff',
+                        background: '#1b5fa8', color: '#ffffff',
                         border: 'none', borderRadius: '4px',
                       }}
                     >
@@ -360,7 +360,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
               position: 'absolute', top: '10px', right: '10px', zIndex: 1000,
               padding: '6px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
               background: '#ffffff', color: '#26292b',
-              border: '1px solid #cfe3d8', borderRadius: '4px',
+              border: '1px solid #cddcf0', borderRadius: '4px',
               boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
             }}
           >
@@ -410,7 +410,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
             Universidades por condado
           </div>
           <svg width={(tramos.length + 1) * 38} height="30" role="img" aria-label="Escala de color por cantidad de universidades">
-            <rect x="1" y="0" width="34" height="13" rx="2" fill={SIN_DATOS} stroke="#cfe3d8" />
+            <rect x="1" y="0" width="34" height="13" rx="2" fill={SIN_DATOS} stroke="#cddcf0" />
             <text x="18" y="25" textAnchor="middle" fontSize="9" fill="#5d6467">0</text>
             {tramos.map((t, i) => (
               <g key={t.color}>

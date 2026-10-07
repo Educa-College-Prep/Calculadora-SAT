@@ -32,7 +32,7 @@ export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props
           <div style={{ width: '100%', height: 56 + datosGrafico.length * 30 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={datosGrafico} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
-                <CartesianGrid horizontal={false} stroke="#dde4df" />
+                <CartesianGrid horizontal={false} stroke="#dde3ea" />
                 <XAxis
                   type="number"
                   tickFormatter={formatoEje}
@@ -51,7 +51,7 @@ export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props
                   tickLine={false}
                 />
                 <Tooltip
-                  cursor={{ fill: '#e8f2ec' }}
+                  cursor={{ fill: '#e9f0fa' }}
                   contentStyle={{
                     background: '#26292b', border: 0, borderRadius: 8,
                     color: '#fff', fontFamily: 'Archivo, sans-serif', fontSize: 13,
@@ -61,7 +61,7 @@ export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props
                   labelFormatter={(etiqueta, carga) => carga?.[0]?.payload?.nombreCompleto ?? etiqueta}
                   formatter={(value) => [`$${new Intl.NumberFormat('en-US').format(Number(value))}`, 'Matrícula anual']}
                 />
-                <Bar dataKey="costo" fill="#2e7d62" radius={[0, 6, 6, 0]} barSize={18} />
+                <Bar dataKey="costo" fill="#1b5fa8" radius={[0, 6, 6, 0]} barSize={18} />
               </BarChart>
             </ResponsiveContainer>
           </div>

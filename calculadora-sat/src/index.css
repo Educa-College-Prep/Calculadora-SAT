@@ -1,24 +1,24 @@
 /* =========================================================
-   Concepto "Hoja de respuestas": papel blanco, tinta verde de
-   formulario, grafito de lápiz y un resaltador para lo que
-   encaja contigo. Los colores tienen significado fijo:
-     verde tinta  → público / activo / estructura
-     azul bolígrafo → privado sin fines de lucro
-     ámbar        → avisos (con fines de lucro, datos faltantes)
-     resaltador   → tu puntaje y lo que encaja contigo
+   Concepto "Hoja de respuestas": papel blanco, tinta azul de
+   formulario (el azul de la marca), grafito de lápiz y un
+   resaltador para lo que encaja contigo. Colores con significado fijo:
+     azul tinta     → marca / público / activo / estructura
+     verde azulado  → privado sin fines de lucro
+     ámbar          → avisos (con fines de lucro, datos faltantes)
+     resaltador     → tu puntaje y lo que encaja contigo
    ========================================================= */
 :root {
-  --papel: #f1f4ef;          /* fondo de página, papel de formulario */
+  --papel: #f2f5f9;          /* fondo de página, papel de formulario */
   --hoja: #ffffff;           /* superficies */
-  --tinta: #2e7d62;          /* tinta verde de formulario */
-  --tinta-fuerte: #1f5a46;
-  --tinta-suave: #cfe3d8;    /* reglas y bordes */
-  --tinta-fondo: #e8f2ec;    /* relleno de lo seleccionado */
+  --tinta: #1b5fa8;          /* tinta azul de formulario: color de marca */
+  --tinta-fuerte: #12407a;
+  --tinta-suave: #cddcf0;    /* reglas y bordes */
+  --tinta-fondo: #e9f0fa;    /* relleno de lo seleccionado */
   --grafito: #26292b;        /* texto y burbujas rellenas */
   --grafito-suave: #5d6467;  /* texto secundario (6:1 sobre blanco) */
-  --linea: #dde4df;          /* divisores neutros */
-  --boligrafo: #2d5ba8;      /* privadas sin fines de lucro */
-  --boligrafo-fondo: #e7eef9;
+  --linea: #dde3ea;          /* divisores neutros */
+  --boligrafo: #0f766e;      /* privadas sin fines de lucro (verde azulado) */
+  --boligrafo-fondo: #e1f3f0;
   --alerta: #8f4f00;
   --alerta-fondo: #fff3d6;
   --alerta-borde: #f0c96a;
@@ -582,7 +582,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   border-radius: 999px;
 }
 .marca-publica { color: var(--tinta-fuerte); background: var(--tinta-fondo); border-color: var(--tinta-suave); }
-.marca-privada { color: var(--boligrafo); background: var(--boligrafo-fondo); border-color: #c5d5ef; }
+.marca-privada { color: var(--boligrafo); background: var(--boligrafo-fondo); border-color: #b5ded7; }
 .marca-lucro { color: var(--alerta); background: var(--alerta-fondo); border-color: var(--alerta-borde); }
 .marca-sat { color: var(--grafito); background: var(--hoja); border-color: var(--grafito); }
 .marca-sat::before {

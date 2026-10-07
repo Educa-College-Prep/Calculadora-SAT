@@ -102,8 +102,8 @@ export const ResumenEstado = memo(function ResumenEstado({ universidades, estado
                   <text x="0" y="15" fontSize="13" fill="#26292b">
                     {ciudad.length > 16 ? ciudad.slice(0, 15) + '…' : ciudad}
                   </text>
-                  <rect x="122" y="6" width={anchoBarra} height="10" rx="5" fill="#e8f2ec" />
-                  <rect x="122" y="6" width={Math.max(5, (cantidad / maxCiudad) * anchoBarra)} height="10" rx="5" fill="#2e7d62" />
+                  <rect x="122" y="6" width={anchoBarra} height="10" rx="5" fill="#e9f0fa" />
+                  <rect x="122" y="6" width={Math.max(5, (cantidad / maxCiudad) * anchoBarra)} height="10" rx="5" fill="#1b5fa8" />
                   <text x={122 + anchoBarra + 8} y="15" fontSize="13" fontWeight="700" fill="#26292b">{cantidad}</text>
                 </g>
               ))}

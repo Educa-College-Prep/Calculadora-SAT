@@ -184,7 +184,7 @@ export function DetalleUniversidad({ uni, onVolver }: Props) {
                       <span className="fuente">Medido en 2022-2023. Fuente: College Scorecard</span>
                     </div>
                   )}
-                  <ParGraficosEgresados graduados={salariosGraduados} ingreso={salariosIngreso} color="#2e7d62" formato="dinero" />
+                  <ParGraficosEgresados graduados={salariosGraduados} ingreso={salariosIngreso} color="#1b5fa8" formato="dinero" />
                   {(salariosGraduados.length > 0 || salariosIngreso.length > 0) && (
                     <p className="fuente">Gráficos medidos en 2020-2021, en dólares de 2022. Fuente: College Scorecard</p>
                   )}
@@ -195,7 +195,7 @@ export function DetalleUniversidad({ uni, onVolver }: Props) {
                     Porcentaje de egresados que gana más que alguien que solo terminó la secundaria.
                     <InfoTooltip texto={glosarioCampos.GT_THRESHOLD} />
                   </p>
-                  <ParGraficosEgresados graduados={umbralGraduados} ingreso={umbralIngreso} color="#2d5ba8" formato="porcentaje" />
+                  <ParGraficosEgresados graduados={umbralGraduados} ingreso={umbralIngreso} color="#0f766e" formato="porcentaje" />
                   <p className="fuente">Medido en 2020-2021. Fuente: College Scorecard</p>
                 </>
               )}

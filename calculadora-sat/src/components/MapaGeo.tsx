@@ -21,13 +21,13 @@ const stateMapOptions = {
   region: 'US',
   displayMode: 'regions',
   resolution: 'provinces',
-  // Escala en la tinta verde de la hoja: más oscuro = más universidades.
+  // Escala en la tinta azul de la hoja: más oscuro = más universidades.
   colorAxis: {
-    colors: ['#e3efe8', '#7fb79e', '#2e7d62', '#174535']
+    colors: ['#e4edf8', '#7ea6d8', '#1b5fa8', '#0d2f5c']
   },
   backgroundColor: '#ffffff',
-  datalessRegionColor: '#eef1ee',
-  defaultColor: '#d3dbd6',
+  datalessRegionColor: '#eef2f6',
+  defaultColor: '#d3dae3',
   keepAspectRatio: true,
   enableRegionInteractivity: true,
   tooltip: { isHtml: true, trigger: 'focus' },
@@ -37,7 +37,7 @@ const stateMapOptions = {
 // Con un estado elegido: solo ese en azul, el resto en gris (pero clickeable).
 const stateMapOptionsSeleccion = {
   ...stateMapOptions,
-  colorAxis: { minValue: 0, maxValue: 1, colors: ['#e3e8e4', '#2e7d62'] },
+  colorAxis: { minValue: 0, maxValue: 1, colors: ['#e3e8ee', '#1b5fa8'] },
   legend: 'none',
 };
 
