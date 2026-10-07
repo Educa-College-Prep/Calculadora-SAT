@@ -255,10 +255,11 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   gap: 22px;
 }
 
-/* Fija al hacer scroll solo si la hoja entera cabe en la pantalla
-   (sin scroll interno, que cortaría los tooltips). */
-@media (min-width: 961px) and (min-height: 1060px) {
-  .hoja { position: sticky; top: 16px; }
+/* Acompaña al scroll. Si la hoja es más alta que la pantalla, --hoja-tope
+   es negativo (lo calcula Filtros.tsx): baja con la página hasta mostrar
+   su final y ahí se queda, así nunca queda una parte sin verse. */
+@media (min-width: 961px) {
+  .hoja { position: sticky; top: var(--hoja-tope, 16px); }
 }
 
 .hoja-cabecera { padding-bottom: 14px; border-bottom: 1.5px solid var(--tinta-suave); }

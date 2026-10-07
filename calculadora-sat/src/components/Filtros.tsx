@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { InfoTooltip } from './InfoTooltip';
 import { glosarioCampos } from '../utils/glosarioCampos';
@@ -30,6 +30,34 @@ interface Props {
 const SAT_MIN = 200;
 const SAT_MAX = 800;
 const PRECIO_TOPE = 90000;
+const MARGEN_STICKY = 16;
+
+/**
+ * Calcula dónde se "pega" la hoja al hacer scroll. Si cabe en la pantalla, arriba
+ * (16px). Si es más alta, con un tope negativo: se pega cuando su borde inferior
+ * llega al final de la pantalla, así se ve completa.
+ */
+function useTopeSticky() {
+  const ref = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const hoja = ref.current;
+    if (!hoja) return;
+    const actualizar = () => {
+      const tope = Math.min(MARGEN_STICKY, window.innerHeight - hoja.offsetHeight - MARGEN_STICKY);
+      hoja.style.setProperty('--hoja-tope', `${tope}px`);
+    };
+    actualizar();
+    // La altura cambia, por ejemplo, al aparecer el botón "Ver todo el país".
+    const observador = new ResizeObserver(actualizar);
+    observador.observe(hoja);
+    window.addEventListener('resize', actualizar);
+    return () => {
+      observador.disconnect();
+      window.removeEventListener('resize', actualizar);
+    };
+  }, []);
+  return ref;
+}
 
 /** Bloque de la hoja: título con tooltip opcional y su contenido. */
 function Seccion({ titulo, ayuda, children }: { titulo: string; ayuda?: string; children: ReactNode }) {
@@ -130,9 +158,10 @@ export function Filtros({
 }: Props) {
   const satIncompleto = (puntajeMath > 0) !== (puntajeLectura > 0);
   const sinLimitePrecio = precioMaximo >= PRECIO_TOPE;
+  const hojaRef = useTopeSticky();
 
   return (
-    <aside className="hoja" aria-label="Filtros">
+    <aside ref={hojaRef} className="hoja" aria-label="Filtros">
       <div className="hoja-cabecera">
         <h2 className="titulo-seccion">Marca tus datos</h2>
         <p className="ayuda">Los resultados cambian al instante.</p>
