@@ -670,3 +670,133 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   pointer-events: none;
 }
 .ayuda-globo-abajo { bottom: auto; top: calc(100% + 10px); }
+
+/* =========================================================
+   Ficha de universidad
+   ========================================================= */
+.ficha { display: flex; flex-direction: column; gap: 24px; }
+.ficha-volver { align-self: flex-start; }
+
+.ficha-cabecera {
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--grafito);
+}
+.ficha-cabecera .marcas { margin: 0 0 12px; }
+.ficha-nombre {
+  max-width: 22ch;
+  font-size: clamp(30px, 5vw, 56px);
+  font-stretch: 122%;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+}
+.ficha-lugar { margin: 10px 0 0; font-size: 18px; color: var(--grafito-suave); }
+
+/* "Lo esencial": cuatro casillas como las del recuadro de respuestas. */
+.esenciales {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  background: var(--hoja);
+  border: 1.5px solid var(--tinta);
+  border-radius: var(--radio);
+}
+.esencial { padding: 16px 20px; min-width: 0; }
+.esencial + .esencial { border-left: 1.5px solid var(--tinta-suave); }
+.esencial-etiqueta {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tinta-fuerte);
+}
+.esencial-valor {
+  margin: 6px 0 0;
+  font-size: clamp(24px, 3vw, 34px);
+  font-stretch: 112%;
+  font-weight: 800;
+  line-height: 1.05;
+}
+.esencial-vacio { font-size: 18px; font-weight: 600; color: var(--grafito-suave); }
+
+.ficha-grilla {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.ficha-seccion { padding: 20px; }
+.ficha-ancha { grid-column: 1 / -1; }
+.ficha-titulo { display: flex; align-items: center; margin-bottom: 14px; }
+.ficha-bloque { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--linea); }
+.ficha-intro { display: flex; align-items: center; flex-wrap: wrap; color: var(--grafito-suave); }
+
+.fuente { margin: 6px 0 0; font-size: 12px; color: var(--grafito-suave); }
+
+/* Pares etiqueta → valor, alineados como un formulario */
+.datos { margin: 0; }
+.dato-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 8px 0;
+}
+.dato-fila + .dato-fila { border-top: 1px dashed var(--linea); }
+.dato-fila dt { display: flex; align-items: center; color: var(--grafito-suave); }
+.dato-fila dd { margin: 0; font-weight: 700; text-align: right; }
+
+.cifra-destacada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 4px 0 20px;
+}
+.cifra-destacada-valor { font-size: 34px; font-stretch: 112%; font-weight: 800; line-height: 1; }
+.cifra-destacada-texto { display: inline-flex; align-items: center; font-weight: 600; }
+.cifra-destacada .fuente { flex-basis: 100%; margin: 0; }
+
+.programas { margin: 0; padding-left: 1.4em; columns: 2 280px; column-gap: 32px; }
+.programas li { padding: 4px 0; break-inside: avoid; }
+.programas li::marker { color: var(--tinta); font-weight: 700; }
+
+/* ---------- Minipestañas ---------- */
+.pestanas {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 18px;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+}
+.pestana {
+  min-height: 38px;
+  padding: 6px 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--grafito-suave);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.pestana:hover { color: var(--grafito); background: var(--tinta-fondo); }
+.pestana[aria-selected="true"] { color: #fff; background: var(--grafito); }
+
+@media (max-width: 860px) {
+  .esenciales { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .esencial:nth-child(3) { border-left: 0; }
+  .esencial:nth-child(n + 3) { border-top: 1.5px solid var(--tinta-suave); }
+  .ficha-grilla { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .esencial { padding: 14px 16px; }
+  .ficha-seccion { padding: 16px; }
+  .pestanas { display: flex; border-radius: var(--radio); }
+  .pestana { flex: 1 1 auto; }
+}
