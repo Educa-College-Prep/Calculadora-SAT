@@ -15,16 +15,13 @@ function mediana(valores: number[]): number | null {
   return orden.length % 2 ? orden[medio] : Math.round((orden[medio - 1] + orden[medio]) / 2);
 }
 
-/**
- * Dato suelto: número grande + etiqueta. No es un gráfico y no debe serlo.
- * El valor va en tinta de texto normal, no en color de serie.
- */
+/** Dato suelto: número grande + etiqueta. No es un gráfico y no debe serlo. */
 function Cifra({ valor, etiqueta, nota }: { valor: string; etiqueta: string; nota?: string }) {
   return (
-    <div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.1 }}>{valor}</div>
-      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px', fontWeight: 500 }}>{etiqueta}</div>
-      {nota && <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '1px' }}>{nota}</div>}
+    <div className="cifra">
+      <div className="cifra-valor numero">{valor}</div>
+      <div className="cifra-etiqueta">{etiqueta}</div>
+      {nota && <div className="cifra-nota">{nota}</div>}
     </div>
   );
 }
@@ -59,68 +56,61 @@ export const ResumenEstado = memo(function ResumenEstado({ universidades, estado
   const anchoBarra = 150;
 
   return (
-    <div style={{ padding: '20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-subtle)' }}>
-        <h3 style={{ margin: 0 }}>Resumen de {nombreEstado}</h3>
-        <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>
-          Calculado sobre los resultados que pasan tus filtros
-        </p>
+    <div className="panel">
+      <div className="panel-cabecera">
+        <h2 className="titulo-seccion">{nombreEstado} en cifras</h2>
+        <p className="ayuda">Calculado sobre tus resultados en este estado.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px 12px', marginBottom: '18px' }}>
-        <Cifra
-          valor={resumen.total.toLocaleString()}
-          etiqueta="Universidades"
-          nota={`${resumen.cuatroAnios} Grado Bachiller · ${resumen.total - resumen.cuatroAnios} Grado Associate`}
-        />
-        <Cifra
-          valor={resumen.total ? `${Math.round((resumen.publicas / resumen.total) * 100)}%` : '—'}
-          etiqueta="Son públicas"
-          nota={`${resumen.publicas} públicas · ${resumen.sinFines + resumen.conFines} privadas`}
-        />
-        <Cifra
-          valor={formatDinero(resumen.matriculaMediana) ?? 'Sin datos'}
-          etiqueta="Matrícula mediana"
-          nota={`${resumen.conMatricula} de ${resumen.total} informan precio`}
-        />
-        <Cifra
-          valor={resumen.satMediano ? String(resumen.satMediano) : 'Sin datos'}
-          etiqueta="SAT promedio (mediana)"
-          nota={`solo ${resumen.conSat} de ${resumen.total} lo informan`}
-        />
-      </div>
-
-      {resumen.conFines > 0 && (
-        <div style={{
-          fontSize: '11px', color: 'var(--text-muted)', marginBottom: '16px',
-          paddingLeft: '10px', borderLeft: '2px solid #cbd5e1', lineHeight: 1.45,
-        }}>
-          {resumen.conFines} son privadas <strong style={{ color: 'var(--text-main)' }}>con fines de lucro</strong>,
-          un perfil con retorno salarial habitualmente más bajo. Conviene mirarlas aparte.
+      <div className="panel-cuerpo">
+        <div className="cifras">
+          <Cifra
+            valor={resumen.total.toLocaleString()}
+            etiqueta="Universidades"
+            nota={`${resumen.cuatroAnios} de bachiller, ${resumen.total - resumen.cuatroAnios} de associate`}
+          />
+          <Cifra
+            valor={resumen.total ? `${Math.round((resumen.publicas / resumen.total) * 100)}%` : '—'}
+            etiqueta="Son públicas"
+            nota={`${resumen.publicas} públicas, ${resumen.sinFines + resumen.conFines} privadas`}
+          />
+          <Cifra
+            valor={formatDinero(resumen.matriculaMediana) ?? 'Sin datos'}
+            etiqueta="Matrícula mediana"
+            nota={`${resumen.conMatricula} de ${resumen.total} informan precio`}
+          />
+          <Cifra
+            valor={resumen.satMediano ? String(resumen.satMediano) : 'Sin datos'}
+            etiqueta="SAT promedio (mediana)"
+            nota={`solo ${resumen.conSat} de ${resumen.total} lo informan`}
+          />
         </div>
-      )}
 
-      {resumen.topCiudades.length > 0 && (
-        <div style={{ marginTop: 'auto' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: 600 }}>
-            Ciudades con más universidades
+        {resumen.conFines > 0 && (
+          <p className="nota-alerta">
+            {resumen.conFines} son privadas <strong>con fines de lucro</strong>,
+            un perfil con retorno salarial habitualmente más bajo. Conviene mirarlas aparte.
+          </p>
+        )}
+
+        {resumen.topCiudades.length > 0 && (
+          <div className="ciudades-top">
+            <h3 className="subtitulo">Ciudades con más universidades</h3>
+            <svg width="100%" height={resumen.topCiudades.length * 24} role="img" aria-label="Ciudades con más universidades">
+              {resumen.topCiudades.map(([ciudad, cantidad], i) => (
+                <g key={ciudad} transform={`translate(0, ${i * 24})`}>
+                  <text x="0" y="15" fontSize="13" fill="#26292b">
+                    {ciudad.length > 16 ? ciudad.slice(0, 15) + '…' : ciudad}
+                  </text>
+                  <rect x="122" y="6" width={anchoBarra} height="10" rx="5" fill="#e9f0fa" />
+                  <rect x="122" y="6" width={Math.max(5, (cantidad / maxCiudad) * anchoBarra)} height="10" rx="5" fill="#1b5fa8" />
+                  <text x={122 + anchoBarra + 8} y="15" fontSize="13" fontWeight="700" fill="#26292b">{cantidad}</text>
+                </g>
+              ))}
+            </svg>
           </div>
-          {/* Las barras van en SVG: index.css repinta cualquier div o span con
-              background-color en línea, y las dejaría invisibles. */}
-          <svg width="100%" height={resumen.topCiudades.length * 20} role="img" aria-label="Ciudades con más universidades">
-            {resumen.topCiudades.map(([ciudad, cantidad], i) => (
-              <g key={ciudad} transform={`translate(0, ${i * 20})`}>
-                <text x="0" y="12" fontSize="11" fill="var(--text-main)">
-                  {ciudad.length > 16 ? ciudad.slice(0, 15) + '…' : ciudad}
-                </text>
-                <rect x="115" y="4" width={anchoBarra} height="8" rx="4" fill="#e2e8f0" />
-                <rect x="115" y="4" width={Math.max(4, (cantidad / maxCiudad) * anchoBarra)} height="8" rx="4" fill="#0284c7" />
-                <text x={115 + anchoBarra + 8} y="12" fontSize="11" fill="var(--text-muted)">{cantidad}</text>
-              </g>
-            ))}
-          </svg>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 });

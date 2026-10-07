@@ -22,8 +22,8 @@ type PropiedadesCondado = { nombre: string };
  * tramos contiguos se nota: el peor par adyacente pasa de ΔE 5,9 a 14,9 en
  * visión normal y de 4,4 a 13,8 en protanopía.
  */
-const ESCALA = ['#bae6fd', '#38bdf8', '#0284c7', '#075985', '#082f49'];
-const SIN_DATOS = '#f1f5f9';
+const ESCALA = ['#cddcf0', '#8fb3e0', '#4f86c9', '#1b5fa8', '#0d2f5c'];
+const SIN_DATOS = '#eef2f6';
 const TRAMOS = ESCALA.length;
 
 /**
@@ -119,7 +119,7 @@ function Controlador({
 }
 
 const Aviso = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ height: '340px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', textAlign: 'center', padding: '0 20px' }}>
+  <div style={{ height: '340px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--grafito-suave)', textAlign: 'center', padding: '0 20px' }}>
     <div>{children}</div>
   </div>
 );
@@ -187,7 +187,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
         fillColor: indice < 0 ? SIN_DATOS : ESCALA[indice],
         // Al enfocar un condado el relleno se aclara para dejar ver las calles.
         fillOpacity: hayEnfoque ? (enfocado ? 0.3 : 0.12) : 0.92,
-        color: enfocado ? '#f97316' : '#ffffff',
+        color: enfocado ? '#26292b' : '#ffffff',
         weight: enfocado ? 2.5 : 1,
       };
     },
@@ -201,7 +201,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
       const nombre = feature.properties?.nombre ?? 'Condado';
       capa.bindTooltip(
         `<strong>${nombre}</strong><br/>${cantidad} universidad${cantidad === 1 ? '' : 'es'}` +
-        `<br/><span style="color:#64748b">clic para acercar</span>`,
+        `<br/><span style="color:#5d6467">clic para acercar</span>`,
         { sticky: true }
       );
       capa.on('click', () => {
@@ -253,7 +253,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
     return (
       <Aviso>
         No hay geometría de condados disponible para {nombreEstado}.
-        <div style={{ fontSize: '11px', marginTop: '6px', color: 'var(--text-muted)' }}>
+        <div style={{ fontSize: '11px', marginTop: '6px', color: 'var(--grafito-suave)' }}>
           Los territorios (Guam, Samoa Americana, Islas Marianas, Islas Vírgenes,
           Micronesia, Islas Marshall y Palaos) no están divididos en condados.
         </div>
@@ -303,11 +303,9 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
               }}
             >
               <Popup>
-                {/* Sin <ul>/<li>: index.css le mete 16px de relleno y un borde a
-                    todo <li> de la página, y el globo salía enorme. */}
                 <div style={{ fontSize: '12px', minWidth: '170px', maxWidth: '230px' }}>
                   <strong style={{ fontSize: '13px' }}>{ciudad.nombre}</strong>
-                  <div style={{ color: '#64748b', margin: '2px 0 6px 0' }}>
+                  <div style={{ color: '#5d6467', margin: '2px 0 6px 0' }}>
                     {cantidad} universidad{cantidad === 1 ? '' : 'es'}
                   </div>
                   <div style={{ maxHeight: '120px', overflowY: 'auto', lineHeight: 1.35 }}>
@@ -316,7 +314,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
                     ))}
                   </div>
                   {cantidad > 6 && (
-                    <div style={{ color: '#64748b', marginTop: '4px' }}>y {cantidad - 6} más…</div>
+                    <div style={{ color: '#5d6467', marginTop: '4px' }}>y {cantidad - 6} más…</div>
                   )}
                   {onSeleccionarCiudad && (
                     <button
@@ -324,7 +322,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
                       style={{
                         marginTop: '10px', width: '100%', padding: '6px 10px',
                         fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                        background: '#0284c7', color: '#ffffff',
+                        background: '#1b5fa8', color: '#ffffff',
                         border: 'none', borderRadius: '4px',
                       }}
                     >
@@ -345,12 +343,12 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
           <div style={{
             position: 'absolute', top: '10px', left: '50px', zIndex: 1000,
             background: 'rgba(255,255,255,0.94)', padding: '5px 10px',
-            borderRadius: '4px', fontSize: '11px', color: '#0f172a',
+            borderRadius: '4px', fontSize: '11px', color: '#26292b',
             boxShadow: '0 1px 4px rgba(0,0,0,0.15)', fontWeight: 600,
           }}>
             {nombreCondado ?? 'Condado'} · {ciudadesDelCondado.length} ciudad{ciudadesDelCondado.length === 1 ? '' : 'es'}
             {sinCoordenada > 0 && (
-              <span style={{ fontWeight: 400, color: '#92400e' }}> · {sinCoordenada} sin ubicar</span>
+              <span style={{ fontWeight: 400, color: '#8f4f00' }}> · {sinCoordenada} sin ubicar</span>
             )}
           </div>
 
@@ -359,8 +357,8 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
             style={{
               position: 'absolute', top: '10px', right: '10px', zIndex: 1000,
               padding: '6px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-              background: '#ffffff', color: '#0f172a',
-              border: '1px solid #cbd5e1', borderRadius: '4px',
+              background: '#ffffff', color: '#26292b',
+              border: '1px solid #cddcf0', borderRadius: '4px',
               boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
             }}
           >
@@ -371,31 +369,29 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
           <div style={{
             position: 'absolute', bottom: '0', left: '0', zIndex: 1000,
             background: 'rgba(255,255,255,0.85)', padding: '1px 5px',
-            fontSize: '9px', color: '#64748b',
+            fontSize: '9px', color: '#5d6467',
           }}>
-            © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" style={{ color: '#64748b' }}>OpenStreetMap</a>
-            {' '}© <a href="https://carto.com/attributions" target="_blank" rel="noreferrer" style={{ color: '#64748b' }}>CARTO</a>
+            © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" style={{ color: '#5d6467' }}>OpenStreetMap</a>
+            {' '}© <a href="https://carto.com/attributions" target="_blank" rel="noreferrer" style={{ color: '#5d6467' }}>CARTO</a>
           </div>
         </>
       )}
 
-      {/* Leyenda. Los recuadros de color son <rect> de SVG a propósito: index.css
-          repinta a la fuerza cualquier div o span que lleve background-color en
-          línea, y eso dejaba todos los tramos del mismo color. */}
+      {/* Leyenda. Los recuadros de color van en SVG para que coincidan exacto con el mapa. */}
       {/* Dentro de un condado la unidad deja de ser el condado y pasa a ser la
           ciudad, así que la leyenda cambia de escala en vez de mentir. */}
       {condadoEnfocado && ciudadesDelCondado.length > 0 && (
         <div style={{
           position: 'absolute', bottom: '10px', right: '10px', zIndex: 1000,
           background: '#ffffff', padding: '8px 10px', borderRadius: '4px',
-          fontSize: '10px', color: '#334155', boxShadow: '0 1px 6px rgba(0,0,0,0.25)',
+          fontSize: '10px', color: '#26292b', boxShadow: '0 1px 6px rgba(0,0,0,0.25)',
         }}>
-          <div style={{ fontWeight: 600, marginBottom: '4px', color: '#0f172a' }}>Ciudades del condado</div>
+          <div style={{ fontWeight: 600, marginBottom: '4px', color: '#26292b' }}>Ciudades del condado</div>
           <svg width="150" height="26" role="img" aria-label="Cada círculo es una ciudad; el tamaño indica cuántas universidades tiene">
             <circle cx="10" cy="13" r="5" fill={ESCALA[1]} stroke="#ffffff" strokeWidth="2" />
             <circle cx="34" cy="13" r="9" fill={ESCALA[3]} stroke="#ffffff" strokeWidth="2" />
-            <text x="50" y="11" fontSize="9" fill="#64748b">tamaño = nº de</text>
-            <text x="50" y="21" fontSize="9" fill="#64748b">universidades</text>
+            <text x="50" y="11" fontSize="9" fill="#5d6467">tamaño = nº de</text>
+            <text x="50" y="21" fontSize="9" fill="#5d6467">universidades</text>
           </svg>
         </div>
       )}
@@ -404,18 +400,18 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
         <div style={{
           position: 'absolute', bottom: '10px', right: '10px', zIndex: 1000,
           background: '#ffffff', padding: '8px 10px', borderRadius: '4px',
-          fontSize: '10px', color: '#334155', boxShadow: '0 1px 6px rgba(0,0,0,0.25)',
+          fontSize: '10px', color: '#26292b', boxShadow: '0 1px 6px rgba(0,0,0,0.25)',
         }}>
-          <div style={{ fontWeight: 600, marginBottom: '4px', color: '#0f172a', fontSize: '10px' }}>
+          <div style={{ fontWeight: 600, marginBottom: '4px', color: '#26292b', fontSize: '10px' }}>
             Universidades por condado
           </div>
           <svg width={(tramos.length + 1) * 38} height="30" role="img" aria-label="Escala de color por cantidad de universidades">
-            <rect x="1" y="0" width="34" height="13" rx="2" fill={SIN_DATOS} stroke="#cbd5e1" />
-            <text x="18" y="25" textAnchor="middle" fontSize="9" fill="#64748b">0</text>
+            <rect x="1" y="0" width="34" height="13" rx="2" fill={SIN_DATOS} stroke="#cddcf0" />
+            <text x="18" y="25" textAnchor="middle" fontSize="9" fill="#5d6467">0</text>
             {tramos.map((t, i) => (
               <g key={t.color}>
                 <rect x={(i + 1) * 38 + 1} y="0" width="34" height="13" rx="2" fill={t.color} />
-                <text x={(i + 1) * 38 + 18} y="25" textAnchor="middle" fontSize="9" fill="#64748b">
+                <text x={(i + 1) * 38 + 18} y="25" textAnchor="middle" fontSize="9" fill="#5d6467">
                   {t.desde === t.hasta ? t.desde : `${t.desde}–${t.hasta}`}
                 </text>
               </g>
@@ -428,7 +424,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
         <div style={{
           position: 'absolute', bottom: '10px', left: '10px', zIndex: 1000,
           background: 'rgba(255,255,255,0.92)', padding: '5px 8px',
-          borderRadius: '4px', fontSize: '10px', color: '#64748b',
+          borderRadius: '4px', fontSize: '10px', color: '#5d6467',
         }}>
           {sinUbicar} sin ubicación conocida
         </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useDeferredValue, useRef } from 'react';
 import type { Universidad } from './types';
 import { NOMBRES_ESTADOS } from './utils/estados';
+import { crearIndiceBusqueda, buscarUniversidades } from './utils/busqueda';
 
 import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
@@ -46,6 +47,14 @@ export default function App() {
   // El texto que se usa para filtrar va "un paso atrás" del que se ve en el input.
   // Así el tecleo nunca se congela aunque el filtrado de 4300 registros tarde.
   const busquedaDiferida = useDeferredValue(busquedaNombre);
+
+  // Búsqueda con alias ("MIT") y tolerancia a errores ("Hrvrd"). El índice se arma una sola vez.
+  const indiceBusqueda = useMemo(() => crearIndiceBusqueda(universidades), [universidades]);
+  const resultadoBusqueda = useMemo(
+    () => buscarUniversidades(indiceBusqueda, busquedaDiferida),
+    [indiceBusqueda, busquedaDiferida]
+  );
+  const sugerencias = useMemo(() => resultadoBusqueda?.ordenadas.slice(0, 8) ?? [], [resultadoBusqueda]);
 
   useEffect(() => {
     const base = import.meta.env.BASE_URL;
@@ -98,8 +107,6 @@ export default function App() {
    * y no se puede saber (se queda, pero marcada y ordenada al final).
    */
   const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId } = useMemo(() => {
-    const textoBusqueda = busquedaDiferida.toLowerCase();
-
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
     const filtroSATActivo = puntajeTotal > 0;
     const filtroPrecioActivo = precioMaximo < PRECIO_MAXIMO_SLIDER;
@@ -113,7 +120,7 @@ export default function App() {
 
     const lista = universidades.filter((uni) => {
       // Filtros duros: aquí no hay ambigüedad, el dato siempre existe.
-      if (textoBusqueda && !uni.INSTNM.toLowerCase().includes(textoBusqueda)) return false;
+      if (resultadoBusqueda && (uni._id == null || !resultadoBusqueda.posicion.has(uni._id))) return false;
       if (tipoUniversidad === 'publica' && uni.CONTROL !== 'Pública') return false;
       if (tipoUniversidad === 'privada' && (!uni.CONTROL || !uni.CONTROL.includes('Privada'))) return false;
 
@@ -144,11 +151,13 @@ export default function App() {
     });
 
     return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes };
-  }, [universidades, busquedaDiferida, estadoSeleccionado, ciudadSeleccionada, tipoUniversidad, precioMaximo, exigirSAT, puntajeTotal]);
+  }, [universidades, resultadoBusqueda, estadoSeleccionado, ciudadSeleccionada, tipoUniversidad, precioMaximo, exigirSAT, puntajeTotal]);
 
   const universidadesOrdenadas = useMemo(() => {
     const hayFaltantes = faltantesPorId.size > 0;
-    if (!hayFaltantes && ordenarPor === 'ninguno') return universidadesFiltradas;
+    // Sin orden elegido pero con búsqueda activa, se ordena por relevancia (MIT antes que Smith College).
+    const posicion = resultadoBusqueda?.posicion;
+    if (!hayFaltantes && ordenarPor === 'ninguno' && !posicion) return universidadesFiltradas;
 
     const sinDato = (u: Universidad) => (u._id != null && faltantesPorId.has(u._id) ? 1 : 0);
 
@@ -157,7 +166,9 @@ export default function App() {
       const diferencia = sinDato(a) - sinDato(b);
       if (diferencia !== 0) return diferencia;
 
-      if (ordenarPor === 'ninguno') return 0;
+      if (ordenarPor === 'ninguno') {
+        return posicion ? (posicion.get(a._id ?? -1) ?? 0) - (posicion.get(b._id ?? -1) ?? 0) : 0;
+      }
       const valA = (a as any)[ordenarPor];
       const valB = (b as any)[ordenarPor];
       if (valA == null && valB == null) return 0;
@@ -168,7 +179,7 @@ export default function App() {
       }
       return ordenDireccion === 'asc' ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
     });
-  }, [universidadesFiltradas, faltantesPorId, ordenarPor, ordenDireccion]);
+  }, [universidadesFiltradas, faltantesPorId, ordenarPor, ordenDireccion, resultadoBusqueda]);
 
   const datosGrafico = useMemo(
     () => universidadesFiltradas
@@ -197,9 +208,9 @@ export default function App() {
 
     Object.keys(conteoPorEstado).sort().forEach(estado => {
       const nombreEstado = NOMBRES_ESTADOS[estado] ?? estado;
-      const tooltip = `<div style="padding:8px; line-height:1.35; color:#111;">
-      <strong style="font-size:1rem;">${nombreEstado}</strong><br />
-      <span style="font-size:0.9rem; color:#555;">${conteoPorEstado[estado]} universidades</span>
+      const tooltip = `<div style="padding:8px 10px; line-height:1.35; color:#26292b; font-family:Archivo, sans-serif;">
+      <strong style="font-size:15px;">${nombreEstado}</strong><br />
+      <span style="font-size:13px; color:#5d6467;">${conteoPorEstado[estado]} universidades · clic para ver condados</span>
     </div>`;
 
       // Con un estado elegido, el valor solo marca "elegido (1) / resto (0)" para
@@ -279,125 +290,83 @@ export default function App() {
     );
   }
 
-  return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+  const hayFiltrosUbicacion = estadoSeleccionado !== 'todos';
 
-      {/* 1. CABECERA GLOBAL IMPECABLE */}
-      <header style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderBottom: '1px solid var(--border-subtle)',
-        paddingBottom: '16px',
-        marginBottom: '10px'
-      }}>
+  return (
+    <>
+      <header className="cabecera">
         <div>
-          <h1 style={{ fontSize: '1.8rem', color: 'var(--text-main)', fontWeight: 700, letterSpacing: '-0.5px' }}>
-            Calculadora SAT
-          </h1>
-          <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0', fontSize: '0.9rem' }}>
-            Métricas de admisión, costos y distribución regional de instituciones académicas.
+          <h1>Calculadora SAT</h1>
+          <p className="cabecera-bajada">
+            Encuentra universidades de EE.&nbsp;UU. que encajan con tu puntaje, tu presupuesto y el lugar donde quieres estudiar.
           </p>
         </div>
+        <Buscador
+          busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
+          mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
+          sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
+          onSeleccionar={seleccionarUniversidad}
+        />
       </header>
 
-      {/* 2. ESTRUCTURA PRINCIPAL DE DOS COLUMNAS */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '300px 1fr',
-        gap: '30px',
-        alignItems: 'start'
-      }}>
+      <div className="cuerpo">
+        <Filtros
+          estadoSeleccionado={estadoSeleccionado} setEstadoSeleccionado={setEstadoSeleccionado}
+          ciudadSeleccionada={ciudadSeleccionada} setCiudadSeleccionada={setCiudadSeleccionada}
+          estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
+          puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
+          puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
+          puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
+          tipoUniversidad={tipoUniversidad} setTipoUniversidad={setTipoUniversidad}
+          precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
+          nombresEstados={NOMBRES_ESTADOS}
+        />
 
-        {/* COLUMNA IZQUIERDA: PANEL DE FILTROS LATERAL (SIDEBAR) */}
-        <aside className="saas-panel" style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-          position: 'sticky',
-          top: '20px'
-        }}>
-          <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
-            <h3 style={{ margin: 0, fontSize: '14px', color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Filtros de Control
-            </h3>
+        <main className="columna-principal">
+          {/* Lo primero que se lee: cuántas universidades quedan con lo que marcaste. */}
+          <div className="resultado" aria-live="polite">
+            <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
+            <span className="resultado-texto">
+              {universidadesFiltradas.length === 1 ? 'universidad encaja' : 'universidades encajan'} con lo que marcaste
+            </span>
+            <span className="resultado-nota">
+              de {universidades.length.toLocaleString()} en la base de datos
+              {hayFiltrosUbicacion && ` · en ${NOMBRES_ESTADOS[estadoSeleccionado] ?? estadoSeleccionado}`}
+              {ciudadSeleccionada !== 'todas' && `, ${ciudadSeleccionada}`}
+            </span>
           </div>
 
-          {/* Subcomponente Filtros (Rangos, SAT, Precios) */}
-          <Filtros
-            estadoSeleccionado={estadoSeleccionado} setEstadoSeleccionado={setEstadoSeleccionado}
-            ciudadSeleccionada={ciudadSeleccionada} setCiudadSeleccionada={setCiudadSeleccionada}
-            estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
-            puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
-            puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
-            puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
-            tipoUniversidad={tipoUniversidad} setTipoUniversidad={setTipoUniversidad}
-            precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
-            nombresEstados={NOMBRES_ESTADOS}
-          />
-        </aside>
-
-        {/* COLUMNA DERECHA: PANEL PRINCIPAL CENTRAL */}
-        <main style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
-          {/* BUSCADOR COMPACTO SUPERIOR */}
-          <section className="saas-panel" style={{ padding: '16px 20px' }}>
-            <Buscador
-              busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
-              mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
-              universidades={universidades}
+          <section className="tablero">
+            <MapaGeo
+              datosMapaGeoEstados={datosMapaGeoEstados}
+              universidadesFiltradas={universidadesFiltradas}
+              estadoSeleccionado={estadoSeleccionado}
+              onSeleccionarEstado={seleccionarEstadoDesdeMapa}
+              onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
             />
-          </section>
 
-          {/* SEPARADOR VISUAL */}
-          <div style={{ height: '1px', backgroundColor: 'var(--border-subtle)', margin: '4px 0' }} />
-
-          {/* REPORTES GRÁFICOS INTERACTIVOS (LADO A LADO) */}
-          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(450px, 1.3fr) minmax(350px, 1fr)', gap: '20px', alignItems: 'start' }}>
-            <div className="saas-panel" style={{ padding: '0' }}>
-              <MapaGeo
-                datosMapaGeoEstados={datosMapaGeoEstados}
-                universidadesFiltradas={universidadesFiltradas}
-                estadoSeleccionado={estadoSeleccionado}
-                onSeleccionarEstado={seleccionarEstadoDesdeMapa}
-                onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
-              />
-            </div>
-
-            {/* Columna derecha: el gráfico conserva su alto natural y, cuando se abre
-                el mapa del estado, el espacio de abajo lo llena el resumen en vez de
-                estirar las barras. */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div className="saas-panel" style={{ padding: '0', display: 'flex' }}>
-                <GraficoBarras datosGrafico={datosGrafico} />
-              </div>
-              {estadoSeleccionado !== 'todos' && (
-                <div className="saas-panel" style={{ padding: '0', flex: 1 }}>
-                  <ResumenEstado
-                    universidades={universidadesFiltradas}
-                    estadoSeleccionado={estadoSeleccionado}
-                  />
-                </div>
+            {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
+                va el resumen en vez de estirar las barras. */}
+            <div className="tablero-lateral">
+              <GraficoBarras datosGrafico={datosGrafico} />
+              {hayFiltrosUbicacion && (
+                <ResumenEstado
+                  universidades={universidadesFiltradas}
+                  estadoSeleccionado={estadoSeleccionado}
+                />
               )}
             </div>
           </section>
 
-          {/* SEPARADOR VISUAL ANTES DE LOS RESULTADOS */}
-          <div style={{ height: '1px', backgroundColor: 'var(--border-subtle)', margin: '4px 0' }} />
-
-          {/* TABLA DE RESULTADOS TOTALMENTE VISIBLE ABAJO */}
-          <section className="saas-panel" style={{ padding: '8px' }}>
-            <ListaUniversidades
-              universidadesFiltradas={universidadesFiltradas} universidadesOrdenadas={universidadesOrdenadas}
-              faltantesPorId={faltantesPorId}
-              totalUniversidades={universidades.length} ordenarPor={ordenarPor} setOrdenarPor={setOrdenarPor}
-              ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
-              onSeleccionar={seleccionarUniversidad}
-            />
-          </section>
-
+          <ListaUniversidades
+            universidadesFiltradas={universidadesFiltradas} universidadesOrdenadas={universidadesOrdenadas}
+            faltantesPorId={faltantesPorId}
+            totalUniversidades={universidades.length} ordenarPor={ordenarPor} setOrdenarPor={setOrdenarPor}
+            ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
+            onSeleccionar={seleccionarUniversidad}
+          />
         </main>
       </div>
-    </div>
+    </>
   );
 }

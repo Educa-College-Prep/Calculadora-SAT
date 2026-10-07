@@ -1,7 +1,6 @@
 import { memo, useEffect, useMemo, useState } from 'react';
-import type { CSSProperties } from 'react';
 import type { Universidad } from '../types';
-import { formatNivel } from '../utils/formatters';
+import { formatNivel, formatDinero, formatPorcentaje } from '../utils/formatters';
 
 interface Props {
   universidadesFiltradas: Universidad[];
@@ -18,15 +17,12 @@ interface Props {
 
 const OPCIONES_POR_PAGINA = [25, 50, 100, 200];
 
-const estiloBotonPagina: CSSProperties = {
-  padding: '6px 12px',
-  backgroundColor: '#333',
-  color: '#fff',
-  border: '1px solid #555',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  fontSize: '13px',
-};
+/** Color de la etiqueta según el tipo de institución (mismo código en toda la web). */
+function claseControl(control: string | null): string {
+  if (control === 'Pública') return 'marca marca-publica';
+  if (control === 'Privada con fines de lucro') return 'marca marca-lucro';
+  return 'marca marca-privada';
+}
 
 /**
  * Cada tarjeta va memoizada: al cambiar de página o de orden, React solo
@@ -43,46 +39,50 @@ const FilaUniversidad = memo(function FilaUniversidad({
 }) {
   const incompleta = !!faltantes?.length;
   return (
-    <li
-      onClick={() => onSeleccionar(uni)}
-      title={incompleta ? `No se pudo evaluar con los filtros activos: ${faltantes!.join(', ')}` : undefined}
-      style={{ padding: '15px', border: incompleta ? '1px dashed #fcd34d' : '1px solid #444', margin: '10px 0', borderRadius: '8px', backgroundColor: '#2a2a2a', cursor: 'pointer', transition: '0.3s', opacity: incompleta ? 0.82 : 1 }}
-      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3a3a3a'}
-      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2a2a2a'}
-    >
-      <strong style={{ fontSize: '1.2em' }}>{uni.INSTNM}</strong>{' '}
-      <small>({uni.CITY}, {uni.STABBR})</small>
-      <div style={{ marginTop: '10px' }}>
-        <span style={{ display: 'inline-block', padding: '4px 10px', marginRight: '10px', backgroundColor: uni.CONTROL === 'Pública' ? '#2d6a4f' : '#5c4d7d', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-          {uni.CONTROL}
+    <li className={`fila${incompleta ? ' fila-incompleta' : ''}`}>
+      <button
+        type="button"
+        className="fila-boton"
+        onClick={() => onSeleccionar(uni)}
+        title={incompleta ? `No se pudo evaluar con los filtros activos: ${faltantes!.join(', ')}` : undefined}
+      >
+        <span className="fila-identidad">
+          <span className="fila-nombre">{uni.INSTNM}</span>
+          <span className="fila-lugar">{uni.CITY}, {uni.STABBR}</span>
+          <span className="marcas">
+            {uni.CONTROL && <span className={claseControl(uni.CONTROL)}>{uni.CONTROL}</span>}
+            {uni.ICLEVEL && <span className="marca">{formatNivel(uni.ICLEVEL)}</span>}
+            {uni.ADMCON7 === 'Requerido'
+              ? <span className="marca marca-sat">SAT obligatorio</span>
+              : uni.ADMCON7 && <span className="marca">SAT: {uni.ADMCON7.toLowerCase()}</span>}
+          </span>
         </span>
-        {uni.ICLEVEL && (
-          <span style={{ display: 'inline-block', padding: '4px 10px', marginRight: '10px', backgroundColor: '#264653', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-            {formatNivel(uni.ICLEVEL)}
+
+        {/* Tres datos para comparar de un vistazo, siempre en la misma columna. */}
+        <span className="fila-datos">
+          <span className="dato">
+            <span className="dato-valor numero">{formatPorcentaje(uni.ADM_RATE) ?? '—'}</span>
+            <span className="dato-etiqueta">admisión</span>
+          </span>
+          <span className="dato">
+            <span className="dato-valor numero">{uni.SAT_AVG ?? '—'}</span>
+            <span className="dato-etiqueta">SAT prom.</span>
+          </span>
+          <span className="dato">
+            <span className="dato-valor numero">{formatDinero(uni.TUITIONFEE_OUT) ?? '—'}</span>
+            <span className="dato-etiqueta">matrícula</span>
+          </span>
+        </span>
+
+        {/* Datos faltantes para los filtros que el usuario activó */}
+        {incompleta && (
+          <span className="fila-faltantes">
+            {faltantes!.map(motivo => (
+              <span key={motivo} className="marca marca-lucro">{motivo}</span>
+            ))}
           </span>
         )}
-        <span style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: uni.ADMCON7 === 'Requerido' ? '#9b2226' : '#005f73', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-          SAT: {uni.ADMCON7 || 'No especificado'}
-        </span>
-      </div>
-
-      {/* Etiquetas de datos faltantes para los filtros que el usuario activó */}
-      {incompleta && (
-        <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-          {faltantes!.map(motivo => (
-            <span
-              key={motivo}
-              style={{
-                display: 'inline-block', padding: '3px 9px', borderRadius: '4px',
-                fontSize: '11px', fontWeight: 600, color: '#92400e',
-                background: '#fef3c7', border: '1px solid #fcd34d',
-              }}
-            >
-              ⚠ {motivo}
-            </span>
-          ))}
-        </div>
-      )}
+      </button>
     </li>
   );
 });
@@ -120,28 +120,22 @@ export function ListaUniversidades({
   const ultimoResultado = Math.min(paginaSegura * porPagina, universidadesOrdenadas.length);
 
   return (
-    <div style={{ marginTop: '30px', textAlign: 'left' }}>
+    <section className="panel" aria-labelledby="titulo-resultados">
+      <div className="panel-cabecera lista-cabecera">
+        <div>
+          <h2 id="titulo-resultados" className="titulo-seccion">Resultados</h2>
+          <p className="ayuda">
+            {universidadesOrdenadas.length > 0
+              ? `Mostrando ${primerResultado}–${ultimoResultado} de ${universidadesOrdenadas.length.toLocaleString()}. Toca una universidad para ver su ficha.`
+              : `Ninguna de las ${totalUniversidades.toLocaleString()} universidades encaja todavía.`}
+          </p>
+        </div>
 
-      {/* Encabezado con contador y selector de orden */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '5px', flexWrap: 'wrap' }}>
-        <h3 style={{ margin: 0 }}>Universidades Encontradas</h3>
-
-        <span style={{
-          backgroundColor: '#4cc9f0', color: '#000',
-          padding: '5px 15px', borderRadius: '20px',
-          fontWeight: 'bold', fontSize: '14px',
-          boxShadow: '0 0 10px rgba(76, 201, 240, 0.3)'
-        }}>
-          {universidadesFiltradas.length} de {totalUniversidades}
-        </span>
-
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
-          <select
-            value={ordenarPor}
-            onChange={(e) => setOrdenarPor(e.target.value)}
-            style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #555', fontSize: '13px' }}
-          >
-            <option value="ninguno">Ordenar por...</option>
+        <div className="orden">
+          <label className="campo-etiqueta" htmlFor="ordenar-por">Ordenar por</label>
+          <div className="orden-controles">
+            <select id="ordenar-por" value={ordenarPor} onChange={(e) => setOrdenarPor(e.target.value)}>
+            <option value="ninguno">Por defecto</option>
             <optgroup label="Identificación">
               <option value="INSTNM">Nombre (A-Z)</option>
               <option value="CITY">Ciudad</option>
@@ -185,35 +179,29 @@ export function ListaUniversidades({
             <optgroup label="Programas">
               <option value="PRGMOFR">Cantidad de Programas Ofrecidos</option>
             </optgroup>
-          </select>
-
-          <button
-            onClick={() => setOrdenDireccion(ordenDireccion === 'asc' ? 'desc' : 'asc')}
-            title={ordenDireccion === 'asc' ? 'Ascendente' : 'Descendente'}
-            style={{ padding: '6px 12px', backgroundColor: '#333', color: '#fff', border: '1px solid #555', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' }}
-          >
-            {ordenDireccion === 'asc' ? '↑' : '↓'}
-          </button>
+            </select>
+            <button
+              type="button"
+              className="boton"
+              onClick={() => setOrdenDireccion(ordenDireccion === 'asc' ? 'desc' : 'asc')}
+              aria-label={ordenDireccion === 'asc' ? 'Orden ascendente; cambiar a descendente' : 'Orden descendente; cambiar a ascendente'}
+            >
+              {ordenDireccion === 'asc' ? '↑ Asc.' : '↓ Desc.'}
+            </button>
+          </div>
         </div>
       </div>
 
-      <p style={{ color: '#aaa', fontSize: '14px', marginTop: '5px' }}>
-        {universidadesOrdenadas.length > 0
-          ? `Mostrando ${primerResultado}–${ultimoResultado} de ${universidadesOrdenadas.length} resultados.`
-          : 'Explorando nuestra base de datos completa.'}
-      </p>
-
       {faltantesPorId.size > 0 && (
-        <p style={{ color: '#92400e', fontSize: '13px', margin: '4px 0 10px 0' }}>
-          ⚠ {faltantesPorId.size} de estos resultados no tienen los datos que piden tus filtros.
-          No se descartaron, pero van al final de la lista y aparecen marcados.
+        <p className="nota-alerta lista-aviso">
+          {faltantesPorId.size} resultados no tienen los datos que piden tus filtros.
+          No se descartaron: van al final y aparecen marcados.
         </p>
       )}
 
-      {/* Lista */}
       {universidadesFiltradas.length > 0 ? (
         <>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <ul className="filas">
             {universidadesVisibles.map((uni, index) => (
               <FilaUniversidad
                 key={uni._id ?? `${uni.INSTNM}-${uni.CITY}-${index}`}
@@ -224,59 +212,39 @@ export function ListaUniversidades({
             ))}
           </ul>
 
-          {/* Controles de paginación */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '10px 0 20px 0' }}>
-            <button
-              style={{ ...estiloBotonPagina, opacity: paginaSegura === 1 ? 0.4 : 1, cursor: paginaSegura === 1 ? 'default' : 'pointer' }}
-              onClick={() => setPagina(1)}
-              disabled={paginaSegura === 1}
-            >
+          <nav className="paginacion" aria-label="Páginas de resultados">
+            <button type="button" className="boton" onClick={() => setPagina(1)} disabled={paginaSegura === 1}>
               « Primera
             </button>
-            <button
-              style={{ ...estiloBotonPagina, opacity: paginaSegura === 1 ? 0.4 : 1, cursor: paginaSegura === 1 ? 'default' : 'pointer' }}
-              onClick={() => setPagina(p => Math.max(1, p - 1))}
-              disabled={paginaSegura === 1}
-            >
+            <button type="button" className="boton" onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={paginaSegura === 1}>
               ‹ Anterior
             </button>
-
-            <span style={{ color: '#aaa', fontSize: '13px' }}>
-              Página <strong style={{ color: '#4cc9f0' }}>{paginaSegura}</strong> de {totalPaginas}
+            <span className="paginacion-estado numero">
+              Página <strong>{paginaSegura}</strong> de {totalPaginas}
             </span>
-
-            <button
-              style={{ ...estiloBotonPagina, opacity: paginaSegura >= totalPaginas ? 0.4 : 1, cursor: paginaSegura >= totalPaginas ? 'default' : 'pointer' }}
-              onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
-              disabled={paginaSegura >= totalPaginas}
-            >
+            <button type="button" className="boton" onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={paginaSegura >= totalPaginas}>
               Siguiente ›
             </button>
-            <button
-              style={{ ...estiloBotonPagina, opacity: paginaSegura >= totalPaginas ? 0.4 : 1, cursor: paginaSegura >= totalPaginas ? 'default' : 'pointer' }}
-              onClick={() => setPagina(totalPaginas)}
-              disabled={paginaSegura >= totalPaginas}
-            >
+            <button type="button" className="boton" onClick={() => setPagina(totalPaginas)} disabled={paginaSegura >= totalPaginas}>
               Última »
             </button>
 
-            <label style={{ color: '#aaa', fontSize: '13px', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              Por página:
-              <select
-                value={porPagina}
-                onChange={(e) => setPorPagina(Number(e.target.value))}
-                style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #555', fontSize: '13px' }}
-              >
+            <label className="por-pagina">
+              Por página
+              <select value={porPagina} onChange={(e) => setPorPagina(Number(e.target.value))}>
                 {OPCIONES_POR_PAGINA.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </label>
-          </div>
+          </nav>
         </>
       ) : (
-        <p style={{ color: '#ff6b6b', padding: '20px', backgroundColor: '#331a1a', borderRadius: '8px' }}>
-          No se encontraron universidades con esa combinación exacta de filtros. Intenta ampliar tu presupuesto o cambiar la ubicación.
-        </p>
+        <div className="panel-cuerpo">
+          <p className="vacio">
+            Ninguna universidad encaja con todos tus filtros. Prueba subir la matrícula máxima,
+            quitar el estado o cambiar la política SAT.
+          </p>
+        </div>
       )}
-    </div>
+    </section>
   );
 }
