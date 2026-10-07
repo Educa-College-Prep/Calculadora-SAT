@@ -471,3 +471,56 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .sugerencia:hover, .sugerencia:focus-visible { background: var(--tinta-fondo); }
 .sugerencia-nombre { font-weight: 700; }
 .sugerencia-lugar { font-size: 13px; color: var(--grafito-suave); }
+
+/* ---------- Paneles de la página principal ---------- */
+.subtitulo {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.vacio {
+  margin: 0;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--grafito-suave);
+  background: var(--papel);
+  border-radius: var(--radio-chico);
+}
+
+.mapa-nacional { min-height: 300px; }
+.mapa-condados {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linea);
+}
+
+/* Globos de Leaflet con la tipografía de la página */
+.leaflet-container { font-family: var(--fuente); }
+.leaflet-tooltip, .leaflet-popup-content-wrapper { border-radius: var(--radio-chico); color: var(--grafito); }
+
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 16px;
+  margin-bottom: 18px;
+}
+.cifra-valor {
+  font-size: 24px;
+  font-stretch: 112%;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.cifra-etiqueta { margin-top: 3px; font-size: 13px; font-weight: 600; }
+.cifra-nota { font-size: 12px; color: var(--grafito-suave); }
+
+.nota-alerta {
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--alerta);
+  background: var(--alerta-fondo);
+  border-left: 3px solid var(--alerta-borde);
+  border-radius: 0 var(--radio-chico) var(--radio-chico) 0;
+}

@@ -21,22 +21,23 @@ const stateMapOptions = {
   region: 'US',
   displayMode: 'regions',
   resolution: 'provinces',
+  // Escala en la tinta verde de la hoja: más oscuro = más universidades.
   colorAxis: {
-    colors: ['#e0f2fe', '#38bdf8', '#0284c7']
+    colors: ['#e3efe8', '#7fb79e', '#2e7d62', '#174535']
   },
   backgroundColor: '#ffffff',
-  datalessRegionColor: '#f1f5f9',
-  defaultColor: '#cbd5e1',
+  datalessRegionColor: '#eef1ee',
+  defaultColor: '#d3dbd6',
   keepAspectRatio: true,
   enableRegionInteractivity: true,
   tooltip: { isHtml: true, trigger: 'focus' },
-  legend: { textStyle: { color: '#334155' } },
+  legend: { textStyle: { color: '#26292b', fontName: 'Archivo', fontSize: 12 } },
 };
 
 // Con un estado elegido: solo ese en azul, el resto en gris (pero clickeable).
 const stateMapOptionsSeleccion = {
   ...stateMapOptions,
-  colorAxis: { minValue: 0, maxValue: 1, colors: ['#e2e8f0', '#0284c7'] },
+  colorAxis: { minValue: 0, maxValue: 1, colors: ['#e3e8e4', '#2e7d62'] },
   legend: 'none',
 };
 
@@ -68,54 +69,46 @@ export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidade
   const nombreEstado = !esNacional ? (NOMBRES_ESTADOS[estadoSeleccionado] ?? estadoSeleccionado) : null;
 
   return (
-    <div style={{ padding: '0', backgroundColor: '#222', borderRadius: '8px', height: '100%', display: 'flex', flexDirection: 'column', minHeight: '500px' }}>
-      <div style={{ padding: '20px', paddingBottom: '12px', borderBottom: '1px solid var(--border-subtle)' }}>
-        <h3 style={{ margin: '0 0 6px 0', fontSize: '1.15rem', color: '#fff', fontWeight: 600 }}>
-          🗺️ Distribución Geográfica
-          {!esNacional && ` de ${nombreEstado}`}
-        </h3>
-        <p style={{ fontSize: '11px', color: '#888', margin: '0' }}>
+    <div className="panel">
+      <div className="panel-cabecera">
+        <h2 className="titulo-seccion">{esNacional ? 'Dónde están' : `Dónde están en ${nombreEstado}`}</h2>
+        <p className="ayuda">
           {esNacional
-            ? 'Haz clic en un estado para ver el detalle por condado'
-            : 'Haz clic de nuevo en el estado para volver a ver todo el país'}
+            ? 'Elige un estado para ver sus condados y ciudades.'
+            : 'Toca el estado de nuevo para volver a todo el país.'}
         </p>
       </div>
 
-      <div style={{ padding: '20px', paddingTop: '12px', flex: 1 }}>
-
-      {datosMapaGeoEstados.length > 1 ? (
-        <div style={{ flex: 1, minHeight: '300px' }}>
-          <Chart
-            chartEvents={chartEvents}
-            chartType="GeoChart"
-            width="100%"
-            height="300px"
-            data={datosMapaGeoEstados}
-            options={esNacional ? stateMapOptions : stateMapOptionsSeleccion}
-          />
-        </div>
-      ) : (
-        <p style={{ color: '#aaa', textAlign: 'center', marginTop: '50px' }}>
-          No hay datos suficientes para dibujar el mapa nacional.
-        </p>
-      )}
-
-      {!esNacional && (
-        <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-          <h4 style={{ margin: '0 0 12px 0', color: '#fff', fontSize: '0.95rem', fontWeight: 600 }}>🏙️ Universidades por Condado en {nombreEstado}</h4>
-          {universidadesFiltradas.length > 0 ? (
-            <MapaCondados
-              universidades={universidadesFiltradas}
-              estadoSeleccionado={estadoSeleccionado}
-              onSeleccionarCiudad={onSeleccionarCiudad}
+      <div className="panel-cuerpo">
+        {datosMapaGeoEstados.length > 1 ? (
+          <div className="mapa-nacional">
+            <Chart
+              chartEvents={chartEvents}
+              chartType="GeoChart"
+              width="100%"
+              height="300px"
+              data={datosMapaGeoEstados}
+              options={esNacional ? stateMapOptions : stateMapOptionsSeleccion}
             />
-          ) : (
-            <p style={{ color: '#aaa', textAlign: 'center', marginTop: '20px' }}>
-              No hay datos de ciudad suficientes para este estado.
-            </p>
-          )}
-        </div>
-      )}
+          </div>
+        ) : (
+          <p className="vacio">Ninguna universidad encaja con tus filtros, así que no hay nada que mostrar en el mapa.</p>
+        )}
+
+        {!esNacional && (
+          <div className="mapa-condados">
+            <h3 className="subtitulo">Universidades por condado</h3>
+            {universidadesFiltradas.length > 0 ? (
+              <MapaCondados
+                universidades={universidadesFiltradas}
+                estadoSeleccionado={estadoSeleccionado}
+                onSeleccionarCiudad={onSeleccionarCiudad}
+              />
+            ) : (
+              <p className="vacio">Ninguna universidad de {nombreEstado} encaja con tus filtros.</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
