@@ -33,6 +33,13 @@ const stateMapOptions = {
   legend: { textStyle: { color: '#334155' } },
 };
 
+// Con un estado elegido: solo ese en azul, el resto en gris (pero clickeable).
+const stateMapOptionsSeleccion = {
+  ...stateMapOptions,
+  colorAxis: { minValue: 0, maxValue: 1, colors: ['#e2e8f0', '#0284c7'] },
+  legend: 'none',
+};
+
 export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidadesFiltradas, estadoSeleccionado, onSeleccionarEstado, onSeleccionarCiudad }: Props) {
   const esNacional = estadoSeleccionado === 'todos';
 
@@ -42,7 +49,12 @@ export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidade
       callback: ({ chartWrapper }: any) => {
         const chart = chartWrapper.getChart();
         const selection = chart.getSelection();
-        if (selection.length === 0 || selection[0].row == null) return;
+        // Google "deselecciona" al volver a clickear la región activa: se trata
+        // igual que clickear el mismo estado (vuelve a la vista nacional).
+        if (selection.length === 0 || selection[0].row == null) {
+          if (!esNacional) onSeleccionarEstado(estadoSeleccionado);
+          return;
+        }
         const dataTable = chartWrapper.getDataTable();
         const valorSeleccionado = dataTable.getValue(selection[0].row, 0);
 
@@ -51,7 +63,7 @@ export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidade
         }
       }
     }
-  ], [onSeleccionarEstado]);
+  ], [onSeleccionarEstado, esNacional, estadoSeleccionado]);
 
   const nombreEstado = !esNacional ? (NOMBRES_ESTADOS[estadoSeleccionado] ?? estadoSeleccionado) : null;
 
@@ -65,7 +77,7 @@ export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidade
         <p style={{ fontSize: '11px', color: '#888', margin: '0' }}>
           {esNacional
             ? 'Haz clic en un estado para ver el detalle por condado'
-            : 'Densidad de universidades por condado'}
+            : 'Haz clic de nuevo en el estado para volver a ver todo el país'}
         </p>
       </div>
 
@@ -79,7 +91,7 @@ export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidade
             width="100%"
             height="300px"
             data={datosMapaGeoEstados}
-            options={stateMapOptions}
+            options={esNacional ? stateMapOptions : stateMapOptionsSeleccion}
           />
         </div>
       ) : (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useDeferredValue, useRef } from 'react';
 import type { Universidad } from './types';
 import { NOMBRES_ESTADOS } from './utils/estados';
 
@@ -11,6 +11,14 @@ import { ResumenEstado } from './components/ResumenEstado';
 import { DetalleUniversidad } from './components/DetalleUniversidad';
 
 type TooltipCell = { role: 'tooltip'; p: { html: true } };
+
+/** Convierte "123" → 123; "PS" (Privacy Suppressed), vacío o texto raro → null. */
+function aNumero(valor: unknown): number | null {
+  if (typeof valor === 'number') return Number.isFinite(valor) ? valor : null;
+  if (typeof valor !== 'string' || valor.trim() === '') return null;
+  const n = Number(valor);
+  return Number.isFinite(n) ? n : null;
+}
 
 /** Tope del deslizador de matrícula. En ese valor el filtro se considera inactivo. */
 const PRECIO_MAXIMO_SLIDER = 90000;
@@ -40,11 +48,25 @@ export default function App() {
   const busquedaDiferida = useDeferredValue(busquedaNombre);
 
   useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}universidades.json`)
-      .then(response => response.json())
-      .then((data: Universidad[]) => {
+    const base = import.meta.env.BASE_URL;
+    // Datos de IPEDS (admisión por sexo ADM 2024 y becas SFA 2023-24) vienen en un archivo
+    // aparte, con clave "INSTNM|CITY|STABBR". Si falla, la web sigue funcionando sin ellos.
+    const admisiones: Promise<Record<string, Partial<Universidad>>> =
+      fetch(`${base}ipeds_2024.json`)
+        .then(r => r.json())
+        .catch(() => ({}));
+
+    Promise.all([fetch(`${base}universidades_seleccionadas6.json`).then(r => r.json()), admisiones])
+      .then(([data, adm]: [Universidad[], Record<string, Partial<Universidad>>]) => {
         // Se asigna un id estable una sola vez, al cargar.
-        setUniversidades(data.map((uni, indice) => ({ ...uni, _id: indice })));
+        setUniversidades(data.map((uni, indice) => ({
+          ...uni,
+          ...adm[`${uni.INSTNM}|${uni.CITY}|${uni.STABBR}`],
+          // Protección por si el colab vuelve a exportarlos como texto o con "PS" (dato suprimido).
+          MD_EARN_WNE_4YR: aNumero(uni.MD_EARN_WNE_4YR),
+          COUNT_WNE_4YR: aNumero(uni.COUNT_WNE_4YR),
+          _id: indice,
+        })));
       })
       .catch(error => console.error("Error cargando la data:", error));
   }, []);
@@ -64,7 +86,8 @@ export default function App() {
     [universidades, estadoSeleccionado]
   );
 
-  const puntajeTotal = puntajeMath + puntajeLectura;
+  // Solo hay total (y filtro SAT) cuando se ingresaron las dos secciones.
+  const puntajeTotal = puntajeMath > 0 && puntajeLectura > 0 ? puntajeMath + puntajeLectura : 0;
 
   /**
    * Filtrado con manejo explícito de datos faltantes.
@@ -74,7 +97,7 @@ export default function App() {
    * filtro activo distingue tres casos: cumple (se queda), no cumple (se descarta)
    * y no se puede saber (se queda, pero marcada y ordenada al final).
    */
-  const { universidadesFiltradas, faltantesPorId } = useMemo(() => {
+  const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId } = useMemo(() => {
     const textoBusqueda = busquedaDiferida.toLowerCase();
 
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
@@ -84,11 +107,13 @@ export default function App() {
 
     const faltantes = new Map<number, string[]>();
 
+    // El mapa nacional usa todas las que pasan los filtros MENOS estado/ciudad;
+    // si no, al elegir un estado los demás quedan sin datos y no se pueden clickear.
+    const sinUbicacion: Universidad[] = [];
+
     const lista = universidades.filter((uni) => {
       // Filtros duros: aquí no hay ambigüedad, el dato siempre existe.
       if (textoBusqueda && !uni.INSTNM.toLowerCase().includes(textoBusqueda)) return false;
-      if (estadoSeleccionado !== 'todos' && uni.STABBR !== estadoSeleccionado) return false;
-      if (ciudadSeleccionada !== 'todas' && uni.CITY !== ciudadSeleccionada) return false;
       if (tipoUniversidad === 'publica' && uni.CONTROL !== 'Pública') return false;
       if (tipoUniversidad === 'privada' && (!uni.CONTROL || !uni.CONTROL.includes('Privada'))) return false;
 
@@ -110,11 +135,15 @@ export default function App() {
         else if (exigirSAT === 'opcional' && uni.ADMCON7 === 'Requerido') return false;
       }
 
+      sinUbicacion.push(uni);
+      if (estadoSeleccionado !== 'todos' && uni.STABBR !== estadoSeleccionado) return false;
+      if (ciudadSeleccionada !== 'todas' && uni.CITY !== ciudadSeleccionada) return false;
+
       if (falta.length > 0 && uni._id != null) faltantes.set(uni._id, falta);
       return true;
     });
 
-    return { universidadesFiltradas: lista, faltantesPorId: faltantes };
+    return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes };
   }, [universidades, busquedaDiferida, estadoSeleccionado, ciudadSeleccionada, tipoUniversidad, precioMaximo, exigirSAT, puntajeTotal]);
 
   const universidadesOrdenadas = useMemo(() => {
@@ -162,7 +191,7 @@ export default function App() {
 
     const conteoPorEstado: Record<string, number> = {};
 
-    universidadesFiltradas.forEach(uni => {
+    universidadesSinUbicacion.forEach(uni => {
       if (uni.STABBR) conteoPorEstado[uni.STABBR] = (conteoPorEstado[uni.STABBR] || 0) + 1;
     });
 
@@ -173,15 +202,22 @@ export default function App() {
       <span style="font-size:0.9rem; color:#555;">${conteoPorEstado[estado]} universidades</span>
     </div>`;
 
-      filas.push([`US-${estado}`, conteoPorEstado[estado], tooltip]);
+      // Con un estado elegido, el valor solo marca "elegido (1) / resto (0)" para
+      // pintar ese estado y dejar los demás en gris. El tooltip conserva el conteo real.
+      const valor = estadoSeleccionado === 'todos'
+        ? conteoPorEstado[estado]
+        : estado === estadoSeleccionado ? 1 : 0;
+
+      filas.push([`US-${estado}`, valor, tooltip]);
     });
 
     return filas;
-  }, [universidadesFiltradas]);
+  }, [universidadesSinUbicacion, estadoSeleccionado]);
 
   // Callbacks estables: sin esto, los mapas y el gráfico se redibujan en cada tecla.
+  // Clic en el estado que ya está elegido = volver a ver todo el país.
   const seleccionarEstadoDesdeMapa = useCallback((st: string) => {
-    setEstadoSeleccionado(st);
+    setEstadoSeleccionado(prev => (prev === st ? 'todos' : st));
     setCiudadSeleccionada('todas');
   }, []);
 
@@ -189,11 +225,50 @@ export default function App() {
     setCiudadSeleccionada(ciudad);
   }, []);
 
+  // El detalle se abre como una entrada del historial del navegador: así el botón
+  // "atrás" vuelve a la lista (y "adelante" reabre la universidad) en vez de salir de la web.
+  const scrollDeLista = useRef(0);
+  const restaurarScroll = useRef(false);
+
   const seleccionarUniversidad = useCallback((uni: Universidad) => {
+    scrollDeLista.current = window.scrollY;
+    window.history.pushState({ detalleId: uni._id }, '');
     setUniversidadSeleccionada(uni);
+    window.scrollTo(0, 0);
   }, []);
 
-  const volverDelDetalle = useCallback(() => setUniversidadSeleccionada(null), []);
+  // El botón "Volver" de la página hace lo mismo que el "atrás" del navegador.
+  const volverDelDetalle = useCallback(() => {
+    if (window.history.state?.detalleId != null) window.history.back();
+    else setUniversidadSeleccionada(null);
+  }, []);
+
+  useEffect(() => {
+    const alNavegar = (e: PopStateEvent) => {
+      const id = e.state?.detalleId;
+      if (id != null) {
+        const uni = universidades.find(u => u._id === id);
+        if (uni) {
+          scrollDeLista.current = window.scrollY;
+          setUniversidadSeleccionada(uni);
+          window.scrollTo(0, 0);
+        }
+      } else {
+        restaurarScroll.current = true;
+        setUniversidadSeleccionada(null);
+      }
+    };
+    window.addEventListener('popstate', alNavegar);
+    return () => window.removeEventListener('popstate', alNavegar);
+  }, [universidades]);
+
+  // Al volver a la lista, se recupera la posición donde estaba el usuario.
+  useLayoutEffect(() => {
+    if (universidadSeleccionada == null && restaurarScroll.current) {
+      restaurarScroll.current = false;
+      window.scrollTo(0, scrollDeLista.current);
+    }
+  }, [universidadSeleccionada]);
 
   if (universidadSeleccionada) {
     return (
@@ -247,20 +322,6 @@ export default function App() {
               Filtros de Control
             </h3>
           </div>
-
-          {/* Bloque Geográfico de la Barra Lateral */}
-          <div>
-            <label style={{ color: 'var(--text-muted)', fontSize: '11px', display: 'block', marginBottom: '6px', fontWeight: 600 }}>UBICACIÓN GEOGRÁFICA</label>
-            <select value={estadoSeleccionado} onChange={(e) => { setEstadoSeleccionado(e.target.value); setCiudadSeleccionada('todas'); }} style={{ marginBottom: '10px' }}>
-              <option value="todos">Todos los estados</option>
-              {estadosUnicos.map(st => <option key={st} value={st}>{NOMBRES_ESTADOS[st] ?? st}</option>)}
-            </select>
-            <button className="btn-saas-secondary" style={{ width: '100%', padding: '6px', fontSize: '12px' }} onClick={() => { setEstadoSeleccionado('todos'); setCiudadSeleccionada('todas'); }}>
-              Restablecer Mapa
-            </button>
-          </div>
-
-          <div style={{ height: '1px', backgroundColor: 'var(--border-subtle)' }} />
 
           {/* Subcomponente Filtros (Rangos, SAT, Precios) */}
           <Filtros

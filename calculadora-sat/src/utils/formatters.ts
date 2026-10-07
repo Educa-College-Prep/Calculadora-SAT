@@ -2,7 +2,14 @@ export const formatDinero = (valor: number | null | undefined): string | null =>
   valor ? `$${valor.toLocaleString()}` : null;
 
 export const formatPorcentaje = (valor: number | null | undefined): string | null =>
-  valor ? `${(valor * 100).toFixed(1)}%` : null;
+  valor != null ? `${(valor * 100).toFixed(1)}%` : null;
+
+/** ICLEVEL viene como "4-Year" / "2-Year"; en la web se muestra como tipo de grado. */
+export const formatNivel = (nivel: string | null | undefined): string | null => {
+  if (nivel === '4-Year') return 'Grado Bachiller';
+  if (nivel === '2-Year') return 'Grado Associate';
+  return nivel ?? null;
+};
 
 /**
  * Para campos que vienen como CONTEO CRUDO en vez de fracción (ej. GT_THRESHOLD_1YR/5YR),
