@@ -243,29 +243,16 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 
 /* =========================================================
    Hoja de filtros: el elemento con más carácter de la página.
-   Las marcas del borde izquierdo imitan las marcas de lectura
-   de una hoja de respuestas.
    ========================================================= */
 .hoja {
   position: relative;
-  padding: 20px 20px 24px 36px;
+  padding: 20px 20px 24px;
   background: var(--hoja);
   border: 1.5px solid var(--tinta);
   border-radius: var(--radio);
   display: flex;
   flex-direction: column;
   gap: 22px;
-}
-.hoja::before {
-  content: '';
-  position: absolute;
-  top: 18px;
-  bottom: 18px;
-  left: 12px;
-  width: 8px;
-  background: repeating-linear-gradient(to bottom, var(--grafito) 0 9px, transparent 9px 24px);
-  border-radius: 1px;
-  opacity: 0.85;
 }
 
 /* Fija al hacer scroll solo si la hoja entera cabe en la pantalla

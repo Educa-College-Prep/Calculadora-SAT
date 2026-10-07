@@ -195,7 +195,7 @@ export function DetalleUniversidad({ uni, onVolver }: Props) {
                     Porcentaje de egresados que gana más que alguien que solo terminó la secundaria.
                     <InfoTooltip texto={glosarioCampos.GT_THRESHOLD} />
                   </p>
-                  <ParGraficosEgresados graduados={umbralGraduados} ingreso={umbralIngreso} color="#0f766e" formato="porcentaje" />
+                  <ParGraficosEgresados graduados={umbralGraduados} ingreso={umbralIngreso} color="#12407a" formato="porcentaje" />
                   <p className="fuente">Medido en 2020-2021. Fuente: College Scorecard</p>
                 </>
               )}

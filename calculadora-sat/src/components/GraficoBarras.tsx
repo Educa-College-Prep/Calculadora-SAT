@@ -61,7 +61,8 @@ export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props
                   labelFormatter={(etiqueta, carga) => carga?.[0]?.payload?.nombreCompleto ?? etiqueta}
                   formatter={(value) => [`$${new Intl.NumberFormat('en-US').format(Number(value))}`, 'Matrícula anual']}
                 />
-                <Bar dataKey="costo" fill="#1b5fa8" radius={[0, 6, 6, 0]} barSize={18} />
+                {/* Sin animación: así no se mueve cada vez que cambias un filtro. */}
+                <Bar isAnimationActive={false} dataKey="costo" fill="#1b5fa8" radius={[0, 6, 6, 0]} barSize={18} />
               </BarChart>
             </ResponsiveContainer>
           </div>

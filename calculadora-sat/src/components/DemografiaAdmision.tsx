@@ -17,7 +17,7 @@ const otro = (f: FilaCDS) =>
 
 // Padding y encabezados compactos: con la columna "Otro" la tabla son 5 columnas en una tarjeta angosta.
 const celda: CSSProperties = { padding: '6px 4px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
-const encabezado: CSSProperties = { ...celda, fontSize: '10px', fontWeight: 600, color: 'var(--grafito-suave)', textTransform: 'uppercase' };
+const encabezado: CSSProperties = { ...celda, fontSize: '12px', fontWeight: 600, color: 'var(--grafito-suave)' };
 
 const fmt = (v: number | null | undefined) => (v != null ? v.toLocaleString() : '—');
 
