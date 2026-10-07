@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { CSSProperties } from 'react';
 import type { Universidad } from '../types';
 import { formatDinero } from '../utils/formatters';
 import { calcularCostoVida } from '../utils/costos';
@@ -7,6 +6,7 @@ import { glosarioCampos } from '../utils/glosarioCampos';
 import { InfoTooltip } from './InfoTooltip';
 import { CostoVida } from './CostoVida';
 import { MiniBarChart } from './MiniBarChart';
+import { Pestanas } from './Pestanas';
 
 type PerfilId = 'in' | 'out' | 'us' | 'intl';
 
@@ -21,9 +21,6 @@ interface Perfil {
   /** Aclaración de qué recibe este perfil. */
   nota: string | null;
 }
-
-const fuente: CSSProperties = { fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' };
-const filaCosto: CSSProperties = { display: 'flex', justifyContent: 'space-between', margin: '0 0 6px 0' };
 
 /** NPCURL a veces viene sin protocolo ("www.uni.edu/..."); se antepone https:// y se descarta lo inválido. */
 function urlCalculadora(raw: string | null | undefined): string | null {
@@ -76,113 +73,99 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
 
   return (
     <div>
-      <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-main)' }}>Costos y financiamiento</h4>
+      <p className="ficha-intro">Elige cómo postularías: los dos cuadros cambian según tu perfil.</p>
+      <Pestanas
+        etiqueta="Perfil de estudiante"
+        idBase="costos"
+        activa={p.id}
+        onCambio={setActivo}
+        opciones={perfiles.map((x) => ({ id: x.id, label: x.label }))}
+      />
 
-      {/* Pestañas de perfil */}
-      <div role="tablist" style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
-        {perfiles.map((x) => {
-          const sel = x.id === activo;
-          return (
-            <button
-              key={x.id}
-              role="tab"
-              aria-selected={sel}
-              onClick={() => setActivo(x.id)}
-              style={{
-                padding: '6px 12px',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                borderRadius: '999px',
-                border: `1px solid ${sel ? 'var(--brand-blue, #0284c7)' : 'var(--border-subtle, #cbd5e1)'}`,
-                background: sel ? 'var(--brand-blue, #0284c7)' : 'transparent',
-                color: sel ? '#fff' : 'var(--text-muted)',
-              }}
-            >
-              {x.label}
-            </button>
-          );
-        })}
-      </div>
+      <div id="costos-panel" role="tabpanel" aria-labelledby={`costos-tab-${p.id}`} className="costos-grillas">
 
-      {/* Costos del perfil */}
-      {p.matricula != null && (
-        <p style={filaCosto}>
-          <span><strong>Matrícula</strong></span>
-          <span>{formatDinero(p.matricula)}</span>
-        </p>
-      )}
-      <CostoVida uni={uni} />
-      {total != null && (
-        <>
-          <hr style={{ border: 0, borderTop: '1px solid var(--border-subtle, #444)', margin: '10px 0' }} />
-          <p style={{ ...filaCosto, fontSize: '1.05rem' }}>
-            <span><strong>Costo total anual</strong>
-              <InfoTooltip texto={glosarioCampos.COSTO_TOTAL_ANUAL} />
-            </span>
-            <span><strong>{cv?.estimado && '~'}{formatDinero(total)}</strong></span>
-          </p>
-        </>
-      )}
-
-      {/* Después de becas: dato real o aproximado */}
-      {p.netoReal != null ? (
-        <p style={{ ...filaCosto, color: 'var(--brand-blue, #0284c7)' }}>
-          <span><strong>Costo promedio después de becas</strong>
-            <InfoTooltip texto={glosarioCampos.NPT4_PUB} />
-          </span>
-          <span><strong>{formatDinero(p.netoReal)}</strong></span>
-        </p>
-      ) : aprox != null && aprox > 0 ? (
-        <p style={{ ...filaCosto, color: 'var(--brand-blue, #0284c7)' }}>
-          <span><strong>Costo aprox. con beca de la universidad</strong>
-            <InfoTooltip texto={glosarioCampos.COSTO_APROX_BECA} />
-          </span>
-          <span><strong>~{formatDinero(aprox)}</strong></span>
-        </p>
-      ) : null}
-
-      {p.nota && <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: 1.4 }}>{p.nota}</p>}
-
-      {calculadora && (
-        <p style={{ margin: '8px 0 0 0', fontSize: '13px' }}>
-          <a href={calculadora} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand-blue, #0284c7)', fontWeight: 600 }}>
-            Calcula tu costo exacto en la universidad →
-          </a>
-        </p>
-      )}
-
-      {/* Becas de la universidad (aplica a todos los perfiles) */}
-      {uni.IGRNT_P != null && (
-        <>
-          <hr style={{ border: 0, borderTop: '1px solid var(--border-subtle, #444)', margin: '12px 0' }} />
-          <p style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
-            Becas de la universidad
-            <InfoTooltip texto={glosarioCampos.BECAS_1ER_ANIO} />
-          </p>
-          <p style={{ margin: 0, fontSize: '13px' }}>
-            <strong>{uni.IGRNT_P}%</strong> de los alumnos de 1er año la recibe
-            {uni.IGRNT_A != null && <> · promedio <strong>{formatDinero(uni.IGRNT_A)}</strong></>}
-          </p>
-          {p.id === 'intl' && (
-            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-              Dato general de todos los alumnos; los internacionales suelen recibir menos.
-            </p>
+        {/* Cuadrícula 1: el precio de lista del año */}
+        <div className="costos-columna">
+          <h3 className="subtitulo">Lo que cuesta al año</h3>
+          {p.matricula != null && (
+            <div className="dato-fila">
+              <span>Matrícula</span>
+              <span className="numero"><strong>{formatDinero(p.matricula)}</strong></span>
+            </div>
           )}
-          <div style={fuente}>Año 2023-24 · Fuente: IPEDS</div>
-        </>
-      )}
+          <CostoVida uni={uni} />
+          {total != null && (
+            <div className="dato-fila costo-total">
+              <span className="con-ayuda">Costo total anual
+                <InfoTooltip texto={glosarioCampos.COSTO_TOTAL_ANUAL} />
+              </span>
+              <span className="numero">{cv?.estimado && '~'}{formatDinero(total)}</span>
+            </div>
+          )}
+        </div>
 
-      {/* Precio neto por ingreso: solo donde hay dato real */}
-      {p.netoPorIngreso.length > 0 && (
-        <>
-          <p style={{ margin: '14px 0 6px 0', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
-            Precio neto por ingreso familiar
-            <InfoTooltip texto={glosarioCampos.NPT_INGRESO} />
-          </p>
-          <MiniBarChart datos={p.netoPorIngreso} color="#f9c74f" formato="dinero" pisoCero />
-        </>
-      )}
+        {/* Cuadrícula 2: lo que pagarías tras becas, según el perfil */}
+        <div className="costos-columna costos-pagarias">
+          <h3 className="subtitulo">Lo que pagarías</h3>
+
+          {/* Después de becas: dato real o aproximado */}
+          {p.netoReal != null ? (
+            <div className="cifra-destacada">
+              <span className="cifra-destacada-valor numero">{formatDinero(p.netoReal)}</span>
+              <span className="cifra-destacada-texto">
+                al año en promedio, después de becas
+                <InfoTooltip texto={glosarioCampos.NPT4_PUB} />
+              </span>
+            </div>
+          ) : aprox != null && aprox > 0 ? (
+            <div className="cifra-destacada">
+              <span className="cifra-destacada-valor numero">~{formatDinero(aprox)}</span>
+              <span className="cifra-destacada-texto">
+                al año con la beca típica de la universidad
+                <InfoTooltip texto={glosarioCampos.COSTO_APROX_BECA} />
+              </span>
+            </div>
+          ) : (
+            <p className="ayuda">No hay un costo después de becas publicado para este perfil.</p>
+          )}
+
+          {p.nota && <p className="nota-alerta costos-nota">{p.nota}</p>}
+
+          {/* Becas de la universidad (aplica a todos los perfiles) */}
+          {uni.IGRNT_P != null && (
+            <div className="ficha-bloque">
+              <p className="con-ayuda"><strong>Becas de la universidad</strong>
+                <InfoTooltip texto={glosarioCampos.BECAS_1ER_ANIO} />
+              </p>
+              <p>
+                <strong className="numero">{uni.IGRNT_P}%</strong> de los alumnos de 1er año la recibe
+                {uni.IGRNT_A != null && <>, con un promedio de <strong className="numero">{formatDinero(uni.IGRNT_A)}</strong></>}.
+              </p>
+              {p.id === 'intl' && (
+                <p className="ayuda">Dato general de todos los alumnos; los internacionales suelen recibir menos.</p>
+              )}
+              <p className="fuente">Año 2023-24. Fuente: IPEDS</p>
+            </div>
+          )}
+
+          {/* Precio neto por ingreso: solo donde hay dato real */}
+          {p.netoPorIngreso.length > 0 && (
+            <div className="ficha-bloque">
+              <p className="con-ayuda"><strong>Precio neto según ingreso familiar</strong>
+                <InfoTooltip texto={glosarioCampos.NPT_INGRESO} />
+              </p>
+              <MiniBarChart datos={p.netoPorIngreso} color="#2e7d62" formato="dinero" pisoCero />
+            </div>
+          )}
+
+          {calculadora && (
+            <a className="boton boton-primario costos-enlace" href={calculadora} target="_blank" rel="noopener noreferrer">
+              Calcula tu costo exacto en su web
+              <span className="visualmente-oculto"> (se abre en otra pestaña)</span>
+            </a>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
