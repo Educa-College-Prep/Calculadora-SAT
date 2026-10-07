@@ -12,9 +12,7 @@ interface Rango {
   aproximado?: boolean;
 }
 
-// Se usa `background` (no `background-color`) a propósito: index.css pisa con !important
-// cualquier div con background-color en línea y lo vuelve blanco.
-const COLOR_BANDA = 'var(--brand-blue, #0284c7)';
+const COLOR_BANDA = 'var(--tinta)';
 
 /**
  * Gráfico pequeño del rango intercuartil (percentil 25–75) del SAT.
@@ -52,8 +50,8 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
     <div>
       {rangos.length > 0 && (
         <>
-          <p style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center' }}>
-            <strong>Rango SAT (25–75%)</strong>
+          <p className="con-ayuda" style={{ marginBottom: '10px' }}>
+            <strong>Rango SAT de los admitidos (25–75%)</strong>
             <InfoTooltip texto={glosarioCampos.SAT_RANGO} />
           </p>
 
@@ -64,11 +62,11 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
                 <span style={{ fontWeight: 600 }}>{r.label}</span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>
                   <strong>{r.p25} – {r.p75}</strong>
-                  {r.p50 != null && <span style={{ color: 'var(--text-muted, #aaa)' }}> · mediana {r.p50}</span>}
+                  {r.p50 != null && <span style={{ color: 'var(--grafito-suave)' }}> · mediana {r.p50}</span>}
                 </span>
               </div>
 
-              <div style={{ position: 'relative', height: '12px', borderRadius: '6px', background: 'var(--bg-hover, #f1f5f9)', border: '1px solid var(--border-subtle, #e2e8f0)' }}>
+              <div style={{ position: 'relative', height: '14px', borderRadius: '7px', background: 'var(--tinta-fondo)', border: '1px solid var(--tinta-suave)' }}>
                 {/* Banda 25–75 */}
                 <div
                   title={`${r.label}: ${r.p25} – ${r.p75}`}
@@ -80,12 +78,12 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
                     width: `calc(${pos(r.p75, r)} - ${pos(r.p25, r)})`,
                     background: COLOR_BANDA,
                     opacity: r.aproximado ? 0.5 : 1,
-                    borderRadius: '6px',
+                    borderRadius: '7px',
                   }}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', lineHeight: 1.2, marginTop: '3px', color: 'var(--text-muted, #aaa)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', lineHeight: 1.2, marginTop: '3px', color: 'var(--grafito-suave)' }}>
                 <span>{r.min}</span>
                 <span>{r.max}</span>
               </div>
@@ -93,7 +91,7 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
           ))}
 
           {total && (
-            <p style={{ fontSize: '12px', lineHeight: 1.4, color: 'var(--text-muted, #aaa)', margin: '4px 0 0 0' }}>
+            <p style={{ fontSize: '12px', lineHeight: 1.4, color: 'var(--grafito-suave)', margin: '4px 0 0 0' }}>
               La mitad central de los admitidos sacó aproximadamente entre <strong>{total.p25}</strong> y <strong>{total.p75}</strong> en total.
             </p>
           )}
@@ -101,10 +99,12 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
       )}
 
       {uni.SAT_AVG != null && (
-        <p style={{ margin: rangos.length > 0 ? '10px 0 0 0' : 0 }}>
-          <strong>Promedio SAT:</strong> {uni.SAT_AVG}
-          <InfoTooltip texto={glosarioCampos.SAT_AVG} />
-        </p>
+        <div className="dato-fila" style={{ marginTop: rangos.length > 0 ? '6px' : 0 }}>
+          <span className="con-ayuda" style={{ color: 'var(--grafito-suave)' }}>SAT promedio
+            <InfoTooltip texto={glosarioCampos.SAT_AVG} />
+          </span>
+          <strong className="numero">{uni.SAT_AVG}</strong>
+        </div>
       )}
     </div>
   );

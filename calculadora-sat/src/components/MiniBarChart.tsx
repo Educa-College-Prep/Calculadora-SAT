@@ -21,7 +21,7 @@ interface Props {
  * dentro de las tarjetas de detalle de universidad. El tooltip al pasar el mouse
  * muestra el valor exacto formateado.
  */
-export function MiniBarChart({ datos, color = '#4cc9f0', formato = 'numero', altura = 200, maxY, pisoCero = false }: Props) {
+export function MiniBarChart({ datos, color = '#1b5fa8', formato = 'numero', altura = 200, maxY, pisoCero = false }: Props) {
   if (datos.length === 0) return null;
 
   // `original` guarda el valor real para el tooltip; `valor` es lo que se dibuja.
@@ -55,20 +55,20 @@ export function MiniBarChart({ datos, color = '#4cc9f0', formato = 'numero', alt
     <div style={{ width: '100%', height: altura }}>
       <ResponsiveContainer>
         <BarChart data={filas} margin={{ top: pisoCero ? 18 : 10, right: 10, left: 0, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle, #444)" />
-          <XAxis dataKey="label" stroke="var(--text-muted, #aaa)" tick={{ fontSize: 10 }} interval={0} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--linea)" />
+          <XAxis dataKey="label" stroke="var(--grafito-suave)" tick={{ fontSize: 10 }} interval={0} />
           <YAxis
-            stroke="var(--text-muted, #aaa)"
+            stroke="var(--grafito-suave)"
             tick={{ fontSize: 11 }}
             tickFormatter={formatearEje}
             width={44}
             domain={[0, maxY != null ? topeRedondo(maxY) : 'auto']}
           />
           <Tooltip
-            cursor={{ fill: 'rgba(148, 163, 184, 0.12)' }}
-            contentStyle={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border-subtle, #e2e8f0)', borderRadius: '6px', fontSize: '12px' }}
-            labelStyle={{ color: 'var(--text-muted)' }}
-            itemStyle={{ color: 'var(--text-main)', fontWeight: 600 }}
+            cursor={{ fill: 'var(--tinta-fondo)' }}
+            contentStyle={{ background: 'var(--grafito)', border: 0, borderRadius: '8px', fontSize: '13px', fontFamily: 'var(--fuente)' }}
+            labelStyle={{ color: '#fff', opacity: 0.8 }}
+            itemStyle={{ color: '#fff', fontWeight: 700 }}
             separator=""
             formatter={(value, _nombre, item) => {
               const original = Number(item?.payload?.original ?? value);
@@ -80,7 +80,7 @@ export function MiniBarChart({ datos, color = '#4cc9f0', formato = 'numero', alt
           />
           <Bar dataKey="valor" fill={color} radius={[4, 4, 0, 0]} minPointSize={pisoCero ? 2 : 0}>
             {pisoCero && (
-              <LabelList dataKey="etiqueta" position="top" style={{ fontSize: 11, fontWeight: 600, fill: 'var(--text-main, #0f172a)' }} />
+              <LabelList dataKey="etiqueta" position="top" style={{ fontSize: 11, fontWeight: 600, fill: 'var(--grafito)' }} />
             )}
           </Bar>
         </BarChart>

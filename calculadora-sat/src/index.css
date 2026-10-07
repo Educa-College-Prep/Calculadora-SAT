@@ -838,3 +838,9 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   .costos-grillas { grid-template-columns: minmax(0, 1fr); }
   .costos-columna { padding: 16px; }
 }
+
+/* ---------- Tablas del detalle ---------- */
+.tabla-envoltura { overflow-x: auto; }
+.tabla { border-collapse: collapse; }
+.tabla thead tr:last-child { border-bottom: 1.5px solid var(--grafito); }
+.tabla tbody { border-bottom: 1px solid var(--linea); }

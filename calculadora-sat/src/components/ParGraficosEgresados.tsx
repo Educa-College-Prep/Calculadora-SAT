@@ -31,8 +31,8 @@ export function ParGraficosEgresados({ graduados, ingreso, color, formato }: Pro
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
       {grupos.map((g) => (
         <div key={g.titulo}>
-          <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>{g.titulo}</p>
-          <p style={{ margin: '0 0 6px 0', fontSize: '12px', color: 'var(--text-muted)' }}>{g.nota}</p>
+          <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--grafito)' }}>{g.titulo}</p>
+          <p style={{ margin: '0 0 6px 0', fontSize: '12px', color: 'var(--grafito-suave)' }}>{g.nota}</p>
           <MiniBarChart datos={g.datos} color={color} formato={formato} altura={220} maxY={formato === 'porcentaje' ? 100 : maxY} />
         </div>
       ))}

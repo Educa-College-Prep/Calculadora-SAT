@@ -30,16 +30,19 @@ export function CostoVida({ uni }: { uni: Universidad }) {
 
   if (!costoVida.estimado) {
     return (
-      <div style={{ margin: '0 0 1em 0' }}>
-        <p style={{ margin: '0 0 6px 0' }}><strong>Costo de vida:</strong> {formatDinero(costoVida.valor)}
-          <InfoTooltip texto={glosarioCampos.COSTO_VIDA} />
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingLeft: '10px', borderLeft: '2px solid var(--border-subtle, #444)' }}>
+      <div>
+        <div className="dato-fila">
+          <span className="con-ayuda">Costo de vida
+            <InfoTooltip texto={glosarioCampos.COSTO_VIDA} />
+          </span>
+          <span className="numero"><strong>{formatDinero(costoVida.valor)}</strong></span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', margin: '0 0 8px', paddingLeft: '12px', borderLeft: '2px solid var(--tinta-suave)' }}>
           {desglose.map((d) => (
-            <div key={d.label} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', lineHeight: 1.4, color: 'var(--text-muted, #aaa)' }}>
+            <div key={d.label} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', lineHeight: 1.4, color: 'var(--grafito-suave)' }}>
               <Icono trazos={d.icono} />
               <span style={{ flex: 1 }}>{d.label}</span>
-              <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--text-main)' }}>{formatDinero(d.valor)}</span>
+              <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--grafito)' }}>{formatDinero(d.valor)}</span>
             </div>
           ))}
         </div>
@@ -48,9 +51,11 @@ export function CostoVida({ uni }: { uni: Universidad }) {
   }
 
   return (
-    <p><strong>Costo de vida:</strong> ~{formatDinero(costoVida.valor)}
-      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}> (aprox.)</span>
-      <InfoTooltip texto={glosarioCampos.COSTO_VIDA_ESTIMADO} />
-    </p>
+    <div className="dato-fila">
+      <span className="con-ayuda">Costo de vida <span className="ayuda" style={{ margin: '0 0 0 4px' }}>(aprox.)</span>
+        <InfoTooltip texto={glosarioCampos.COSTO_VIDA_ESTIMADO} />
+      </span>
+      <span className="numero"><strong>~{formatDinero(costoVida.valor)}</strong></span>
+    </div>
   );
 }

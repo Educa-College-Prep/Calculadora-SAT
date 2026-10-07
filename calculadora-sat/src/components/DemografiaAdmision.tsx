@@ -17,7 +17,7 @@ const otro = (f: FilaCDS) =>
 
 // Padding y encabezados compactos: con la columna "Otro" la tabla son 5 columnas en una tarjeta angosta.
 const celda: CSSProperties = { padding: '6px 4px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
-const encabezado: CSSProperties = { ...celda, fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' };
+const encabezado: CSSProperties = { ...celda, fontSize: '10px', fontWeight: 600, color: 'var(--grafito-suave)', textTransform: 'uppercase' };
 
 const fmt = (v: number | null | undefined) => (v != null ? v.toLocaleString() : '—');
 
@@ -41,36 +41,41 @@ export function DemografiaAdmision({ uni }: { uni: Universidad }) {
 
   return (
     <div>
-      {uni.UGDS != null && (
-        <p><strong>Total de alumnos de pregrado:</strong> {uni.UGDS.toLocaleString()}
-          <InfoTooltip texto={glosarioCampos.UGDS} />
-        </p>
-      )}
-      {uni.UGDS_HISP != null && (
-        <p><strong>Porcentaje de hispanos:</strong> {formatPorcentaje(uni.UGDS_HISP)}
-          <InfoTooltip texto={glosarioCampos.UGDS_HISP} />
-        </p>
-      )}
-      {uni.STUFACR != null && (
-        <p><strong>Ratio estudiante-facultad:</strong> {uni.STUFACR}:1
-          <InfoTooltip texto={glosarioCampos.STUFACR} />
-        </p>
-      )}
+      <dl className="datos">
+        {uni.UGDS != null && (
+          <div className="dato-fila">
+            <dt>Alumnos de pregrado<InfoTooltip texto={glosarioCampos.UGDS} /></dt>
+            <dd className="numero">{uni.UGDS.toLocaleString()}</dd>
+          </div>
+        )}
+        {uni.UGDS_HISP != null && (
+          <div className="dato-fila">
+            <dt>Hispanos<InfoTooltip texto={glosarioCampos.UGDS_HISP} /></dt>
+            <dd className="numero">{formatPorcentaje(uni.UGDS_HISP)}</dd>
+          </div>
+        )}
+        {uni.STUFACR != null && (
+          <div className="dato-fila">
+            <dt>Alumnos por profesor<InfoTooltip texto={glosarioCampos.STUFACR} /></dt>
+            <dd className="numero">{uni.STUFACR}:1</dd>
+          </div>
+        )}
+      </dl>
 
       {filas.length > 0 && (
-        <>
-          <hr style={{ border: 0, borderTop: '1px solid var(--border-subtle, #444)', margin: '12px 0' }} />
-          <p style={{ margin: '0 0 6px 0', display: 'flex', alignItems: 'center' }}>
+        <div className="ficha-bloque">
+          <p className="con-ayuda">
             <strong>Postulantes, admitidos y matriculados</strong>
             <InfoTooltip texto={glosarioCampos.POSTULANTES} />
           </p>
-          <table style={{ width: 'auto', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <div className="tabla-envoltura">
+          <table className="tabla" style={{ fontSize: '13px' }}>
             <thead>
               <tr>
                 <th />
-                <th colSpan={mostrarOtro ? 4 : 3} style={{ ...celda, fontSize: '12px', fontWeight: 500, color: 'var(--text-main)' }}>Otoño 2024</th>
+                <th colSpan={mostrarOtro ? 4 : 3} style={{ ...celda, fontSize: '12px', fontWeight: 500, color: 'var(--grafito)' }}>Otoño 2024</th>
               </tr>
-              <tr style={{ borderBottom: '1px solid var(--border-subtle, #cbd5e1)' }}>
+              <tr style={{ borderBottom: '1px solid var(--linea)' }}>
                 <th style={{ ...encabezado, textAlign: 'left' }}></th>
                 <th style={encabezado}>Hombres</th>
                 <th style={encabezado}>Mujeres</th>
@@ -80,9 +85,8 @@ export function DemografiaAdmision({ uni }: { uni: Universidad }) {
             </thead>
             <tbody>
               {filas.map((f, i) => (
-                // Filas alternadas como en el Common Data Set. Se usa `background` (no
-                // background-color) para que no lo pise la regla global de index.css.
-                <tr key={f.label} style={{ background: i % 2 === 0 ? 'var(--bg-hover, #f1f5f9)' : 'transparent' }}>
+                // Filas alternadas como en el Common Data Set.
+                <tr key={f.label} style={{ background: i % 2 === 0 ? 'var(--papel)' : 'transparent' }}>
                   <td style={{ ...celda, textAlign: 'left', fontWeight: 600, paddingLeft: '6px' }}>{f.label}</td>
                   <td style={celda}>{fmt(f.hombres)}</td>
                   <td style={celda}>{fmt(f.mujeres)}</td>
@@ -92,9 +96,9 @@ export function DemografiaAdmision({ uni }: { uni: Universidad }) {
               ))}
             </tbody>
           </table>
-          <div style={{ borderTop: '1px solid var(--border-subtle, #cbd5e1)' }} />
-          <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>Fuente: IPEDS</p>
-        </>
+          </div>
+          <p className="fuente">Fuente: IPEDS</p>
+        </div>
       )}
     </div>
   );

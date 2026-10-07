@@ -119,7 +119,7 @@ function Controlador({
 }
 
 const Aviso = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ height: '340px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', textAlign: 'center', padding: '0 20px' }}>
+  <div style={{ height: '340px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--grafito-suave)', textAlign: 'center', padding: '0 20px' }}>
     <div>{children}</div>
   </div>
 );
@@ -253,7 +253,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
     return (
       <Aviso>
         No hay geometría de condados disponible para {nombreEstado}.
-        <div style={{ fontSize: '11px', marginTop: '6px', color: 'var(--text-muted)' }}>
+        <div style={{ fontSize: '11px', marginTop: '6px', color: 'var(--grafito-suave)' }}>
           Los territorios (Guam, Samoa Americana, Islas Marianas, Islas Vírgenes,
           Micronesia, Islas Marshall y Palaos) no están divididos en condados.
         </div>
@@ -303,8 +303,6 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
               }}
             >
               <Popup>
-                {/* Sin <ul>/<li>: index.css le mete 16px de relleno y un borde a
-                    todo <li> de la página, y el globo salía enorme. */}
                 <div style={{ fontSize: '12px', minWidth: '170px', maxWidth: '230px' }}>
                   <strong style={{ fontSize: '13px' }}>{ciudad.nombre}</strong>
                   <div style={{ color: '#5d6467', margin: '2px 0 6px 0' }}>
@@ -379,9 +377,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
         </>
       )}
 
-      {/* Leyenda. Los recuadros de color son <rect> de SVG a propósito: index.css
-          repinta a la fuerza cualquier div o span que lleve background-color en
-          línea, y eso dejaba todos los tramos del mismo color. */}
+      {/* Leyenda. Los recuadros de color van en SVG para que coincidan exacto con el mapa. */}
       {/* Dentro de un condado la unidad deja de ser el condado y pasa a ser la
           ciudad, así que la leyenda cambia de escala en vez de mentir. */}
       {condadoEnfocado && ciudadesDelCondado.length > 0 && (
