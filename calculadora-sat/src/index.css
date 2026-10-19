@@ -921,3 +921,93 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .boton-guardar-texto.boton-guardar-activo { color: var(--grafito); background: var(--resaltador); border-color: #e6c400; }
 .boton-guardar-texto.boton-guardar-activo svg { color: var(--grafito); }
 .ficha-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+/* Mi lista y comparar */
+.boton-mi-lista { margin-top: 14px; }
+.boton-mi-lista svg { color: #c79a00; }
+.contador {
+  min-width: 22px;
+  padding: 0 7px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--grafito);
+  background: var(--resaltador);
+  border-radius: 999px;
+}
+
+.comparar { display: flex; flex-direction: column; gap: 20px; }
+.comparar-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--grafito);
+}
+.comparar-titulo {
+  font-size: clamp(30px, 5vw, 52px);
+  font-stretch: 122%;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.comparar-vacio p { margin-top: 16px; font-size: 16px; }
+
+.comparar-envoltura { overflow-x: auto; }
+.comparar-tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
+.comparar-tabla th, .comparar-tabla td { padding: 10px 14px; text-align: left; vertical-align: top; }
+.comparar-tabla td { min-width: 170px; border-left: 1px solid var(--linea); }
+.comparar-tabla tbody th[scope="row"] { font-weight: 500; color: var(--grafito-suave); white-space: nowrap; }
+.comparar-tabla tbody tr + tr { border-top: 1px dashed var(--linea); }
+/* La columna de los nombres de dato queda fija al desplazar hacia el costado. */
+.comparar-tabla th[scope="row"], .comparar-esquina {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--hoja);
+  box-shadow: 1px 0 0 var(--linea);
+}
+.comparar-uni { min-width: 170px; border-left: 1px solid var(--linea); border-bottom: 1.5px solid var(--grafito); }
+.comparar-nombre {
+  display: block;
+  padding: 0;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: left;
+  color: var(--tinta-fuerte);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--tinta-suave);
+  text-underline-offset: 3px;
+}
+.comparar-nombre:hover { text-decoration-color: currentColor; }
+.comparar-lugar { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--grafito-suave); }
+.comparar-quitar {
+  margin-top: 8px;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--error);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.comparar-quitar:hover { text-decoration: underline; }
+.comparar-grupo th {
+  padding-top: 18px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tinta-fuerte);
+  background: var(--hoja);
+}
+.comparar-mejor { font-weight: 700; background: linear-gradient(transparent 12%, #fff3a6 12%, #fff3a6 88%, transparent 88%); }
+.comparar-sin-dato { color: var(--grafito-suave); }
+.comparar-sub { display: block; font-size: 12px; color: var(--grafito-suave); font-weight: 400; }

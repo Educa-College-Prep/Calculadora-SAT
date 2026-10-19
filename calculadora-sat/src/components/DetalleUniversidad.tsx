@@ -14,6 +14,8 @@ interface Props {
   onVolver: () => void;
   guardada: boolean;
   onAlternarGuardada: (uni: Universidad) => void;
+  cantidadMiLista: number;
+  onVerMiLista: () => void;
 }
 
 /** Casilla de "Lo esencial": un dato clave con su explicación a un toque. */
@@ -47,7 +49,7 @@ const claseControl = (control: string | null) =>
     : control === 'Privada con fines de lucro' ? 'marca marca-lucro'
     : 'marca marca-privada';
 
-export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada }: Props) {
+export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista }: Props) {
   const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;
   const ranking = posicionUSNews(uni);
   const programas = [uni.CIPTITLE1, uni.CIPTITLE2, uni.CIPTITLE3, uni.CIPTITLE4, uni.CIPTITLE5, uni.CIPTITLE6].filter(Boolean);
@@ -73,6 +75,11 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
         <p className="ficha-lugar">{uni.CITY}, {uni.STABBR}</p>
         <div className="ficha-acciones">
           <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} conTexto />
+          {cantidadMiLista > 0 && (
+            <button type="button" className="boton" onClick={onVerMiLista}>
+              Comparar Mi lista ({cantidadMiLista})
+            </button>
+          )}
         </div>
       </header>
 

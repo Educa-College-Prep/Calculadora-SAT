@@ -15,6 +15,7 @@ import { GraficoBarras } from './components/GraficoBarras';
 import { ListaUniversidades } from './components/ListaUniversidades';
 import { ResumenEstado } from './components/ResumenEstado';
 import { DetalleUniversidad } from './components/DetalleUniversidad';
+import { ComparadorUniversidades } from './components/ComparadorUniversidades';
 
 type TooltipCell = { role: 'tooltip'; p: { html: true } };
 
@@ -47,6 +48,7 @@ export default function App() {
   const [precioMaximo, setPrecioMaximo] = useState<number>(90000);
 
   const miLista = useMiLista();
+  const [viendoMiLista, setViendoMiLista] = useState(false);
 
   const [ordenarPor, setOrdenarPor] = useState<string>('ninguno');
   const [ordenDireccion, setOrdenDireccion] = useState<'asc' | 'desc'>('asc');
@@ -309,6 +311,28 @@ export default function App() {
     window.scrollTo(0, 0);
   }, []);
 
+  // "Mi lista" también es una entrada del historial: "atrás" vuelve a donde estaba.
+  const abrirMiLista = useCallback(() => {
+    if (window.history.state?.vista !== 'mi-lista' && window.history.state?.detalleId == null) {
+      scrollDeLista.current = window.scrollY;
+    }
+    window.history.pushState({ vista: 'mi-lista' }, '');
+    setUniversidadSeleccionada(null);
+    setViendoMiLista(true);
+    window.scrollTo(0, 0);
+  }, []);
+
+  const volverDeMiLista = useCallback(() => {
+    if (window.history.state?.vista === 'mi-lista') window.history.back();
+    else setViendoMiLista(false);
+  }, []);
+
+  // Las guardadas, en el orden en que se guardaron (las que ya no existen en la data se ignoran).
+  const universidadesGuardadas = useMemo(() => {
+    const porClave = new Map(universidades.map(u => [claveUniversidad(u), u]));
+    return miLista.claves.map(c => porClave.get(c)).filter((u): u is Universidad => u != null);
+  }, [universidades, miLista.claves]);
+
   // El botón "Volver" de la página hace lo mismo que el "atrás" del navegador.
   const volverDelDetalle = useCallback(() => {
     if (window.history.state?.detalleId != null) window.history.back();
@@ -321,13 +345,17 @@ export default function App() {
       if (id != null) {
         const uni = universidades.find(u => u._id === id);
         if (uni) {
-          scrollDeLista.current = window.scrollY;
           setUniversidadSeleccionada(uni);
           window.scrollTo(0, 0);
         }
+      } else if (e.state?.vista === 'mi-lista') {
+        setUniversidadSeleccionada(null);
+        setViendoMiLista(true);
+        window.scrollTo(0, 0);
       } else {
         restaurarScroll.current = true;
         setUniversidadSeleccionada(null);
+        setViendoMiLista(false);
       }
     };
     window.addEventListener('popstate', alNavegar);
@@ -336,11 +364,11 @@ export default function App() {
 
   // Al volver a la lista, se recupera la posición donde estaba el usuario.
   useLayoutEffect(() => {
-    if (universidadSeleccionada == null && restaurarScroll.current) {
+    if (universidadSeleccionada == null && !viendoMiLista && restaurarScroll.current) {
       restaurarScroll.current = false;
       window.scrollTo(0, scrollDeLista.current);
     }
-  }, [universidadSeleccionada]);
+  }, [universidadSeleccionada, viendoMiLista]);
 
   if (universidadSeleccionada) {
     return (
@@ -349,6 +377,20 @@ export default function App() {
         onVolver={volverDelDetalle}
         guardada={miLista.guardadas.has(claveUniversidad(universidadSeleccionada))}
         onAlternarGuardada={miLista.alternar}
+        cantidadMiLista={universidadesGuardadas.length}
+        onVerMiLista={abrirMiLista}
+      />
+    );
+  }
+
+  if (viendoMiLista) {
+    return (
+      <ComparadorUniversidades
+        universidades={universidadesGuardadas}
+        onSeleccionar={seleccionarUniversidad}
+        onQuitar={miLista.quitar}
+        onVaciar={miLista.vaciar}
+        onVolver={volverDeMiLista}
       />
     );
   }
@@ -364,6 +406,11 @@ export default function App() {
           <p className="cabecera-bajada">
             Encuentra universidades de EE.&nbsp;UU. que encajan con tu puntaje, tu presupuesto y el lugar donde quieres estudiar.
           </p>
+          <button type="button" className="boton boton-mi-lista" onClick={abrirMiLista}>
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
+            Mi lista y comparar
+            <span className="contador numero">{universidadesGuardadas.length}</span>
+          </button>
         </div>
         <Buscador
           busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
