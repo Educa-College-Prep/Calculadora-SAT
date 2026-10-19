@@ -15,7 +15,7 @@ export const glosarioCampos: Record<string, string> = {
   // Admisiones
   ADM_RATE: 'Porcentaje de solicitantes que fueron aceptados. Un valor bajo indica una universidad más selectiva.',
   SAT_AVG: 'Puntaje SAT promedio de los estudiantes admitidos (escala 400–1600). Incluye a quienes rindieron el ACT, con su puntaje convertido a escala SAT.',
-  POSTULANTES: 'Alumnos de primer año que postularon, fueron admitidos y se matricularon. "Otro" incluye otro género o no informado.',
+  POSTULANTES: 'Alumnos de primer año que postularon, fueron admitidos y se matricularon. Hombres y mujeres se muestran como porcentaje del total de cada fila.',
   SAT_RANGO: 'Rango intercuartil: el 25% de los alumnos sacó menos que el número de la izquierda y el 25% sacó más que el de la derecha. La mitad central está dentro de la barra. La mediana es el puntaje del alumno que queda justo en el medio.',
   ADMCON7: 'Qué tan importante es el expediente académico (notas, cursos tomados) en la decisión de admisión.',
 
