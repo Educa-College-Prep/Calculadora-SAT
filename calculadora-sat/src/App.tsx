@@ -187,7 +187,9 @@ export default function App() {
       .sort((a, b) => (b.TUITIONFEE_OUT || 0) - (a.TUITIONFEE_OUT || 0))
       .slice(0, 10)
       .map(uni => ({
-        nombre: uni.INSTNM.length > 15 ? uni.INSTNM.substring(0, 15) + '...' : uni.INSTNM,
+        // Clave única por barra: con el nombre recortado, las sedes de una misma
+        // universidad ("Keiser University-...") se confundían entre sí.
+        id: String(uni._id),
         costo: uni.TUITIONFEE_OUT,
         nombreCompleto: uni.INSTNM
       })),
