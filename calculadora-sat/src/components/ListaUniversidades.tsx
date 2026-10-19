@@ -1,6 +1,7 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import type { Universidad } from '../types';
 import { formatNivel, formatDinero, formatPorcentaje } from '../utils/formatters';
+import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
 
 interface Props {
   universidadesFiltradas: Universidad[];
@@ -38,6 +39,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
   onSeleccionar: (uni: Universidad) => void;
 }) {
   const incompleta = !!faltantes?.length;
+  const ranking = posicionUSNews(uni);
   return (
     <li className={`fila${incompleta ? ' fila-incompleta' : ''}`}>
       <button
@@ -50,6 +52,11 @@ const FilaUniversidad = memo(function FilaUniversidad({
           <span className="fila-nombre">{uni.INSTNM}</span>
           <span className="fila-lugar">{uni.CITY}, {uni.STABBR}</span>
           <span className="marcas">
+            {ranking && (
+              <span className="marca marca-ranking" title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
+                U.S. News {textoPuesto(ranking)}
+              </span>
+            )}
             {uni.CONTROL && <span className={claseControl(uni.CONTROL)}>{uni.CONTROL}</span>}
             {uni.ICLEVEL && <span className="marca">{formatNivel(uni.ICLEVEL)}</span>}
             {uni.ADMCON7 === 'Requerido'
@@ -136,6 +143,9 @@ export function ListaUniversidades({
           <div className="orden-controles">
             <select id="ordenar-por" value={ordenarPor} onChange={(e) => setOrdenarPor(e.target.value)}>
             <option value="ninguno">Por defecto</option>
+            <optgroup label="Rankings">
+              <option value="USNEWS_ORDEN">Ranking U.S. News 2027</option>
+            </optgroup>
             <optgroup label="Identificación">
               <option value="INSTNM">Nombre (A-Z)</option>
               <option value="CITY">Ciudad</option>

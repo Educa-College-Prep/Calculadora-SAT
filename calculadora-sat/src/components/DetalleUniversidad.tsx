@@ -3,6 +3,7 @@ import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { InfoTooltip } from './InfoTooltip';
+import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
@@ -45,6 +46,7 @@ const claseControl = (control: string | null) =>
 
 export function DetalleUniversidad({ uni, onVolver }: Props) {
   const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;
+  const ranking = posicionUSNews(uni);
   const programas = [uni.CIPTITLE1, uni.CIPTITLE2, uni.CIPTITLE3, uni.CIPTITLE4, uni.CIPTITLE5, uni.CIPTITLE6].filter(Boolean);
 
   return (
@@ -59,6 +61,11 @@ export function DetalleUniversidad({ uni, onVolver }: Props) {
           {uni.ICLEVEL && <span className="marca">{formatNivel(uni.ICLEVEL)}</span>}
           {uni.ADMCON7 === 'Requerido' && <span className="marca marca-sat">SAT obligatorio</span>}
         </div>
+        {ranking && (
+          <p className="ficha-ranking" title={`Fuente: ${FUENTE_USNEWS}`}>
+            <strong>{textoPuesto(ranking)}</strong> en {NOMBRE_LISTA[ranking.lista]} · U.S. News {EDICION_USNEWS}
+          </p>
+        )}
         <h1 className="ficha-nombre">{uni.INSTNM}</h1>
         <p className="ficha-lugar">{uni.CITY}, {uni.STABBR}</p>
       </header>

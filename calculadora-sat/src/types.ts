@@ -49,6 +49,9 @@ export interface Universidad {
   CIPTITLE5?: string | null;
   CIPTITLE6?: string | null;
   ICLEVEL?: string | null;
+  /** Orden en el ranking U.S. News (se calcula al cargar): primero las universidades
+   *  nacionales (1–49) y luego los liberal arts colleges (1001–1049). null = no rankeada. */
+  USNEWS_ORDEN?: number | null;
   /** URL de la calculadora de costo neto de la universidad (College Scorecard NPCURL). */
   NPCURL?: string | null;
 

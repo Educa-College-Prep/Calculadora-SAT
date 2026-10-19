@@ -885,3 +885,14 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   border-left: 1.5px solid var(--tinta-suave);
 }
 .casillas-anidadas .burbuja { font-size: 14px; min-height: 36px; }
+
+/* Ranking U.S. News: insignia en la lista y línea destacada en la ficha. */
+.marca-ranking { color: var(--grafito); background: var(--resaltador); border-color: #e6c400; }
+.ficha-ranking {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 4px 12px;
+  font-size: 15px;
+  background: var(--resaltador);
+  border-radius: 999px;
+}

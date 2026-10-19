@@ -7,6 +7,7 @@ import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
 import { tipoControl } from './utils/tipoControl';
 import { useValorEstable } from './utils/useValorEstable';
+import { posicionUSNews } from './data/rankingUSNews';
 import type { TipoControl } from './utils/tipoControl';
 import { MapaGeo } from './components/MapaGeo';
 import { GraficoBarras } from './components/GraficoBarras';
@@ -71,14 +72,18 @@ export default function App() {
     Promise.all([fetch(`${base}universidades_seleccionadas6.json`).then(r => r.json()), admisiones])
       .then(([data, adm]: [Universidad[], Record<string, Partial<Universidad>>]) => {
         // Se asigna un id estable una sola vez, al cargar.
-        setUniversidades(data.map((uni, indice) => ({
+        setUniversidades(data.map((uni, indice) => {
+          const ranking = posicionUSNews(uni);
+          return {
           ...uni,
           ...adm[`${uni.INSTNM}|${uni.CITY}|${uni.STABBR}`],
           // Protección por si el colab vuelve a exportarlos como texto o con "PS" (dato suprimido).
           MD_EARN_WNE_4YR: aNumero(uni.MD_EARN_WNE_4YR),
           COUNT_WNE_4YR: aNumero(uni.COUNT_WNE_4YR),
+          USNEWS_ORDEN: ranking ? ranking.puesto + (ranking.lista === 'liberal-arts' ? 1000 : 0) : null,
           _id: indice,
-        })));
+          };
+        }));
       })
       .catch(error => console.error("Error cargando la data:", error));
   }, []);
