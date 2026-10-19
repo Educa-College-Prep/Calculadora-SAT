@@ -74,7 +74,7 @@ export function DetalleUniversidad({ uni, onVolver }: Props) {
       <div className="ficha-grilla">
 
         {/* Admisiones y SAT */}
-        {(uni.ADM_RATE || uni.ADMCON7 || uni.OPENADMP || uni.SAT_AVG || uni.SATVR25 || uni.SATMT25) && (
+        {(uni.ADM_RATE || uni.ADMCON7 || uni.SAT_AVG || uni.SATVR25 || uni.SATMT25) && (
           <Seccion titulo="Admisión y SAT">
             <dl className="datos">
               {uni.ADM_RATE != null && (
@@ -87,12 +87,6 @@ export function DetalleUniversidad({ uni, onVolver }: Props) {
                 <div className="dato-fila">
                   <dt>Política SAT<InfoTooltip texto={glosarioCampos.ADMCON7} /></dt>
                   <dd>{uni.ADMCON7}</dd>
-                </div>
-              )}
-              {uni.OPENADMP && (
-                <div className="dato-fila">
-                  <dt>Admisión abierta<InfoTooltip texto={glosarioCampos.OPENADMP} /></dt>
-                  <dd>{uni.OPENADMP}</dd>
                 </div>
               )}
             </dl>

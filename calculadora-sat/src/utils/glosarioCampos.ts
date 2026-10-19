@@ -18,7 +18,6 @@ export const glosarioCampos: Record<string, string> = {
   POSTULANTES: 'Alumnos de primer año que postularon, fueron admitidos y se matricularon. "Otro" incluye otro género o no informado.',
   SAT_RANGO: 'Rango intercuartil: el 25% de los alumnos sacó menos que el número de la izquierda y el 25% sacó más que el de la derecha. La mitad central está dentro de la barra. La mediana es el puntaje del alumno que queda justo en el medio.',
   ADMCON7: 'Qué tan importante es el expediente académico (notas, cursos tomados) en la decisión de admisión.',
-  OPENADMP: 'Indica si la universidad acepta prácticamente a cualquier solicitante con diploma de preparatoria, sin importar sus calificaciones.',
 
   // Costos
   TUITIONFEE_IN: 'In-state: matrícula anual para estudiantes que residen en el mismo estado de la universidad.',
