@@ -5,6 +5,8 @@ import { crearIndiceBusqueda, buscarUniversidades } from './utils/busqueda';
 
 import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
+import { tipoControl } from './utils/tipoControl';
+import type { TipoControl } from './utils/tipoControl';
 import { MapaGeo } from './components/MapaGeo';
 import { GraficoBarras } from './components/GraficoBarras';
 import { ListaUniversidades } from './components/ListaUniversidades';
@@ -38,7 +40,7 @@ export default function App() {
   const [puntajeLectura, setPuntajeLectura] = useState<number>(0);
 
   const [exigirSAT, setExigirSAT] = useState<string>('todos');
-  const [tipoUniversidad, setTipoUniversidad] = useState<string>('todos');
+  const [tiposUniversidad, setTiposUniversidad] = useState<TipoControl[]>([]);
   const [precioMaximo, setPrecioMaximo] = useState<number>(90000);
 
   const [ordenarPor, setOrdenarPor] = useState<string>('ninguno');
@@ -121,8 +123,10 @@ export default function App() {
     const lista = universidades.filter((uni) => {
       // Filtros duros: aquí no hay ambigüedad, el dato siempre existe.
       if (resultadoBusqueda && (uni._id == null || !resultadoBusqueda.posicion.has(uni._id))) return false;
-      if (tipoUniversidad === 'publica' && uni.CONTROL !== 'Pública') return false;
-      if (tipoUniversidad === 'privada' && (!uni.CONTROL || !uni.CONTROL.includes('Privada'))) return false;
+      if (tiposUniversidad.length > 0) {
+        const tipo = tipoControl(uni.CONTROL);
+        if (tipo == null || !tiposUniversidad.includes(tipo)) return false;
+      }
 
       const falta: string[] = [];
 
@@ -151,7 +155,7 @@ export default function App() {
     });
 
     return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes };
-  }, [universidades, resultadoBusqueda, estadoSeleccionado, ciudadSeleccionada, tipoUniversidad, precioMaximo, exigirSAT, puntajeTotal]);
+  }, [universidades, resultadoBusqueda, estadoSeleccionado, ciudadSeleccionada, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal]);
 
   // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
   // estado+ciudad cuentan como uno cada uno).
@@ -159,7 +163,8 @@ export default function App() {
     [puntajeMath > 0 || puntajeLectura > 0, 'puntaje SAT'],
     [estadoSeleccionado !== 'todos', 'estado'],
     [exigirSAT !== 'todos', '¿piden el SAT?'],
-    [tipoUniversidad !== 'todos', 'tipo de universidad'],
+    // Marcar los tres tipos equivale a no filtrar.
+    [tiposUniversidad.length > 0 && tiposUniversidad.length < 3, 'tipo de universidad'],
     [precioMaximo < PRECIO_MAXIMO_SLIDER, 'matrícula máxima'],
     [busquedaNombre.trim() !== '', `búsqueda "${busquedaNombre.trim()}"`],
   ] as const).filter(([activo]) => activo).map(([, nombre]) => nombre);
@@ -171,7 +176,7 @@ export default function App() {
     setEstadoSeleccionado('todos');
     setCiudadSeleccionada('todas');
     setExigirSAT('todos');
-    setTipoUniversidad('todos');
+    setTiposUniversidad([]);
     setPrecioMaximo(PRECIO_MAXIMO_SLIDER);
   }, []);
 
@@ -342,7 +347,7 @@ export default function App() {
           puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
           puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
           puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
-          tipoUniversidad={tipoUniversidad} setTipoUniversidad={setTipoUniversidad}
+          tiposUniversidad={tiposUniversidad} setTiposUniversidad={setTiposUniversidad}
           precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
           nombresEstados={NOMBRES_ESTADOS}
           filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}

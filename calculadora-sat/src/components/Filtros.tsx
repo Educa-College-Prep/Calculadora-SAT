@@ -1,7 +1,9 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { InfoTooltip } from './InfoTooltip';
 import { glosarioCampos } from '../utils/glosarioCampos';
+import { PRIVADAS } from '../utils/tipoControl';
+import type { TipoControl } from '../utils/tipoControl';
 
 interface Props {
   // Ubicación
@@ -21,8 +23,8 @@ interface Props {
   // Adicionales
   exigirSAT: string;
   setExigirSAT: (v: string) => void;
-  tipoUniversidad: string;
-  setTipoUniversidad: (v: string) => void;
+  tiposUniversidad: TipoControl[];
+  setTiposUniversidad: (v: TipoControl[]) => void;
   precioMaximo: number;
   setPrecioMaximo: (v: number) => void;
   // Limpiar
@@ -101,6 +103,58 @@ function Burbujas({ nombre, valor, opciones, onCambio }: {
   );
 }
 
+/** Casilla cuadrada (selección múltiple), con el mismo estilo de la hoja de respuestas. */
+function Casilla({ marcada, parcial = false, texto, onCambio }: {
+  marcada: boolean;
+  parcial?: boolean;
+  texto: string;
+  onCambio: () => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  // "indeterminate" solo se puede poner desde JS, no como atributo.
+  useEffect(() => { if (ref.current) ref.current.indeterminate = parcial; }, [parcial]);
+  return (
+    <label className="burbuja burbuja-casilla">
+      <input ref={ref} type="checkbox" checked={marcada} onChange={onCambio} />
+      <span>{texto}</span>
+    </label>
+  );
+}
+
+/**
+ * Públicas y privadas se pueden combinar. Al marcar "Privadas" aparecen sus dos
+ * subtipos (sin y con fines de lucro), que se pueden desmarcar por separado.
+ */
+function TiposUniversidad({ tipos, setTipos }: { tipos: TipoControl[]; setTipos: (v: TipoControl[]) => void }) {
+  const tiene = (t: TipoControl) => tipos.includes(t);
+  const alternar = (t: TipoControl) => setTipos(tiene(t) ? tipos.filter(x => x !== t) : [...tipos, t]);
+  const privadasMarcadas = PRIVADAS.filter(tiene).length;
+  const alternarPrivadas = () => setTipos(
+    privadasMarcadas === PRIVADAS.length
+      ? tipos.filter(t => !PRIVADAS.includes(t))
+      : [...tipos.filter(t => !PRIVADAS.includes(t)), ...PRIVADAS]
+  );
+
+  return (
+    <div className="burbujas">
+      <Casilla marcada={tiene('publica')} texto="Públicas" onCambio={() => alternar('publica')} />
+      <Casilla
+        marcada={privadasMarcadas === PRIVADAS.length}
+        parcial={privadasMarcadas === 1}
+        texto="Privadas"
+        onCambio={alternarPrivadas}
+      />
+      {privadasMarcadas > 0 && (
+        <div className="casillas-anidadas">
+          <Casilla marcada={tiene('sin-fines')} texto="Sin fines de lucro" onCambio={() => alternar('sin-fines')} />
+          <Casilla marcada={tiene('con-fines')} texto="Con fines de lucro" onCambio={() => alternar('con-fines')} />
+        </div>
+      )}
+      {tipos.length === 0 && <p className="ayuda">Sin marcar, se muestran todas.</p>}
+    </div>
+  );
+}
+
 /**
  * Input de una sección del SAT. Deja escribir libremente y, al salir del campo,
  * ajusta el valor al rango oficial (200–800) en múltiplos de 10.
@@ -164,7 +218,7 @@ export function Filtros({
   puntajeLectura, setPuntajeLectura,
   puntajeTotal,
   exigirSAT, setExigirSAT,
-  tipoUniversidad, setTipoUniversidad,
+  tiposUniversidad, setTiposUniversidad,
   precioMaximo, setPrecioMaximo,
   filtrosActivos, onLimpiar,
 }: Props) {
@@ -272,16 +326,7 @@ export function Filtros({
       </Seccion>
 
       <Seccion titulo="Tipo de universidad" ayuda={glosarioCampos.CONTROL}>
-        <Burbujas
-          nombre="tipo-universidad"
-          valor={tipoUniversidad}
-          onCambio={setTipoUniversidad}
-          opciones={[
-            { valor: 'todos', texto: 'Todas' },
-            { valor: 'publica', texto: 'Públicas' },
-            { valor: 'privada', texto: 'Privadas' },
-          ]}
-        />
+        <TiposUniversidad tipos={tiposUniversidad} setTipos={setTiposUniversidad} />
       </Seccion>
 
       {/* MATRÍCULA */}
