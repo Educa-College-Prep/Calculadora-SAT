@@ -25,6 +25,10 @@ interface Props {
   setTipoUniversidad: (v: string) => void;
   precioMaximo: number;
   setPrecioMaximo: (v: number) => void;
+  // Limpiar
+  /** Nombres de los filtros activos; el botón "Limpiar" muestra cuántos son y cuáles. */
+  filtrosActivos: readonly string[];
+  onLimpiar: () => void;
 }
 
 const SAT_MIN = 200;
@@ -105,6 +109,13 @@ function Burbujas({ nombre, valor, opciones, onCambio }: {
 function InputSeccionSAT({ etiqueta, valor, setValor }: { etiqueta: string; valor: number; setValor: (v: number) => void }) {
   const [texto, setTexto] = useState(valor ? String(valor) : '');
 
+  // Si el valor cambia desde fuera (p. ej. con "Limpiar filtros"), se refleja en el campo.
+  const [valorPrevio, setValorPrevio] = useState(valor);
+  if (valor !== valorPrevio) {
+    setValorPrevio(valor);
+    setTexto(valor ? String(valor) : '');
+  }
+
   const numero = Number(texto);
   const fueraDeRango = texto !== '' && (numero < SAT_MIN || numero > SAT_MAX);
   const idError = `error-${etiqueta.toLowerCase()}`;
@@ -155,6 +166,7 @@ export function Filtros({
   exigirSAT, setExigirSAT,
   tipoUniversidad, setTipoUniversidad,
   precioMaximo, setPrecioMaximo,
+  filtrosActivos, onLimpiar,
 }: Props) {
   const satIncompleto = (puntajeMath > 0) !== (puntajeLectura > 0);
   const sinLimitePrecio = precioMaximo >= PRECIO_TOPE;
@@ -163,7 +175,20 @@ export function Filtros({
   return (
     <aside ref={hojaRef} className="hoja" aria-label="Filtros">
       <div className="hoja-cabecera">
-        <h2 className="titulo-seccion">Marca tus datos</h2>
+        <div className="hoja-cabecera-fila">
+          <h2 className="titulo-seccion">Marca tus datos</h2>
+          {filtrosActivos.length > 0 && (
+            <button
+              type="button"
+              className="boton-limpiar"
+              onClick={onLimpiar}
+              title={`Quita: ${filtrosActivos.join(', ')}`}
+              aria-label={`Limpiar ${filtrosActivos.length} ${filtrosActivos.length === 1 ? 'filtro' : 'filtros'}: ${filtrosActivos.join(', ')}`}
+            >
+              Limpiar ({filtrosActivos.length})
+            </button>
+          )}
+        </div>
         <p className="ayuda">Los resultados cambian al instante.</p>
       </div>
 

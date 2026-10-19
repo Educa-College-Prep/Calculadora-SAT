@@ -839,3 +839,29 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .grafico-enlace { fill: var(--grafito); cursor: pointer; }
 .grafico-enlace:hover,
 .grafico-enlace:focus-visible { fill: var(--tinta-fuerte); text-decoration: underline; outline: none; }
+
+/* Limpiar filtros: en la cabecera de la hoja y junto al conteo de resultados. */
+.hoja-cabecera-fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.boton-limpiar {
+  flex: none;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tinta-fuerte);
+  background: var(--tinta-fondo);
+  border: 1px solid var(--tinta-suave);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.boton-limpiar:hover { background: #dbe7f7; border-color: var(--tinta); }
+.boton-limpiar-enlace {
+  padding: 0;
+  font-size: inherit;
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.boton-limpiar-enlace:hover { background: none; color: var(--tinta); }

@@ -153,6 +153,28 @@ export default function App() {
     return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes };
   }, [universidades, resultadoBusqueda, estadoSeleccionado, ciudadSeleccionada, tipoUniversidad, precioMaximo, exigirSAT, puntajeTotal]);
 
+  // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
+  // estado+ciudad cuentan como uno cada uno).
+  const filtrosActivos = ([
+    [puntajeMath > 0 || puntajeLectura > 0, 'puntaje SAT'],
+    [estadoSeleccionado !== 'todos', 'estado'],
+    [exigirSAT !== 'todos', '¿piden el SAT?'],
+    [tipoUniversidad !== 'todos', 'tipo de universidad'],
+    [precioMaximo < PRECIO_MAXIMO_SLIDER, 'matrícula máxima'],
+    [busquedaNombre.trim() !== '', `búsqueda "${busquedaNombre.trim()}"`],
+  ] as const).filter(([activo]) => activo).map(([, nombre]) => nombre);
+
+  const limpiarFiltros = useCallback(() => {
+    setBusquedaNombre('');
+    setPuntajeMath(0);
+    setPuntajeLectura(0);
+    setEstadoSeleccionado('todos');
+    setCiudadSeleccionada('todas');
+    setExigirSAT('todos');
+    setTipoUniversidad('todos');
+    setPrecioMaximo(PRECIO_MAXIMO_SLIDER);
+  }, []);
+
   const universidadesOrdenadas = useMemo(() => {
     const hayFaltantes = faltantesPorId.size > 0;
     // Sin orden elegido pero con búsqueda activa, se ordena por relevancia (MIT antes que Smith College).
@@ -323,6 +345,7 @@ export default function App() {
           tipoUniversidad={tipoUniversidad} setTipoUniversidad={setTipoUniversidad}
           precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
           nombresEstados={NOMBRES_ESTADOS}
+          filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
         />
 
         <main className="columna-principal">
@@ -336,6 +359,15 @@ export default function App() {
               de {universidades.length.toLocaleString()} en la base de datos
               {hayFiltrosUbicacion && ` · en ${NOMBRES_ESTADOS[estadoSeleccionado] ?? estadoSeleccionado}`}
               {ciudadSeleccionada !== 'todas' && `, ${ciudadSeleccionada}`}
+              {filtrosActivos.length > 0 && (
+                <>
+                  {' · '}
+                  <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={limpiarFiltros}
+                    title={`Quita: ${filtrosActivos.join(', ')}`}>
+                    Quitar filtros
+                  </button>
+                </>
+              )}
             </span>
           </div>
 
