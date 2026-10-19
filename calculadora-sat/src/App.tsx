@@ -305,7 +305,10 @@ export default function App() {
   const restaurarScroll = useRef(false);
 
   const seleccionarUniversidad = useCallback((uni: Universidad) => {
-    scrollDeLista.current = window.scrollY;
+    // Solo se recuerda el scroll de la lista principal, no el de otra ficha o de Mi lista.
+    if (window.history.state?.detalleId == null && window.history.state?.vista == null) {
+      scrollDeLista.current = window.scrollY;
+    }
     window.history.pushState({ detalleId: uni._id }, '');
     setUniversidadSeleccionada(uni);
     window.scrollTo(0, 0);
@@ -379,6 +382,8 @@ export default function App() {
         onAlternarGuardada={miLista.alternar}
         cantidadMiLista={universidadesGuardadas.length}
         onVerMiLista={abrirMiLista}
+        universidades={universidades}
+        onSeleccionar={seleccionarUniversidad}
       />
     );
   }

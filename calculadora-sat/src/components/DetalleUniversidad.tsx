@@ -4,6 +4,7 @@ import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { InfoTooltip } from './InfoTooltip';
 import { BotonGuardar } from './BotonGuardar';
+import { UniversidadesSimilares } from './UniversidadesSimilares';
 import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
@@ -16,6 +17,9 @@ interface Props {
   onAlternarGuardada: (uni: Universidad) => void;
   cantidadMiLista: number;
   onVerMiLista: () => void;
+  /** Todas las universidades, para buscar las similares. */
+  universidades: Universidad[];
+  onSeleccionar: (uni: Universidad) => void;
 }
 
 /** Casilla de "Lo esencial": un dato clave con su explicación a un toque. */
@@ -49,7 +53,7 @@ const claseControl = (control: string | null) =>
     : control === 'Privada con fines de lucro' ? 'marca marca-lucro'
     : 'marca marca-privada';
 
-export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista }: Props) {
+export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista, universidades, onSeleccionar }: Props) {
   const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;
   const ranking = posicionUSNews(uni);
   const programas = [uni.CIPTITLE1, uni.CIPTITLE2, uni.CIPTITLE3, uni.CIPTITLE4, uni.CIPTITLE5, uni.CIPTITLE6].filter(Boolean);
@@ -149,6 +153,10 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
             )}
           </Seccion>
         )}
+
+        <Seccion titulo="Universidades similares" ancha>
+          <UniversidadesSimilares uni={uni} universidades={universidades} onSeleccionar={onSeleccionar} />
+        </Seccion>
 
       </div>
     </main>
