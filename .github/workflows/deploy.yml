@@ -1,0 +1,36 @@
+name: Publicar en GitHub Pages
+
+on:
+  push:
+    branches: [main]      # al mergear un PR a main → publica
+  pull_request:           # en cada PR → solo compila, para avisar si algo se rompió
+  workflow_dispatch:      # botón "Run workflow" para publicar a mano
+
+permissions:
+  contents: write         # para poder escribir en la rama gh-pages
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: calculadora-sat
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: calculadora-sat/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+
+      # Solo publica cuando es main (no en los PR)
+      - name: Publicar en gh-pages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: calculadora-sat/dist
