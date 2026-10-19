@@ -6,6 +6,7 @@ import { crearIndiceBusqueda, buscarUniversidades } from './utils/busqueda';
 import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
 import { tipoControl } from './utils/tipoControl';
+import { useValorEstable } from './utils/useValorEstable';
 import type { TipoControl } from './utils/tipoControl';
 import { MapaGeo } from './components/MapaGeo';
 import { GraficoBarras } from './components/GraficoBarras';
@@ -100,6 +101,19 @@ export default function App() {
   // Solo hay total (y filtro SAT) cuando se ingresaron las dos secciones.
   const puntajeTotal = puntajeMath > 0 && puntajeLectura > 0 ? puntajeMath + puntajeLectura : 0;
 
+  // Los controles (deslizador, casillas) se actualizan al instante con los valores de
+  // arriba. El filtrado y todo lo que se dibuja con él usan esta copia diferida: React
+  // la procesa en segundo plano y, si el usuario sigue moviendo un filtro, descarta el
+  // trabajo viejo en vez de trabarse en cada paso.
+  const filtros = useDeferredValue(useMemo(() => ({
+    estado: estadoSeleccionado,
+    ciudad: ciudadSeleccionada,
+    tipos: tiposUniversidad,
+    precio: precioMaximo,
+    politica: exigirSAT,
+    sat: puntajeTotal,
+  }), [estadoSeleccionado, ciudadSeleccionada, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal]));
+
   /**
    * Filtrado con manejo explícito de datos faltantes.
    *
@@ -109,10 +123,11 @@ export default function App() {
    * y no se puede saber (se queda, pero marcada y ordenada al final).
    */
   const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId } = useMemo(() => {
+    const { estado, ciudad, tipos, precio, politica, sat } = filtros;
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
-    const filtroSATActivo = puntajeTotal > 0;
-    const filtroPrecioActivo = precioMaximo < PRECIO_MAXIMO_SLIDER;
-    const filtroPoliticaActivo = exigirSAT !== 'todos';
+    const filtroSATActivo = sat > 0;
+    const filtroPrecioActivo = precio < PRECIO_MAXIMO_SLIDER;
+    const filtroPoliticaActivo = politica !== 'todos';
 
     const faltantes = new Map<number, string[]>();
 
@@ -123,39 +138,39 @@ export default function App() {
     const lista = universidades.filter((uni) => {
       // Filtros duros: aquí no hay ambigüedad, el dato siempre existe.
       if (resultadoBusqueda && (uni._id == null || !resultadoBusqueda.posicion.has(uni._id))) return false;
-      if (tiposUniversidad.length > 0) {
+      if (tipos.length > 0) {
         const tipo = tipoControl(uni.CONTROL);
-        if (tipo == null || !tiposUniversidad.includes(tipo)) return false;
+        if (tipo == null || !tipos.includes(tipo)) return false;
       }
 
       const falta: string[] = [];
 
       if (filtroSATActivo) {
         if (uni.SAT_AVG == null) falta.push('Sin promedio SAT');
-        else if (puntajeTotal < uni.SAT_AVG) return false;
+        else if (sat < uni.SAT_AVG) return false;
       }
 
       if (filtroPrecioActivo) {
         if (uni.TUITIONFEE_OUT == null) falta.push('Sin dato de matrícula');
-        else if (uni.TUITIONFEE_OUT > precioMaximo) return false;
+        else if (uni.TUITIONFEE_OUT > precio) return false;
       }
 
       if (filtroPoliticaActivo) {
         if (uni.ADMCON7 == null) falta.push('Política SAT no informada');
-        else if (exigirSAT === 'requerido' && uni.ADMCON7 !== 'Requerido') return false;
-        else if (exigirSAT === 'opcional' && uni.ADMCON7 === 'Requerido') return false;
+        else if (politica === 'requerido' && uni.ADMCON7 !== 'Requerido') return false;
+        else if (politica === 'opcional' && uni.ADMCON7 === 'Requerido') return false;
       }
 
       sinUbicacion.push(uni);
-      if (estadoSeleccionado !== 'todos' && uni.STABBR !== estadoSeleccionado) return false;
-      if (ciudadSeleccionada !== 'todas' && uni.CITY !== ciudadSeleccionada) return false;
+      if (estado !== 'todos' && uni.STABBR !== estado) return false;
+      if (ciudad !== 'todas' && uni.CITY !== ciudad) return false;
 
       if (falta.length > 0 && uni._id != null) faltantes.set(uni._id, falta);
       return true;
     });
 
     return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes };
-  }, [universidades, resultadoBusqueda, estadoSeleccionado, ciudadSeleccionada, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal]);
+  }, [universidades, resultadoBusqueda, filtros]);
 
   // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
   // estado+ciudad cuentan como uno cada uno).
@@ -245,15 +260,23 @@ export default function App() {
 
       // Con un estado elegido, el valor solo marca "elegido (1) / resto (0)" para
       // pintar ese estado y dejar los demás en gris. El tooltip conserva el conteo real.
-      const valor = estadoSeleccionado === 'todos'
+      const valor = filtros.estado === 'todos'
         ? conteoPorEstado[estado]
-        : estado === estadoSeleccionado ? 1 : 0;
+        : estado === filtros.estado ? 1 : 0;
 
       filas.push([`US-${estado}`, valor, tooltip]);
     });
 
     return filas;
-  }, [universidadesSinUbicacion, estadoSeleccionado]);
+  }, [universidadesSinUbicacion, filtros.estado]);
+
+  // El mapa de Google y el de condados son lo más caro de redibujar y no se pueden
+  // interrumpir: mientras un filtro cambia seguido, esperan a que se quede quieto.
+  const mapa = useValorEstable(
+    useMemo(() => ({ datos: datosMapaGeoEstados, universidades: universidadesFiltradas, estado: filtros.estado }),
+      [datosMapaGeoEstados, universidadesFiltradas, filtros.estado]),
+    250,
+  );
 
   // Callbacks estables: sin esto, los mapas y el gráfico se redibujan en cada tecla.
   // Clic en el estado que ya está elegido = volver a ver todo el país.
@@ -320,7 +343,8 @@ export default function App() {
     );
   }
 
-  const hayFiltrosUbicacion = estadoSeleccionado !== 'todos';
+  // Lo que se muestra junto a los resultados va con los filtros ya aplicados (diferidos).
+  const hayFiltrosUbicacion = filtros.estado !== 'todos';
 
   return (
     <>
@@ -362,8 +386,8 @@ export default function App() {
             </span>
             <span className="resultado-nota">
               de {universidades.length.toLocaleString()} en la base de datos
-              {hayFiltrosUbicacion && ` · en ${NOMBRES_ESTADOS[estadoSeleccionado] ?? estadoSeleccionado}`}
-              {ciudadSeleccionada !== 'todas' && `, ${ciudadSeleccionada}`}
+              {hayFiltrosUbicacion && ` · en ${NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado}`}
+              {filtros.ciudad !== 'todas' && `, ${filtros.ciudad}`}
               {filtrosActivos.length > 0 && (
                 <>
                   {' · '}
@@ -378,9 +402,9 @@ export default function App() {
 
           <section className="tablero">
             <MapaGeo
-              datosMapaGeoEstados={datosMapaGeoEstados}
-              universidadesFiltradas={universidadesFiltradas}
-              estadoSeleccionado={estadoSeleccionado}
+              datosMapaGeoEstados={mapa.datos}
+              universidadesFiltradas={mapa.universidades}
+              estadoSeleccionado={mapa.estado}
               onSeleccionarEstado={seleccionarEstadoDesdeMapa}
               onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
             />
@@ -392,7 +416,7 @@ export default function App() {
               {hayFiltrosUbicacion && (
                 <ResumenEstado
                   universidades={universidadesFiltradas}
-                  estadoSeleccionado={estadoSeleccionado}
+                  estadoSeleccionado={filtros.estado}
                 />
               )}
             </div>
