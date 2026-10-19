@@ -15,10 +15,9 @@ export const glosarioCampos: Record<string, string> = {
   // Admisiones
   ADM_RATE: 'Porcentaje de solicitantes que fueron aceptados. Un valor bajo indica una universidad más selectiva.',
   SAT_AVG: 'Puntaje SAT promedio de los estudiantes admitidos (escala 400–1600). Incluye a quienes rindieron el ACT, con su puntaje convertido a escala SAT.',
-  POSTULANTES: 'Alumnos de primer año que postularon, fueron admitidos y se matricularon. "Otro" incluye otro género o no informado.',
+  POSTULANTES: 'Alumnos de primer año que postularon, fueron admitidos y se matricularon. Hombres y mujeres se muestran como porcentaje del total de cada fila.',
   SAT_RANGO: 'Rango intercuartil: el 25% de los alumnos sacó menos que el número de la izquierda y el 25% sacó más que el de la derecha. La mitad central está dentro de la barra. La mediana es el puntaje del alumno que queda justo en el medio.',
   ADMCON7: 'Qué tan importante es el expediente académico (notas, cursos tomados) en la decisión de admisión.',
-  OPENADMP: 'Indica si la universidad acepta prácticamente a cualquier solicitante con diploma de preparatoria, sin importar sus calificaciones.',
 
   // Costos
   TUITIONFEE_IN: 'In-state: matrícula anual para estudiantes que residen en el mismo estado de la universidad.',
@@ -39,6 +38,4 @@ export const glosarioCampos: Record<string, string> = {
 
   // Resultados económicos
   MD_EARN_4YR: 'Lo que gana al año el egresado típico, 4 años después de graduarse. Solo cuenta a quienes trabajan y ya no estudian.',
-  MD_EARN: 'Salario anual del egresado típico (mediana) que trabaja y no estudia, en dólares de 2022.',
-  GT_THRESHOLD: 'Porcentaje de egresados que ganan más que el salario mediano de alguien que solo terminó la preparatoria. Es un indicador de si la carrera "valió la pena" económicamente frente a no ir a la universidad.',
 };

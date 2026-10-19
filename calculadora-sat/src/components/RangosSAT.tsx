@@ -9,6 +9,8 @@ interface Rango {
   p75: number;
   min: number;
   max: number;
+  /** Separación entre las marcas de la escala (100 en secciones, 200 en el total). */
+  paso: number;
   aproximado?: boolean;
 }
 
@@ -26,10 +28,10 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
   const rangos: Rango[] = [];
 
   if (uni.SATVR25 != null && uni.SATVR75 != null) {
-    rangos.push({ label: 'Verbal', p25: uni.SATVR25, p50: uni.SATVR50 ?? null, p75: uni.SATVR75, min: 200, max: 800 });
+    rangos.push({ label: 'Verbal', p25: uni.SATVR25, p50: uni.SATVR50 ?? null, p75: uni.SATVR75, min: 200, max: 800, paso: 100 });
   }
   if (uni.SATMT25 != null && uni.SATMT75 != null) {
-    rangos.push({ label: 'Math', p25: uni.SATMT25, p50: uni.SATMT50 ?? null, p75: uni.SATMT75, min: 200, max: 800 });
+    rangos.push({ label: 'Math', p25: uni.SATMT25, p50: uni.SATMT50 ?? null, p75: uni.SATMT75, min: 200, max: 800, paso: 100 });
   }
   if (uni.SATVR25 != null && uni.SATVR75 != null && uni.SATMT25 != null && uni.SATMT75 != null) {
     rangos.push({
@@ -39,12 +41,15 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
       p75: uni.SATVR75 + uni.SATMT75,
       min: 400,
       max: 1600,
+      paso: 200,
       aproximado: true,
     });
   }
 
   const total = rangos.find((r) => r.label === 'Total');
   const pos = (v: number, r: Rango) => `${((v - r.min) / (r.max - r.min)) * 100}%`;
+  const marcas = (r: Rango) =>
+    Array.from({ length: Math.floor((r.max - r.min) / r.paso) + 1 }, (_, i) => r.min + i * r.paso);
 
   return (
     <div>
@@ -66,7 +71,7 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
                 </span>
               </div>
 
-              <div style={{ position: 'relative', height: '14px', borderRadius: '7px', background: 'var(--tinta-fondo)', border: '1px solid var(--tinta-suave)' }}>
+              <div style={{ position: 'relative', height: '16px', borderRadius: '8px', background: 'var(--tinta-fondo)', border: '1px solid var(--tinta-suave)' }}>
                 {/* Banda 25–75 */}
                 <div
                   title={`${r.label}: ${r.p25} – ${r.p75}`}
@@ -78,14 +83,64 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
                     width: `calc(${pos(r.p75, r)} - ${pos(r.p25, r)})`,
                     background: COLOR_BANDA,
                     opacity: r.aproximado ? 0.5 : 1,
-                    borderRadius: '7px',
+                    borderRadius: '8px',
                   }}
                 />
+                {/* Puntos de la escala: dejan ver a qué altura está la banda. Los extremos
+                    no llevan punto porque coinciden con el borde de la pista. */}
+                {marcas(r).slice(1, -1).map((m) => {
+                  const dentro = m >= r.p25 && m <= r.p75;
+                  return (
+                    <span
+                      key={m}
+                      aria-hidden="true"
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: pos(m, r),
+                        width: '4px',
+                        height: '4px',
+                        borderRadius: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        background: dentro ? '#fff' : 'var(--grafito-suave)',
+                        opacity: dentro ? 0.9 : 0.45,
+                      }}
+                    />
+                  );
+                })}
+                {/* Mediana, si existe */}
+                {r.p50 != null && (
+                  <span
+                    title={`Mediana: ${r.p50}`}
+                    style={{
+                      position: 'absolute',
+                      top: '-4px',
+                      bottom: '-4px',
+                      left: pos(r.p50, r),
+                      width: '3px',
+                      transform: 'translateX(-50%)',
+                      background: 'var(--grafito)',
+                      borderRadius: '2px',
+                      border: '1px solid #fff',
+                    }}
+                  />
+                )}
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', lineHeight: 1.2, marginTop: '3px', color: 'var(--grafito-suave)' }}>
-                <span>{r.min}</span>
-                <span>{r.max}</span>
+              {/* Escala con todos los valores intermedios */}
+              <div aria-hidden="true" style={{ position: 'relative', height: '16px', marginTop: '4px', fontSize: '11px', lineHeight: 1.2, color: 'var(--grafito-suave)', fontVariantNumeric: 'tabular-nums' }}>
+                {marcas(r).map((m, i, todas) => (
+                  <span
+                    key={m}
+                    style={{
+                      position: 'absolute',
+                      left: pos(m, r),
+                      transform: i === 0 ? 'none' : i === todas.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)',
+                    }}
+                  >
+                    {m}
+                  </span>
+                ))}
               </div>
             </div>
           ))}

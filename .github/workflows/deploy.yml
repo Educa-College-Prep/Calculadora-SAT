@@ -1,0 +1,52 @@
+name: Publicar en GitHub Pages
+
+on:
+  push:
+    branches: [main]      # al mergear un PR a main → publica
+  pull_request:           # en cada PR → solo compila, para avisar si algo se rompió
+  workflow_dispatch:      # botón "Run workflow" para publicar a mano
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si se mergean dos PR seguidos, no se cancela una publicación a medias.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: calculadora-sat
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: calculadora-sat/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+
+      # Solo se empaqueta para publicar cuando no es un PR
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: calculadora-sat/dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
