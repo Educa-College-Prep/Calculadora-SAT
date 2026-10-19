@@ -105,6 +105,13 @@ function Burbujas({ nombre, valor, opciones, onCambio }: {
 function InputSeccionSAT({ etiqueta, valor, setValor }: { etiqueta: string; valor: number; setValor: (v: number) => void }) {
   const [texto, setTexto] = useState(valor ? String(valor) : '');
 
+  // Si el valor cambia desde fuera (p. ej. el asistente aplica filtros), se refleja en el campo.
+  const [valorPrevio, setValorPrevio] = useState(valor);
+  if (valor !== valorPrevio) {
+    setValorPrevio(valor);
+    setTexto(valor ? String(valor) : '');
+  }
+
   const numero = Number(texto);
   const fueraDeRango = texto !== '' && (numero < SAT_MIN || numero > SAT_MAX);
   const idError = `error-${etiqueta.toLowerCase()}`;

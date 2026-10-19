@@ -10,6 +10,9 @@ import { GraficoBarras } from './components/GraficoBarras';
 import { ListaUniversidades } from './components/ListaUniversidades';
 import { ResumenEstado } from './components/ResumenEstado';
 import { DetalleUniversidad } from './components/DetalleUniversidad';
+import { AsistenteIA, EntradaAsistente } from './components/AsistenteIA';
+import type { SolicitudAsistente } from './components/AsistenteIA';
+import type { FiltrosSugeridos } from './asistente/tipos';
 
 type TooltipCell = { role: 'tooltip'; p: { html: true } };
 
@@ -281,12 +284,57 @@ export default function App() {
     }
   }, [universidadSeleccionada]);
 
+  // --- ASISTENTE IA (demo) ---
+  const [asistenteAbierto, setAsistenteAbierto] = useState(false);
+  const [solicitudAsistente, setSolicitudAsistente] = useState<SolicitudAsistente | null>(null);
+
+  const preguntarAlAsistente = useCallback((texto: string) => {
+    setSolicitudAsistente(prev => ({ texto, id: (prev?.id ?? 0) + 1 }));
+    setAsistenteAbierto(true);
+  }, []);
+  const abrirAsistente = useCallback(() => setAsistenteAbierto(true), []);
+  const cerrarAsistente = useCallback(() => setAsistenteAbierto(false), []);
+
+  // El asistente puede "mover" la calculadora: reemplaza los filtros por los que sugiere.
+  const aplicarFiltrosAsistente = useCallback((f: FiltrosSugeridos) => {
+    setBusquedaNombre('');
+    setEstadoSeleccionado(f.estado ?? 'todos');
+    setCiudadSeleccionada('todas');
+    setPuntajeMath(f.math ?? 0);
+    setPuntajeLectura(f.lectura ?? 0);
+    setPrecioMaximo(f.precioMaximo ?? PRECIO_MAXIMO_SLIDER);
+    setTipoUniversidad(f.tipo ?? 'todos');
+    setExigirSAT(f.exigirSAT ?? 'todos');
+    if (universidadSeleccionada) volverDelDetalle();
+    else document.querySelector('.resultado')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // En el celular el panel tapa todo: se cierra para que se vea el resultado.
+    if (window.matchMedia('(max-width: 600px)').matches) setAsistenteAbierto(false);
+  }, [universidadSeleccionada, volverDelDetalle]);
+
+  const seleccionarDesdeAsistente = useCallback((uni: Universidad) => {
+    seleccionarUniversidad(uni);
+    if (window.matchMedia('(max-width: 600px)').matches) setAsistenteAbierto(false);
+  }, [seleccionarUniversidad]);
+
+  const asistente = (
+    <AsistenteIA
+      abierto={asistenteAbierto} onAbrir={abrirAsistente} onCerrar={cerrarAsistente}
+      solicitud={solicitudAsistente}
+      universidades={universidades} indice={indiceBusqueda}
+      onSeleccionar={seleccionarDesdeAsistente}
+      onAplicarFiltros={aplicarFiltrosAsistente}
+    />
+  );
+
   if (universidadSeleccionada) {
     return (
-      <DetalleUniversidad
-        uni={universidadSeleccionada}
-        onVolver={volverDelDetalle}
-      />
+      <>
+        <DetalleUniversidad
+          uni={universidadSeleccionada}
+          onVolver={volverDelDetalle}
+        />
+        {asistente}
+      </>
     );
   }
 
@@ -323,6 +371,8 @@ export default function App() {
         />
 
         <main className="columna-principal">
+          <EntradaAsistente onPreguntar={preguntarAlAsistente} />
+
           {/* Lo primero que se lee: cuántas universidades quedan con lo que marcaste. */}
           <div className="resultado" aria-live="polite">
             <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
@@ -367,6 +417,7 @@ export default function App() {
           />
         </main>
       </div>
+      {asistente}
     </>
   );
 }
