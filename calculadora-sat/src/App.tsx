@@ -418,9 +418,10 @@ export default function App() {
     />
   );
 
-  if (universidadSeleccionada) {
-    return (
-      <>
+  // Contenido de la vista actual: ficha, Mi lista o la página principal.
+  const vista = (() => {
+    if (universidadSeleccionada) {
+      return (
         <DetalleUniversidad
           uni={universidadSeleccionada}
           onVolver={volverDelDetalle}
@@ -431,119 +432,126 @@ export default function App() {
           universidades={universidades}
           onSeleccionar={seleccionarUniversidad}
         />
-        {asistente}
+      );
+    }
+
+    if (viendoMiLista) {
+      return (
+        <ComparadorUniversidades
+          universidades={universidadesGuardadas}
+          onSeleccionar={seleccionarUniversidad}
+          onQuitar={miLista.quitar}
+          onVaciar={miLista.vaciar}
+          onVolver={volverDeMiLista}
+        />
+      );
+    }
+
+    // Lo que se muestra junto a los resultados va con los filtros ya aplicados (diferidos).
+    const hayFiltrosUbicacion = filtros.estado !== 'todos';
+
+    return (
+      <>
+        <header className="cabecera">
+          <div>
+            <h1>Calculadora SAT</h1>
+            <p className="cabecera-bajada">
+              Encuentra universidades de EE.&nbsp;UU. que encajan con tu puntaje, tu presupuesto y el lugar donde quieres estudiar.
+            </p>
+            <button type="button" className="boton boton-mi-lista" onClick={abrirMiLista}>
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
+              Mi lista y comparar
+              <span className="contador numero">{universidadesGuardadas.length}</span>
+            </button>
+          </div>
+          <Buscador
+            busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
+            mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
+            sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
+            onSeleccionar={seleccionarUniversidad}
+          />
+        </header>
+
+        <div className="cuerpo">
+          <Filtros
+            estadoSeleccionado={estadoSeleccionado} setEstadoSeleccionado={setEstadoSeleccionado}
+            ciudadSeleccionada={ciudadSeleccionada} setCiudadSeleccionada={setCiudadSeleccionada}
+            estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
+            puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
+            puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
+            puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
+            tiposUniversidad={tiposUniversidad} setTiposUniversidad={setTiposUniversidad}
+            precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
+            nombresEstados={NOMBRES_ESTADOS}
+            filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
+          />
+
+          <main className="columna-principal">
+            <EntradaAsistente onPreguntar={preguntarAlAsistente} />
+
+            {/* Lo primero que se lee: cuántas universidades quedan con lo que marcaste. */}
+            <div className="resultado" aria-live="polite">
+              <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
+              <span className="resultado-texto">
+                {universidadesFiltradas.length === 1 ? 'universidad encaja' : 'universidades encajan'} con lo que marcaste
+              </span>
+              <span className="resultado-nota">
+                de {universidades.length.toLocaleString()} en la base de datos
+                {hayFiltrosUbicacion && ` · en ${NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado}`}
+                {filtros.ciudad !== 'todas' && `, ${filtros.ciudad}`}
+                {filtrosActivos.length > 0 && (
+                  <>
+                    {' · '}
+                    <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={limpiarFiltros}
+                      title={`Quita: ${filtrosActivos.join(', ')}`}>
+                      Quitar filtros
+                    </button>
+                  </>
+                )}
+              </span>
+            </div>
+
+            <section className="tablero">
+              <MapaGeo
+                datosMapaGeoEstados={mapa.datos}
+                universidadesFiltradas={mapa.universidades}
+                estadoSeleccionado={mapa.estado}
+                onSeleccionarEstado={seleccionarEstadoDesdeMapa}
+                onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
+              />
+
+              {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
+                  va el resumen en vez de estirar las barras. */}
+              <div className="tablero-lateral">
+                <GraficoBarras datosGrafico={datosGrafico} onSeleccionar={seleccionarUniversidad} />
+                {hayFiltrosUbicacion && (
+                  <ResumenEstado
+                    universidades={universidadesFiltradas}
+                    estadoSeleccionado={filtros.estado}
+                  />
+                )}
+              </div>
+            </section>
+
+            <ListaUniversidades
+              universidadesFiltradas={universidadesFiltradas} universidadesOrdenadas={universidadesOrdenadas}
+              faltantesPorId={faltantesPorId}
+              totalUniversidades={universidades.length} ordenarPor={ordenarPor} setOrdenarPor={setOrdenarPor}
+              ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
+              onSeleccionar={seleccionarUniversidad}
+              guardadas={miLista.guardadas} onAlternarGuardada={miLista.alternar}
+            />
+          </main>
+        </div>
       </>
     );
-  }
+  })();
 
-  if (viendoMiLista) {
-    return (
-      <ComparadorUniversidades
-        universidades={universidadesGuardadas}
-        onSeleccionar={seleccionarUniversidad}
-        onQuitar={miLista.quitar}
-        onVaciar={miLista.vaciar}
-        onVolver={volverDeMiLista}
-      />
-    );
-  }
-
-  // Lo que se muestra junto a los resultados va con los filtros ya aplicados (diferidos).
-  const hayFiltrosUbicacion = filtros.estado !== 'todos';
-
+  // El asistente va siempre en el mismo lugar del árbol: así no se vuelve a crear
+  // (ni pierde la conversación, ni repite la última pregunta) al pasar entre vistas.
   return (
     <>
-      <header className="cabecera">
-        <div>
-          <h1>Calculadora SAT</h1>
-          <p className="cabecera-bajada">
-            Encuentra universidades de EE.&nbsp;UU. que encajan con tu puntaje, tu presupuesto y el lugar donde quieres estudiar.
-          </p>
-          <button type="button" className="boton boton-mi-lista" onClick={abrirMiLista}>
-            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
-            Mi lista y comparar
-            <span className="contador numero">{universidadesGuardadas.length}</span>
-          </button>
-        </div>
-        <Buscador
-          busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
-          mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
-          sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
-          onSeleccionar={seleccionarUniversidad}
-        />
-      </header>
-
-      <div className="cuerpo">
-        <Filtros
-          estadoSeleccionado={estadoSeleccionado} setEstadoSeleccionado={setEstadoSeleccionado}
-          ciudadSeleccionada={ciudadSeleccionada} setCiudadSeleccionada={setCiudadSeleccionada}
-          estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
-          puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
-          puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
-          puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
-          tiposUniversidad={tiposUniversidad} setTiposUniversidad={setTiposUniversidad}
-          precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
-          nombresEstados={NOMBRES_ESTADOS}
-          filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
-        />
-
-        <main className="columna-principal">
-          <EntradaAsistente onPreguntar={preguntarAlAsistente} />
-
-          {/* Lo primero que se lee: cuántas universidades quedan con lo que marcaste. */}
-          <div className="resultado" aria-live="polite">
-            <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
-            <span className="resultado-texto">
-              {universidadesFiltradas.length === 1 ? 'universidad encaja' : 'universidades encajan'} con lo que marcaste
-            </span>
-            <span className="resultado-nota">
-              de {universidades.length.toLocaleString()} en la base de datos
-              {hayFiltrosUbicacion && ` · en ${NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado}`}
-              {filtros.ciudad !== 'todas' && `, ${filtros.ciudad}`}
-              {filtrosActivos.length > 0 && (
-                <>
-                  {' · '}
-                  <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={limpiarFiltros}
-                    title={`Quita: ${filtrosActivos.join(', ')}`}>
-                    Quitar filtros
-                  </button>
-                </>
-              )}
-            </span>
-          </div>
-
-          <section className="tablero">
-            <MapaGeo
-              datosMapaGeoEstados={mapa.datos}
-              universidadesFiltradas={mapa.universidades}
-              estadoSeleccionado={mapa.estado}
-              onSeleccionarEstado={seleccionarEstadoDesdeMapa}
-              onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
-            />
-
-            {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
-                va el resumen en vez de estirar las barras. */}
-            <div className="tablero-lateral">
-              <GraficoBarras datosGrafico={datosGrafico} onSeleccionar={seleccionarUniversidad} />
-              {hayFiltrosUbicacion && (
-                <ResumenEstado
-                  universidades={universidadesFiltradas}
-                  estadoSeleccionado={filtros.estado}
-                />
-              )}
-            </div>
-          </section>
-
-          <ListaUniversidades
-            universidadesFiltradas={universidadesFiltradas} universidadesOrdenadas={universidadesOrdenadas}
-            faltantesPorId={faltantesPorId}
-            totalUniversidades={universidades.length} ordenarPor={ordenarPor} setOrdenarPor={setOrdenarPor}
-            ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
-            onSeleccionar={seleccionarUniversidad}
-            guardadas={miLista.guardadas} onAlternarGuardada={miLista.alternar}
-          />
-        </main>
-      </div>
+      {vista}
       {asistente}
     </>
   );
