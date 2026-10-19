@@ -1,6 +1,9 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import type { Universidad } from '../types';
 import { formatNivel, formatDinero, formatPorcentaje } from '../utils/formatters';
+import { BotonGuardar } from './BotonGuardar';
+import { claveUniversidad } from '../utils/useMiLista';
+import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
 
 interface Props {
   universidadesFiltradas: Universidad[];
@@ -13,6 +16,9 @@ interface Props {
   ordenDireccion: 'asc' | 'desc';
   setOrdenDireccion: (v: 'asc' | 'desc') => void;
   onSeleccionar: (uni: Universidad) => void;
+  /** Claves (claveUniversidad) de las universidades en "Mi lista". */
+  guardadas: Set<string>;
+  onAlternarGuardada: (uni: Universidad) => void;
 }
 
 const OPCIONES_POR_PAGINA = [25, 50, 100, 200];
@@ -32,12 +38,17 @@ const FilaUniversidad = memo(function FilaUniversidad({
   uni,
   faltantes,
   onSeleccionar,
+  guardada,
+  onAlternarGuardada,
 }: {
   uni: Universidad;
   faltantes?: string[];
   onSeleccionar: (uni: Universidad) => void;
+  guardada: boolean;
+  onAlternarGuardada: (uni: Universidad) => void;
 }) {
   const incompleta = !!faltantes?.length;
+  const ranking = posicionUSNews(uni);
   return (
     <li className={`fila${incompleta ? ' fila-incompleta' : ''}`}>
       <button
@@ -50,6 +61,11 @@ const FilaUniversidad = memo(function FilaUniversidad({
           <span className="fila-nombre">{uni.INSTNM}</span>
           <span className="fila-lugar">{uni.CITY}, {uni.STABBR}</span>
           <span className="marcas">
+            {ranking && (
+              <span className="marca marca-ranking" title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
+                U.S. News {textoPuesto(ranking)}
+              </span>
+            )}
             {uni.CONTROL && <span className={claseControl(uni.CONTROL)}>{uni.CONTROL}</span>}
             {uni.ICLEVEL && <span className="marca">{formatNivel(uni.ICLEVEL)}</span>}
             {uni.ADMCON7 === 'Requerido'
@@ -83,6 +99,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
           </span>
         )}
       </button>
+      <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} />
     </li>
   );
 });
@@ -97,6 +114,8 @@ export function ListaUniversidades({
   ordenDireccion,
   setOrdenDireccion,
   onSeleccionar,
+  guardadas,
+  onAlternarGuardada,
 }: Props) {
   const [porPagina, setPorPagina] = useState<number>(50);
   const [pagina, setPagina] = useState<number>(1);
@@ -136,6 +155,9 @@ export function ListaUniversidades({
           <div className="orden-controles">
             <select id="ordenar-por" value={ordenarPor} onChange={(e) => setOrdenarPor(e.target.value)}>
             <option value="ninguno">Por defecto</option>
+            <optgroup label="Rankings">
+              <option value="USNEWS_ORDEN">Ranking U.S. News 2027</option>
+            </optgroup>
             <optgroup label="Identificación">
               <option value="INSTNM">Nombre (A-Z)</option>
               <option value="CITY">Ciudad</option>
@@ -208,6 +230,8 @@ export function ListaUniversidades({
                 uni={uni}
                 faltantes={uni._id != null ? faltantesPorId.get(uni._id) : undefined}
                 onSeleccionar={onSeleccionar}
+                guardada={guardadas.has(claveUniversidad(uni))}
+                onAlternarGuardada={onAlternarGuardada}
               />
             ))}
           </ul>

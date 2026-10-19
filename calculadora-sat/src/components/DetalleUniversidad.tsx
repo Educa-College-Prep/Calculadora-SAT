@@ -3,6 +3,9 @@ import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { InfoTooltip } from './InfoTooltip';
+import { BotonGuardar } from './BotonGuardar';
+import { UniversidadesSimilares } from './UniversidadesSimilares';
+import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
@@ -10,6 +13,13 @@ import { CostosFinanciamiento } from './CostosFinanciamiento';
 interface Props {
   uni: Universidad;
   onVolver: () => void;
+  guardada: boolean;
+  onAlternarGuardada: (uni: Universidad) => void;
+  cantidadMiLista: number;
+  onVerMiLista: () => void;
+  /** Todas las universidades, para buscar las similares. */
+  universidades: Universidad[];
+  onSeleccionar: (uni: Universidad) => void;
 }
 
 /** Casilla de "Lo esencial": un dato clave con su explicación a un toque. */
@@ -43,8 +53,9 @@ const claseControl = (control: string | null) =>
     : control === 'Privada con fines de lucro' ? 'marca marca-lucro'
     : 'marca marca-privada';
 
-export function DetalleUniversidad({ uni, onVolver }: Props) {
+export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista, universidades, onSeleccionar }: Props) {
   const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;
+  const ranking = posicionUSNews(uni);
   const programas = [uni.CIPTITLE1, uni.CIPTITLE2, uni.CIPTITLE3, uni.CIPTITLE4, uni.CIPTITLE5, uni.CIPTITLE6].filter(Boolean);
 
   return (
@@ -59,8 +70,21 @@ export function DetalleUniversidad({ uni, onVolver }: Props) {
           {uni.ICLEVEL && <span className="marca">{formatNivel(uni.ICLEVEL)}</span>}
           {uni.ADMCON7 === 'Requerido' && <span className="marca marca-sat">SAT obligatorio</span>}
         </div>
+        {ranking && (
+          <p className="ficha-ranking" title={`Fuente: ${FUENTE_USNEWS}`}>
+            <strong>{textoPuesto(ranking)}</strong> en {NOMBRE_LISTA[ranking.lista]} · U.S. News {EDICION_USNEWS}
+          </p>
+        )}
         <h1 className="ficha-nombre">{uni.INSTNM}</h1>
         <p className="ficha-lugar">{uni.CITY}, {uni.STABBR}</p>
+        <div className="ficha-acciones">
+          <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} conTexto />
+          {cantidadMiLista > 0 && (
+            <button type="button" className="boton" onClick={onVerMiLista}>
+              Comparar Mi lista ({cantidadMiLista})
+            </button>
+          )}
+        </div>
       </header>
 
       {/* Lo más importante, legible en pocos segundos. */}
@@ -129,6 +153,10 @@ export function DetalleUniversidad({ uni, onVolver }: Props) {
             )}
           </Seccion>
         )}
+
+        <Seccion titulo="Universidades similares" ancha>
+          <UniversidadesSimilares uni={uni} universidades={universidades} onSeleccionar={onSeleccionar} />
+        </Seccion>
 
       </div>
     </main>

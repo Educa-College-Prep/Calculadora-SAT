@@ -7,12 +7,15 @@ import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
 import { tipoControl } from './utils/tipoControl';
 import { useValorEstable } from './utils/useValorEstable';
+import { posicionUSNews } from './data/rankingUSNews';
+import { useMiLista, claveUniversidad } from './utils/useMiLista';
 import type { TipoControl } from './utils/tipoControl';
 import { MapaGeo } from './components/MapaGeo';
 import { GraficoBarras } from './components/GraficoBarras';
 import { ListaUniversidades } from './components/ListaUniversidades';
 import { ResumenEstado } from './components/ResumenEstado';
 import { DetalleUniversidad } from './components/DetalleUniversidad';
+import { ComparadorUniversidades } from './components/ComparadorUniversidades';
 
 type TooltipCell = { role: 'tooltip'; p: { html: true } };
 
@@ -44,6 +47,9 @@ export default function App() {
   const [tiposUniversidad, setTiposUniversidad] = useState<TipoControl[]>([]);
   const [precioMaximo, setPrecioMaximo] = useState<number>(90000);
 
+  const miLista = useMiLista();
+  const [viendoMiLista, setViendoMiLista] = useState(false);
+
   const [ordenarPor, setOrdenarPor] = useState<string>('ninguno');
   const [ordenDireccion, setOrdenDireccion] = useState<'asc' | 'desc'>('asc');
 
@@ -71,14 +77,18 @@ export default function App() {
     Promise.all([fetch(`${base}universidades_seleccionadas6.json`).then(r => r.json()), admisiones])
       .then(([data, adm]: [Universidad[], Record<string, Partial<Universidad>>]) => {
         // Se asigna un id estable una sola vez, al cargar.
-        setUniversidades(data.map((uni, indice) => ({
+        setUniversidades(data.map((uni, indice) => {
+          const ranking = posicionUSNews(uni);
+          return {
           ...uni,
           ...adm[`${uni.INSTNM}|${uni.CITY}|${uni.STABBR}`],
           // Protección por si el colab vuelve a exportarlos como texto o con "PS" (dato suprimido).
           MD_EARN_WNE_4YR: aNumero(uni.MD_EARN_WNE_4YR),
           COUNT_WNE_4YR: aNumero(uni.COUNT_WNE_4YR),
+          USNEWS_ORDEN: ranking ? ranking.puesto + (ranking.lista === 'liberal-arts' ? 1000 : 0) : null,
           _id: indice,
-        })));
+          };
+        }));
       })
       .catch(error => console.error("Error cargando la data:", error));
   }, []);
@@ -295,11 +305,36 @@ export default function App() {
   const restaurarScroll = useRef(false);
 
   const seleccionarUniversidad = useCallback((uni: Universidad) => {
-    scrollDeLista.current = window.scrollY;
+    // Solo se recuerda el scroll de la lista principal, no el de otra ficha o de Mi lista.
+    if (window.history.state?.detalleId == null && window.history.state?.vista == null) {
+      scrollDeLista.current = window.scrollY;
+    }
     window.history.pushState({ detalleId: uni._id }, '');
     setUniversidadSeleccionada(uni);
     window.scrollTo(0, 0);
   }, []);
+
+  // "Mi lista" también es una entrada del historial: "atrás" vuelve a donde estaba.
+  const abrirMiLista = useCallback(() => {
+    if (window.history.state?.vista !== 'mi-lista' && window.history.state?.detalleId == null) {
+      scrollDeLista.current = window.scrollY;
+    }
+    window.history.pushState({ vista: 'mi-lista' }, '');
+    setUniversidadSeleccionada(null);
+    setViendoMiLista(true);
+    window.scrollTo(0, 0);
+  }, []);
+
+  const volverDeMiLista = useCallback(() => {
+    if (window.history.state?.vista === 'mi-lista') window.history.back();
+    else setViendoMiLista(false);
+  }, []);
+
+  // Las guardadas, en el orden en que se guardaron (las que ya no existen en la data se ignoran).
+  const universidadesGuardadas = useMemo(() => {
+    const porClave = new Map(universidades.map(u => [claveUniversidad(u), u]));
+    return miLista.claves.map(c => porClave.get(c)).filter((u): u is Universidad => u != null);
+  }, [universidades, miLista.claves]);
 
   // El botón "Volver" de la página hace lo mismo que el "atrás" del navegador.
   const volverDelDetalle = useCallback(() => {
@@ -313,13 +348,17 @@ export default function App() {
       if (id != null) {
         const uni = universidades.find(u => u._id === id);
         if (uni) {
-          scrollDeLista.current = window.scrollY;
           setUniversidadSeleccionada(uni);
           window.scrollTo(0, 0);
         }
+      } else if (e.state?.vista === 'mi-lista') {
+        setUniversidadSeleccionada(null);
+        setViendoMiLista(true);
+        window.scrollTo(0, 0);
       } else {
         restaurarScroll.current = true;
         setUniversidadSeleccionada(null);
+        setViendoMiLista(false);
       }
     };
     window.addEventListener('popstate', alNavegar);
@@ -328,17 +367,35 @@ export default function App() {
 
   // Al volver a la lista, se recupera la posición donde estaba el usuario.
   useLayoutEffect(() => {
-    if (universidadSeleccionada == null && restaurarScroll.current) {
+    if (universidadSeleccionada == null && !viendoMiLista && restaurarScroll.current) {
       restaurarScroll.current = false;
       window.scrollTo(0, scrollDeLista.current);
     }
-  }, [universidadSeleccionada]);
+  }, [universidadSeleccionada, viendoMiLista]);
 
   if (universidadSeleccionada) {
     return (
       <DetalleUniversidad
         uni={universidadSeleccionada}
         onVolver={volverDelDetalle}
+        guardada={miLista.guardadas.has(claveUniversidad(universidadSeleccionada))}
+        onAlternarGuardada={miLista.alternar}
+        cantidadMiLista={universidadesGuardadas.length}
+        onVerMiLista={abrirMiLista}
+        universidades={universidades}
+        onSeleccionar={seleccionarUniversidad}
+      />
+    );
+  }
+
+  if (viendoMiLista) {
+    return (
+      <ComparadorUniversidades
+        universidades={universidadesGuardadas}
+        onSeleccionar={seleccionarUniversidad}
+        onQuitar={miLista.quitar}
+        onVaciar={miLista.vaciar}
+        onVolver={volverDeMiLista}
       />
     );
   }
@@ -354,6 +411,11 @@ export default function App() {
           <p className="cabecera-bajada">
             Encuentra universidades de EE.&nbsp;UU. que encajan con tu puntaje, tu presupuesto y el lugar donde quieres estudiar.
           </p>
+          <button type="button" className="boton boton-mi-lista" onClick={abrirMiLista}>
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
+            Mi lista y comparar
+            <span className="contador numero">{universidadesGuardadas.length}</span>
+          </button>
         </div>
         <Buscador
           busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
@@ -428,6 +490,7 @@ export default function App() {
             totalUniversidades={universidades.length} ordenarPor={ordenarPor} setOrdenarPor={setOrdenarPor}
             ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
             onSeleccionar={seleccionarUniversidad}
+            guardadas={miLista.guardadas} onAlternarGuardada={miLista.alternar}
           />
         </main>
       </div>
