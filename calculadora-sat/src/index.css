@@ -1051,3 +1051,12 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   color: var(--grafito-suave);
   border-top: 1px dashed var(--linea);
 }
+
+/* En el celular, la columna fija de nombres de dato es angosta para dejar sitio a las universidades. */
+@media (max-width: 600px) {
+  .comparar-tabla { font-size: 13px; }
+  .comparar-tabla th, .comparar-tabla td { padding: 8px 10px; }
+  .comparar-tabla tbody th[scope="row"] { min-width: 108px; max-width: 120px; white-space: normal; font-size: 12px; }
+  .comparar-tabla td, .comparar-uni { min-width: 140px; }
+  .comparar-nombre { font-size: 14px; }
+}
