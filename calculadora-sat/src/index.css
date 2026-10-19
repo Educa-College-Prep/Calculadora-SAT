@@ -832,3 +832,56 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .tabla { border-collapse: collapse; }
 .tabla thead tr:last-child { border-bottom: 1.5px solid var(--grafito); }
 .tabla tbody { border-bottom: 1px solid var(--linea); }
+
+/* Gráfico de matrículas: barras y nombres llevan a la ficha. */
+.grafico-barra-enlace .recharts-rectangle { cursor: pointer; }
+.grafico-barra-enlace .recharts-rectangle:hover { fill: var(--tinta-fuerte); }
+.grafico-enlace { fill: var(--grafito); cursor: pointer; }
+.grafico-enlace:hover,
+.grafico-enlace:focus-visible { fill: var(--tinta-fuerte); text-decoration: underline; outline: none; }
+
+/* Limpiar filtros: en la cabecera de la hoja y junto al conteo de resultados. */
+.hoja-cabecera-fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.boton-limpiar {
+  flex: none;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tinta-fuerte);
+  background: var(--tinta-fondo);
+  border: 1px solid var(--tinta-suave);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.boton-limpiar:hover { background: #dbe7f7; border-color: var(--tinta); }
+.boton-limpiar-enlace {
+  padding: 0;
+  font-size: inherit;
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.boton-limpiar-enlace:hover { background: none; color: var(--tinta); }
+
+/* Casillas cuadradas: selección múltiple en "Tipo de universidad". */
+.burbuja-casilla input { border-radius: 5px; }
+.burbuja-casilla input:checked {
+  background: var(--grafito) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-7'/%3E%3C/svg%3E") center / 14px no-repeat;
+  box-shadow: none;
+}
+.burbuja-casilla input:indeterminate {
+  background: var(--hoja) linear-gradient(var(--grafito), var(--grafito)) center / 10px 2.5px no-repeat;
+}
+.burbuja-casilla input:indeterminate + span { font-weight: 700; }
+.casillas-anidadas {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 11px;
+  padding-left: 18px;
+  border-left: 1.5px solid var(--tinta-suave);
+}
+.casillas-anidadas .burbuja { font-size: 14px; min-height: 36px; }

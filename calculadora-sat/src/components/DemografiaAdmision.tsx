@@ -11,15 +11,22 @@ interface FilaCDS {
   total: number | null | undefined;
 }
 
-/** "Otro género / no informado" = Total − Hombres − Mujeres (IPEDS deja vacío el detalle). */
-const otro = (f: FilaCDS) =>
-  f.total != null && f.hombres != null && f.mujeres != null ? f.total - f.hombres - f.mujeres : null;
-
-// Padding y encabezados compactos: con la columna "Otro" la tabla son 5 columnas en una tarjeta angosta.
-const celda: CSSProperties = { padding: '6px 4px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
-const encabezado: CSSProperties = { ...celda, fontSize: '12px', fontWeight: 600, color: 'var(--grafito-suave)' };
+const celda: CSSProperties = { padding: '10px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
+const encabezado: CSSProperties = { ...celda, paddingTop: '6px', paddingBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--grafito-suave)' };
 
 const fmt = (v: number | null | undefined) => (v != null ? v.toLocaleString() : '—');
+
+/** Hombres o mujeres como % del total de su fila, con la cantidad debajo. */
+function CeldaPorcentaje({ parte, total }: { parte: number | null | undefined; total: number | null | undefined }) {
+  if (parte == null) return <td style={celda}>—</td>;
+  const porcentaje = total ? `${((parte / total) * 100).toFixed(1)}%` : '—';
+  return (
+    <td style={celda}>
+      <span style={{ display: 'block', fontSize: '16px', fontWeight: 700 }}>{porcentaje}</span>
+      <span style={{ display: 'block', fontSize: '12px', color: 'var(--grafito-suave)' }}>{fmt(parte)}</span>
+    </td>
+  );
+}
 
 /**
  * Bloque "Datos demográficos y de admisión" del detalle.
@@ -35,9 +42,6 @@ export function DemografiaAdmision({ uni }: { uni: Universidad }) {
     { label: 'Admitidos', hombres: uni.ADMSSNM, mujeres: uni.ADMSSNW, total: uni.ADMSSN },
     { label: 'Matriculados', hombres: uni.ENRLM, mujeres: uni.ENRLW, total: uni.ENRLT },
   ].filter((f) => f.hombres != null || f.mujeres != null || f.total != null);
-
-  // La columna "Otro" solo aparece si alguna fila tiene alumnos de otro género o sin informar.
-  const mostrarOtro = filas.some((f) => (otro(f) ?? 0) > 0);
 
   return (
     <div>
@@ -69,17 +73,12 @@ export function DemografiaAdmision({ uni }: { uni: Universidad }) {
             <InfoTooltip texto={glosarioCampos.POSTULANTES} />
           </p>
           <div className="tabla-envoltura">
-          <table className="tabla" style={{ fontSize: '13px' }}>
+          <table className="tabla" style={{ width: '100%', fontSize: '15px' }}>
             <thead>
-              <tr>
-                <th />
-                <th colSpan={mostrarOtro ? 4 : 3} style={{ ...celda, fontSize: '12px', fontWeight: 500, color: 'var(--grafito)' }}>Otoño 2024</th>
-              </tr>
               <tr style={{ borderBottom: '1px solid var(--linea)' }}>
-                <th style={{ ...encabezado, textAlign: 'left' }}></th>
+                <th style={{ ...encabezado, textAlign: 'left' }}>Otoño 2024</th>
                 <th style={encabezado}>Hombres</th>
                 <th style={encabezado}>Mujeres</th>
-                {mostrarOtro && <th style={encabezado} title="Otro género o no informado">Otro</th>}
                 <th style={encabezado}>Total</th>
               </tr>
             </thead>
@@ -87,17 +86,16 @@ export function DemografiaAdmision({ uni }: { uni: Universidad }) {
               {filas.map((f, i) => (
                 // Filas alternadas como en el Common Data Set.
                 <tr key={f.label} style={{ background: i % 2 === 0 ? 'var(--papel)' : 'transparent' }}>
-                  <td style={{ ...celda, textAlign: 'left', fontWeight: 600, paddingLeft: '6px' }}>{f.label}</td>
-                  <td style={celda}>{fmt(f.hombres)}</td>
-                  <td style={celda}>{fmt(f.mujeres)}</td>
-                  {mostrarOtro && <td style={celda}>{fmt(otro(f))}</td>}
-                  <td style={{ ...celda, fontWeight: 600 }}>{fmt(f.total)}</td>
+                  <td style={{ ...celda, textAlign: 'left', fontWeight: 600 }}>{f.label}</td>
+                  <CeldaPorcentaje parte={f.hombres} total={f.total} />
+                  <CeldaPorcentaje parte={f.mujeres} total={f.total} />
+                  <td style={{ ...celda, fontSize: '16px', fontWeight: 700 }}>{fmt(f.total)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
           </div>
-          <p className="fuente">Fuente: IPEDS</p>
+          <p className="fuente">Porcentajes sobre el total de cada fila. Fuente: IPEDS</p>
         </div>
       )}
     </div>

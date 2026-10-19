@@ -5,6 +5,9 @@ import { crearIndiceBusqueda, buscarUniversidades } from './utils/busqueda';
 
 import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
+import { tipoControl } from './utils/tipoControl';
+import { useValorEstable } from './utils/useValorEstable';
+import type { TipoControl } from './utils/tipoControl';
 import { MapaGeo } from './components/MapaGeo';
 import { GraficoBarras } from './components/GraficoBarras';
 import { ListaUniversidades } from './components/ListaUniversidades';
@@ -38,7 +41,7 @@ export default function App() {
   const [puntajeLectura, setPuntajeLectura] = useState<number>(0);
 
   const [exigirSAT, setExigirSAT] = useState<string>('todos');
-  const [tipoUniversidad, setTipoUniversidad] = useState<string>('todos');
+  const [tiposUniversidad, setTiposUniversidad] = useState<TipoControl[]>([]);
   const [precioMaximo, setPrecioMaximo] = useState<number>(90000);
 
   const [ordenarPor, setOrdenarPor] = useState<string>('ninguno');
@@ -98,6 +101,19 @@ export default function App() {
   // Solo hay total (y filtro SAT) cuando se ingresaron las dos secciones.
   const puntajeTotal = puntajeMath > 0 && puntajeLectura > 0 ? puntajeMath + puntajeLectura : 0;
 
+  // Los controles (deslizador, casillas) se actualizan al instante con los valores de
+  // arriba. El filtrado y todo lo que se dibuja con él usan esta copia diferida: React
+  // la procesa en segundo plano y, si el usuario sigue moviendo un filtro, descarta el
+  // trabajo viejo en vez de trabarse en cada paso.
+  const filtros = useDeferredValue(useMemo(() => ({
+    estado: estadoSeleccionado,
+    ciudad: ciudadSeleccionada,
+    tipos: tiposUniversidad,
+    precio: precioMaximo,
+    politica: exigirSAT,
+    sat: puntajeTotal,
+  }), [estadoSeleccionado, ciudadSeleccionada, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal]));
+
   /**
    * Filtrado con manejo explícito de datos faltantes.
    *
@@ -107,10 +123,11 @@ export default function App() {
    * y no se puede saber (se queda, pero marcada y ordenada al final).
    */
   const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId } = useMemo(() => {
+    const { estado, ciudad, tipos, precio, politica, sat } = filtros;
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
-    const filtroSATActivo = puntajeTotal > 0;
-    const filtroPrecioActivo = precioMaximo < PRECIO_MAXIMO_SLIDER;
-    const filtroPoliticaActivo = exigirSAT !== 'todos';
+    const filtroSATActivo = sat > 0;
+    const filtroPrecioActivo = precio < PRECIO_MAXIMO_SLIDER;
+    const filtroPoliticaActivo = politica !== 'todos';
 
     const faltantes = new Map<number, string[]>();
 
@@ -121,37 +138,62 @@ export default function App() {
     const lista = universidades.filter((uni) => {
       // Filtros duros: aquí no hay ambigüedad, el dato siempre existe.
       if (resultadoBusqueda && (uni._id == null || !resultadoBusqueda.posicion.has(uni._id))) return false;
-      if (tipoUniversidad === 'publica' && uni.CONTROL !== 'Pública') return false;
-      if (tipoUniversidad === 'privada' && (!uni.CONTROL || !uni.CONTROL.includes('Privada'))) return false;
+      if (tipos.length > 0) {
+        const tipo = tipoControl(uni.CONTROL);
+        if (tipo == null || !tipos.includes(tipo)) return false;
+      }
 
       const falta: string[] = [];
 
       if (filtroSATActivo) {
         if (uni.SAT_AVG == null) falta.push('Sin promedio SAT');
-        else if (puntajeTotal < uni.SAT_AVG) return false;
+        else if (sat < uni.SAT_AVG) return false;
       }
 
       if (filtroPrecioActivo) {
         if (uni.TUITIONFEE_OUT == null) falta.push('Sin dato de matrícula');
-        else if (uni.TUITIONFEE_OUT > precioMaximo) return false;
+        else if (uni.TUITIONFEE_OUT > precio) return false;
       }
 
       if (filtroPoliticaActivo) {
         if (uni.ADMCON7 == null) falta.push('Política SAT no informada');
-        else if (exigirSAT === 'requerido' && uni.ADMCON7 !== 'Requerido') return false;
-        else if (exigirSAT === 'opcional' && uni.ADMCON7 === 'Requerido') return false;
+        else if (politica === 'requerido' && uni.ADMCON7 !== 'Requerido') return false;
+        else if (politica === 'opcional' && uni.ADMCON7 === 'Requerido') return false;
       }
 
       sinUbicacion.push(uni);
-      if (estadoSeleccionado !== 'todos' && uni.STABBR !== estadoSeleccionado) return false;
-      if (ciudadSeleccionada !== 'todas' && uni.CITY !== ciudadSeleccionada) return false;
+      if (estado !== 'todos' && uni.STABBR !== estado) return false;
+      if (ciudad !== 'todas' && uni.CITY !== ciudad) return false;
 
       if (falta.length > 0 && uni._id != null) faltantes.set(uni._id, falta);
       return true;
     });
 
     return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes };
-  }, [universidades, resultadoBusqueda, estadoSeleccionado, ciudadSeleccionada, tipoUniversidad, precioMaximo, exigirSAT, puntajeTotal]);
+  }, [universidades, resultadoBusqueda, filtros]);
+
+  // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
+  // estado+ciudad cuentan como uno cada uno).
+  const filtrosActivos = ([
+    [puntajeMath > 0 || puntajeLectura > 0, 'puntaje SAT'],
+    [estadoSeleccionado !== 'todos', 'estado'],
+    [exigirSAT !== 'todos', '¿piden el SAT?'],
+    // Marcar los tres tipos equivale a no filtrar.
+    [tiposUniversidad.length > 0 && tiposUniversidad.length < 3, 'tipo de universidad'],
+    [precioMaximo < PRECIO_MAXIMO_SLIDER, 'matrícula máxima'],
+    [busquedaNombre.trim() !== '', `búsqueda "${busquedaNombre.trim()}"`],
+  ] as const).filter(([activo]) => activo).map(([, nombre]) => nombre);
+
+  const limpiarFiltros = useCallback(() => {
+    setBusquedaNombre('');
+    setPuntajeMath(0);
+    setPuntajeLectura(0);
+    setEstadoSeleccionado('todos');
+    setCiudadSeleccionada('todas');
+    setExigirSAT('todos');
+    setTiposUniversidad([]);
+    setPrecioMaximo(PRECIO_MAXIMO_SLIDER);
+  }, []);
 
   const universidadesOrdenadas = useMemo(() => {
     const hayFaltantes = faltantesPorId.size > 0;
@@ -191,7 +233,8 @@ export default function App() {
         // universidad ("Keiser University-...") se confundían entre sí.
         id: String(uni._id),
         costo: uni.TUITIONFEE_OUT,
-        nombreCompleto: uni.INSTNM
+        nombreCompleto: uni.INSTNM,
+        uni,
       })),
     [universidadesFiltradas]
   );
@@ -217,15 +260,23 @@ export default function App() {
 
       // Con un estado elegido, el valor solo marca "elegido (1) / resto (0)" para
       // pintar ese estado y dejar los demás en gris. El tooltip conserva el conteo real.
-      const valor = estadoSeleccionado === 'todos'
+      const valor = filtros.estado === 'todos'
         ? conteoPorEstado[estado]
-        : estado === estadoSeleccionado ? 1 : 0;
+        : estado === filtros.estado ? 1 : 0;
 
       filas.push([`US-${estado}`, valor, tooltip]);
     });
 
     return filas;
-  }, [universidadesSinUbicacion, estadoSeleccionado]);
+  }, [universidadesSinUbicacion, filtros.estado]);
+
+  // El mapa de Google y el de condados son lo más caro de redibujar y no se pueden
+  // interrumpir: mientras un filtro cambia seguido, esperan a que se quede quieto.
+  const mapa = useValorEstable(
+    useMemo(() => ({ datos: datosMapaGeoEstados, universidades: universidadesFiltradas, estado: filtros.estado }),
+      [datosMapaGeoEstados, universidadesFiltradas, filtros.estado]),
+    250,
+  );
 
   // Callbacks estables: sin esto, los mapas y el gráfico se redibujan en cada tecla.
   // Clic en el estado que ya está elegido = volver a ver todo el país.
@@ -292,7 +343,8 @@ export default function App() {
     );
   }
 
-  const hayFiltrosUbicacion = estadoSeleccionado !== 'todos';
+  // Lo que se muestra junto a los resultados va con los filtros ya aplicados (diferidos).
+  const hayFiltrosUbicacion = filtros.estado !== 'todos';
 
   return (
     <>
@@ -319,9 +371,10 @@ export default function App() {
           puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
           puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
           puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
-          tipoUniversidad={tipoUniversidad} setTipoUniversidad={setTipoUniversidad}
+          tiposUniversidad={tiposUniversidad} setTiposUniversidad={setTiposUniversidad}
           precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
           nombresEstados={NOMBRES_ESTADOS}
+          filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
         />
 
         <main className="columna-principal">
@@ -333,16 +386,25 @@ export default function App() {
             </span>
             <span className="resultado-nota">
               de {universidades.length.toLocaleString()} en la base de datos
-              {hayFiltrosUbicacion && ` · en ${NOMBRES_ESTADOS[estadoSeleccionado] ?? estadoSeleccionado}`}
-              {ciudadSeleccionada !== 'todas' && `, ${ciudadSeleccionada}`}
+              {hayFiltrosUbicacion && ` · en ${NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado}`}
+              {filtros.ciudad !== 'todas' && `, ${filtros.ciudad}`}
+              {filtrosActivos.length > 0 && (
+                <>
+                  {' · '}
+                  <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={limpiarFiltros}
+                    title={`Quita: ${filtrosActivos.join(', ')}`}>
+                    Quitar filtros
+                  </button>
+                </>
+              )}
             </span>
           </div>
 
           <section className="tablero">
             <MapaGeo
-              datosMapaGeoEstados={datosMapaGeoEstados}
-              universidadesFiltradas={universidadesFiltradas}
-              estadoSeleccionado={estadoSeleccionado}
+              datosMapaGeoEstados={mapa.datos}
+              universidadesFiltradas={mapa.universidades}
+              estadoSeleccionado={mapa.estado}
               onSeleccionarEstado={seleccionarEstadoDesdeMapa}
               onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
             />
@@ -350,11 +412,11 @@ export default function App() {
             {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
                 va el resumen en vez de estirar las barras. */}
             <div className="tablero-lateral">
-              <GraficoBarras datosGrafico={datosGrafico} />
+              <GraficoBarras datosGrafico={datosGrafico} onSeleccionar={seleccionarUniversidad} />
               {hayFiltrosUbicacion && (
                 <ResumenEstado
                   universidades={universidadesFiltradas}
-                  estadoSeleccionado={estadoSeleccionado}
+                  estadoSeleccionado={filtros.estado}
                 />
               )}
             </div>
