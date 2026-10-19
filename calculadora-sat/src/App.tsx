@@ -8,6 +8,7 @@ import { Filtros } from './components/Filtros';
 import { tipoControl } from './utils/tipoControl';
 import { useValorEstable } from './utils/useValorEstable';
 import { posicionUSNews } from './data/rankingUSNews';
+import { useMiLista, claveUniversidad } from './utils/useMiLista';
 import type { TipoControl } from './utils/tipoControl';
 import { MapaGeo } from './components/MapaGeo';
 import { GraficoBarras } from './components/GraficoBarras';
@@ -44,6 +45,8 @@ export default function App() {
   const [exigirSAT, setExigirSAT] = useState<string>('todos');
   const [tiposUniversidad, setTiposUniversidad] = useState<TipoControl[]>([]);
   const [precioMaximo, setPrecioMaximo] = useState<number>(90000);
+
+  const miLista = useMiLista();
 
   const [ordenarPor, setOrdenarPor] = useState<string>('ninguno');
   const [ordenDireccion, setOrdenDireccion] = useState<'asc' | 'desc'>('asc');
@@ -344,6 +347,8 @@ export default function App() {
       <DetalleUniversidad
         uni={universidadSeleccionada}
         onVolver={volverDelDetalle}
+        guardada={miLista.guardadas.has(claveUniversidad(universidadSeleccionada))}
+        onAlternarGuardada={miLista.alternar}
       />
     );
   }
@@ -433,6 +438,7 @@ export default function App() {
             totalUniversidades={universidades.length} ordenarPor={ordenarPor} setOrdenarPor={setOrdenarPor}
             ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
             onSeleccionar={seleccionarUniversidad}
+            guardadas={miLista.guardadas} onAlternarGuardada={miLista.alternar}
           />
         </main>
       </div>

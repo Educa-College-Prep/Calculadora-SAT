@@ -3,6 +3,7 @@ import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { InfoTooltip } from './InfoTooltip';
+import { BotonGuardar } from './BotonGuardar';
 import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
@@ -11,6 +12,8 @@ import { CostosFinanciamiento } from './CostosFinanciamiento';
 interface Props {
   uni: Universidad;
   onVolver: () => void;
+  guardada: boolean;
+  onAlternarGuardada: (uni: Universidad) => void;
 }
 
 /** Casilla de "Lo esencial": un dato clave con su explicación a un toque. */
@@ -44,7 +47,7 @@ const claseControl = (control: string | null) =>
     : control === 'Privada con fines de lucro' ? 'marca marca-lucro'
     : 'marca marca-privada';
 
-export function DetalleUniversidad({ uni, onVolver }: Props) {
+export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada }: Props) {
   const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;
   const ranking = posicionUSNews(uni);
   const programas = [uni.CIPTITLE1, uni.CIPTITLE2, uni.CIPTITLE3, uni.CIPTITLE4, uni.CIPTITLE5, uni.CIPTITLE6].filter(Boolean);
@@ -68,6 +71,9 @@ export function DetalleUniversidad({ uni, onVolver }: Props) {
         )}
         <h1 className="ficha-nombre">{uni.INSTNM}</h1>
         <p className="ficha-lugar">{uni.CITY}, {uni.STABBR}</p>
+        <div className="ficha-acciones">
+          <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} conTexto />
+        </div>
       </header>
 
       {/* Lo más importante, legible en pocos segundos. */}

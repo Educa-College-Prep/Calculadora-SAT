@@ -896,3 +896,28 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   background: var(--resaltador);
   border-radius: 999px;
 }
+
+/* Mi lista: estrella para guardar (en cada fila y en la ficha). */
+.fila { display: flex; align-items: stretch; }
+.fila .fila-boton { flex: 1; min-width: 0; }
+.boton-guardar {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  padding: 0;
+  font: inherit;
+  color: var(--grafito-suave);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.boton-guardar:hover { color: var(--tinta-fuerte); background: var(--tinta-fondo); }
+.boton-guardar:focus-visible { outline-offset: -3px; }
+.boton-guardar-activo { color: #c79a00; }
+.boton-guardar-activo:hover { color: #a07c00; }
+.boton-guardar-texto { display: inline-flex; width: auto; gap: 8px; padding: 8px 16px; color: var(--tinta-fuerte); }
+.boton-guardar-texto.boton-guardar-activo { color: var(--grafito); background: var(--resaltador); border-color: #e6c400; }
+.boton-guardar-texto.boton-guardar-activo svg { color: var(--grafito); }
+.ficha-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }

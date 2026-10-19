@@ -1,6 +1,8 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import type { Universidad } from '../types';
 import { formatNivel, formatDinero, formatPorcentaje } from '../utils/formatters';
+import { BotonGuardar } from './BotonGuardar';
+import { claveUniversidad } from '../utils/useMiLista';
 import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
 
 interface Props {
@@ -14,6 +16,9 @@ interface Props {
   ordenDireccion: 'asc' | 'desc';
   setOrdenDireccion: (v: 'asc' | 'desc') => void;
   onSeleccionar: (uni: Universidad) => void;
+  /** Claves (claveUniversidad) de las universidades en "Mi lista". */
+  guardadas: Set<string>;
+  onAlternarGuardada: (uni: Universidad) => void;
 }
 
 const OPCIONES_POR_PAGINA = [25, 50, 100, 200];
@@ -33,10 +38,14 @@ const FilaUniversidad = memo(function FilaUniversidad({
   uni,
   faltantes,
   onSeleccionar,
+  guardada,
+  onAlternarGuardada,
 }: {
   uni: Universidad;
   faltantes?: string[];
   onSeleccionar: (uni: Universidad) => void;
+  guardada: boolean;
+  onAlternarGuardada: (uni: Universidad) => void;
 }) {
   const incompleta = !!faltantes?.length;
   const ranking = posicionUSNews(uni);
@@ -90,6 +99,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
           </span>
         )}
       </button>
+      <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} />
     </li>
   );
 });
@@ -104,6 +114,8 @@ export function ListaUniversidades({
   ordenDireccion,
   setOrdenDireccion,
   onSeleccionar,
+  guardadas,
+  onAlternarGuardada,
 }: Props) {
   const [porPagina, setPorPagina] = useState<number>(50);
   const [pagina, setPagina] = useState<number>(1);
@@ -218,6 +230,8 @@ export function ListaUniversidades({
                 uni={uni}
                 faltantes={uni._id != null ? faltantesPorId.get(uni._id) : undefined}
                 onSeleccionar={onSeleccionar}
+                guardada={guardadas.has(claveUniversidad(uni))}
+                onAlternarGuardada={onAlternarGuardada}
               />
             ))}
           </ul>
