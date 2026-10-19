@@ -2,7 +2,8 @@ import { memo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 interface DatoGrafico {
-  nombre: string;
+  /** Identificador único de la barra (el nombre puede repetirse entre sedes). */
+  id: string;
   costo: number | null | undefined;
   nombreCompleto: string;
 }
@@ -13,7 +14,28 @@ interface Props {
 
 const formatoEje = (v: number) => `$${Math.round(v / 1000)}k`;
 
+const MAX_ETIQUETA = 22;
+
+const recortar = (texto: string, largo: number) =>
+  texto.length > largo ? `${texto.slice(0, largo - 1).trimEnd()}…` : texto;
+
+/**
+ * Nombre corto para el eje. Si hay sede ("Keiser University-Tampa"), lo que distingue
+ * una barra de otra es la sede, así que se quitan las palabras genéricas del nombre
+ * y se conserva la sede: "Keiser · Tampa". El nombre completo sale al pasar el mouse.
+ */
+function etiquetaCorta(nombre: string): string {
+  const [base, ...resto] = nombre.split(/\s*-\s*/);
+  const sede = resto.join(' - ');
+  if (!sede) return recortar(nombre.replace(/\bUniversity\b/g, 'Univ.'), MAX_ETIQUETA);
+  const nucleo = base.replace(/\b(University|College|of|the|at|in)\b/gi, '').replace(/\s+/g, ' ').trim() || base;
+  const sedeCorta = recortar(sede, 13);
+  return `${recortar(nucleo, Math.max(6, MAX_ETIQUETA - sedeCorta.length - 3))} · ${sedeCorta}`;
+}
+
 export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props) {
+  const etiquetas = new Map(datosGrafico.map(d => [d.id, etiquetaCorta(d.nombreCompleto)]));
+
   return (
     <div className="panel">
       <div className="panel-cabecera">
@@ -43,8 +65,9 @@ export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props
                 />
                 <YAxis
                   type="category"
-                  dataKey="nombre"
-                  width={128}
+                  dataKey="id"
+                  tickFormatter={(id: string) => etiquetas.get(id) ?? ''}
+                  width={170}
                   stroke="#26292b"
                   tick={{ fontSize: 12 }}
                   axisLine={false}

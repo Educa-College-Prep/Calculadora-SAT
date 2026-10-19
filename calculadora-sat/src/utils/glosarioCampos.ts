@@ -39,6 +39,4 @@ export const glosarioCampos: Record<string, string> = {
 
   // Resultados económicos
   MD_EARN_4YR: 'Lo que gana al año el egresado típico, 4 años después de graduarse. Solo cuenta a quienes trabajan y ya no estudian.',
-  MD_EARN: 'Salario anual del egresado típico (mediana) que trabaja y no estudia, en dólares de 2022.',
-  GT_THRESHOLD: 'Porcentaje de egresados que ganan más que el salario mediano de alguien que solo terminó la preparatoria. Es un indicador de si la carrera "valió la pena" económicamente frente a no ir a la universidad.',
 };
