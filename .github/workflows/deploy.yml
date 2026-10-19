@@ -7,7 +7,14 @@ on:
   workflow_dispatch:      # botón "Run workflow" para publicar a mano
 
 permissions:
-  contents: write         # para poder escribir en la rama gh-pages
+  contents: read
+  pages: write
+  id-token: write
+
+# Si se mergean dos PR seguidos, no se cancela una publicación a medias.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -27,10 +34,19 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-      # Solo publica cuando es main (no en los PR)
-      - name: Publicar en gh-pages
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-        uses: peaceiris/actions-gh-pages@v4
+      # Solo se empaqueta para publicar cuando no es un PR
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: calculadora-sat/dist
+          path: calculadora-sat/dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
