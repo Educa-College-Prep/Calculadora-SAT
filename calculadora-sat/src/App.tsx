@@ -191,7 +191,8 @@ export default function App() {
         // universidad ("Keiser University-...") se confundían entre sí.
         id: String(uni._id),
         costo: uni.TUITIONFEE_OUT,
-        nombreCompleto: uni.INSTNM
+        nombreCompleto: uni.INSTNM,
+        uni,
       })),
     [universidadesFiltradas]
   );
@@ -350,7 +351,7 @@ export default function App() {
             {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
                 va el resumen en vez de estirar las barras. */}
             <div className="tablero-lateral">
-              <GraficoBarras datosGrafico={datosGrafico} />
+              <GraficoBarras datosGrafico={datosGrafico} onSeleccionar={seleccionarUniversidad} />
               {hayFiltrosUbicacion && (
                 <ResumenEstado
                   universidades={universidadesFiltradas}

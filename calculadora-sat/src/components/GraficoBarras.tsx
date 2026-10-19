@@ -1,15 +1,20 @@
 import { memo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+import type { YAxisTickContentProps } from 'recharts';
+import type { Universidad } from '../types';
 
 interface DatoGrafico {
   /** Identificador único de la barra (el nombre puede repetirse entre sedes). */
   id: string;
   costo: number | null | undefined;
   nombreCompleto: string;
+  uni: Universidad;
 }
 
 interface Props {
   datosGrafico: DatoGrafico[];
+  /** Abre la ficha de la universidad al tocar su barra o su nombre. */
+  onSeleccionar: (uni: Universidad) => void;
 }
 
 const formatoEje = (v: number) => `$${Math.round(v / 1000)}k`;
@@ -33,8 +38,28 @@ function etiquetaCorta(nombre: string): string {
   return `${recortar(nucleo, Math.max(6, MAX_ETIQUETA - sedeCorta.length - 3))} · ${sedeCorta}`;
 }
 
-export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props) {
+export const GraficoBarras = memo(function GraficoBarras({ datosGrafico, onSeleccionar }: Props) {
   const etiquetas = new Map(datosGrafico.map(d => [d.id, etiquetaCorta(d.nombreCompleto)]));
+  const porId = new Map(datosGrafico.map(d => [d.id, d.uni]));
+  const abrir = (id: unknown) => {
+    const uni = porId.get(String(id));
+    if (uni) onSeleccionar(uni);
+  };
+
+  // El nombre del eje también es un enlace a la ficha.
+  const EtiquetaEnlace = ({ x, y, payload }: YAxisTickContentProps) => (
+    <text
+      x={x} y={y} dy={4} textAnchor="end" fontSize={12}
+      className="grafico-enlace"
+      role="link"
+      tabIndex={0}
+      onClick={() => abrir(payload.value)}
+      onKeyDown={(e) => { if (e.key === 'Enter') abrir(payload.value); }}
+    >
+      <title>{`Ver ficha de ${porId.get(String(payload.value))?.INSTNM ?? ''}`}</title>
+      {etiquetas.get(String(payload.value)) ?? ''}
+    </text>
+  );
 
   return (
     <div className="panel">
@@ -42,6 +67,7 @@ export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props
         <h2 className="titulo-seccion">Las matrículas más altas</h2>
         <p className="ayuda">
           Matrícula anual para alumnos de otros estados y del extranjero, entre tus resultados.
+          Toca una barra para ver su ficha.
         </p>
       </div>
 
@@ -66,10 +92,9 @@ export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props
                 <YAxis
                   type="category"
                   dataKey="id"
-                  tickFormatter={(id: string) => etiquetas.get(id) ?? ''}
+                  tick={EtiquetaEnlace}
                   width={170}
                   stroke="#26292b"
-                  tick={{ fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -85,7 +110,11 @@ export const GraficoBarras = memo(function GraficoBarras({ datosGrafico }: Props
                   formatter={(value) => [`$${new Intl.NumberFormat('en-US').format(Number(value))}`, 'Matrícula anual']}
                 />
                 {/* Sin animación: así no se mueve cada vez que cambias un filtro. */}
-                <Bar isAnimationActive={false} dataKey="costo" fill="#1b5fa8" radius={[0, 6, 6, 0]} barSize={18} />
+                <Bar
+                  isAnimationActive={false}
+                  className="grafico-barra-enlace"
+                  onClick={(d) => abrir(d.payload?.id)}
+                  dataKey="costo" fill="#1b5fa8" radius={[0, 6, 6, 0]} barSize={18} />
               </BarChart>
             </ResponsiveContainer>
           </div>

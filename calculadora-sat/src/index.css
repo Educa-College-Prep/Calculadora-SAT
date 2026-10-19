@@ -832,3 +832,10 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .tabla { border-collapse: collapse; }
 .tabla thead tr:last-child { border-bottom: 1.5px solid var(--grafito); }
 .tabla tbody { border-bottom: 1px solid var(--linea); }
+
+/* Gráfico de matrículas: barras y nombres llevan a la ficha. */
+.grafico-barra-enlace .recharts-rectangle { cursor: pointer; }
+.grafico-barra-enlace .recharts-rectangle:hover { fill: var(--tinta-fuerte); }
+.grafico-enlace { fill: var(--grafito); cursor: pointer; }
+.grafico-enlace:hover,
+.grafico-enlace:focus-visible { fill: var(--tinta-fuerte); text-decoration: underline; outline: none; }
