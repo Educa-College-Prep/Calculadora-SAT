@@ -4,6 +4,7 @@ import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { InfoTooltip } from './InfoTooltip';
 import { BotonGuardar } from './BotonGuardar';
+import { FotoUniversidad } from './FotoUniversidad';
 import { UniversidadesSimilares } from './UniversidadesSimilares';
 import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
@@ -65,26 +66,29 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
       </button>
 
       <header className="ficha-cabecera">
-        <div className="marcas">
-          {uni.CONTROL && <span className={claseControl(uni.CONTROL)}>{uni.CONTROL}</span>}
-          {uni.ICLEVEL && <span className="marca">{formatNivel(uni.ICLEVEL)}</span>}
-          {uni.ADMCON7 === 'Requerido' && <span className="marca marca-sat">SAT obligatorio</span>}
-        </div>
-        {ranking && (
-          <p className="ficha-ranking" title={`Fuente: ${FUENTE_USNEWS}`}>
-            <strong>{textoPuesto(ranking)}</strong> en {NOMBRE_LISTA[ranking.lista]} · U.S. News {EDICION_USNEWS}
-          </p>
-        )}
-        <h1 className="ficha-nombre">{uni.INSTNM}</h1>
-        <p className="ficha-lugar">{uni.CITY}, {uni.STABBR}</p>
-        <div className="ficha-acciones">
-          <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} conTexto />
-          {cantidadMiLista > 0 && (
-            <button type="button" className="boton" onClick={onVerMiLista}>
-              Comparar Mi lista ({cantidadMiLista})
-            </button>
+        <div className="ficha-cabecera-texto">
+          <div className="marcas">
+            {uni.CONTROL && <span className={claseControl(uni.CONTROL)}>{uni.CONTROL}</span>}
+            {uni.ICLEVEL && <span className="marca">{formatNivel(uni.ICLEVEL)}</span>}
+            {uni.ADMCON7 === 'Requerido' && <span className="marca marca-sat">SAT obligatorio</span>}
+          </div>
+          {ranking && (
+            <p className="ficha-ranking" title={`Fuente: ${FUENTE_USNEWS}`}>
+              <strong>{textoPuesto(ranking)}</strong> en {NOMBRE_LISTA[ranking.lista]} · U.S. News {EDICION_USNEWS}
+            </p>
           )}
+          <h1 className="ficha-nombre">{uni.INSTNM}</h1>
+          <p className="ficha-lugar">{uni.CITY}, {uni.STABBR}</p>
+          <div className="ficha-acciones">
+            <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} conTexto />
+            {cantidadMiLista > 0 && (
+              <button type="button" className="boton" onClick={onVerMiLista}>
+                Comparar Mi lista ({cantidadMiLista})
+              </button>
+            )}
+          </div>
         </div>
+        <FotoUniversidad uni={uni} />
       </header>
 
       {/* Lo más importante, legible en pocos segundos. */}
