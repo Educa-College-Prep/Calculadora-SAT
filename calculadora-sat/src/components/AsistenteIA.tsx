@@ -97,16 +97,32 @@ const claseEtiqueta = (e: string) =>
     : e === 'Segura' ? 'asis-etiqueta asis-etiqueta-segura'
     : 'asis-etiqueta';
 
-function Razonamiento({ respuesta, pasos, fase, abiertoInicial }: {
-  respuesta: RespuestaAgente; pasos: number; fase: Fase; abiertoInicial: boolean;
-}) {
+function IconoHerramienta() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" />
+    </svg>
+  );
+}
+
+/**
+ * Lo que el agente hizo antes de responder. Se ve abierto mientras piensa y se pliega
+ * solo cuando empieza la respuesta, para que lo importante sea el resultado.
+ */
+const claseFicha = (e: string) =>
+  e === 'Alcance' || e === 'Por debajo' ? 'alcance' : e === 'Segura' ? 'segura' : 'objetivo';
+
+function Razonamiento({ respuesta, pasos, fase }: { respuesta: RespuestaAgente; pasos: number; fase: Fase }) {
+  // null = sigue lo automático; true/false = la persona lo abrió o cerró a mano.
+  const [manual, setManual] = useState<boolean | null>(null);
+  const abierto = manual ?? fase === 'pensando';
   const herramientas = respuesta.pasos.filter(p => p.tipo === 'herramienta').length;
   return (
-    <details className="asis-razonamiento" open={abiertoInicial}>
-      <summary>
+    <details className={`asis-razonamiento${fase === 'pensando' ? ' asis-razonamiento-vivo' : ''}`} open={abierto}>
+      <summary onClick={e => { e.preventDefault(); setManual(!abierto); }}>
         {fase === 'pensando'
           ? <><span className="asis-punto-vivo" aria-hidden="true" />Pensando…</>
-          : <>Razonó en {respuesta.pasos.length} pasos · usó {herramientas} herramientas</>}
+          : <>Cómo llegó a la respuesta<span className="asis-razonamiento-resumen">{respuesta.pasos.length} pasos · {herramientas} búsquedas</span></>}
       </summary>
       <ol className="asis-pasos">
         {respuesta.pasos.slice(0, pasos).map((p, i) => (
@@ -115,9 +131,9 @@ function Razonamiento({ respuesta, pasos, fase, abiertoInicial }: {
               <span className="asis-pensamiento">{p.texto}</span>
             ) : (
               <>
-                <code className="asis-herramienta">{p.nombre}</code>
+                <span className="asis-herramienta"><IconoHerramienta />{p.nombre}</span>
                 <span className="asis-argumentos">{p.argumentos}</span>
-                <span className="asis-resultado">→ {p.resultado}</span>
+                <span className="asis-resultado">{p.resultado}</span>
               </>
             )}
           </li>
@@ -133,6 +149,7 @@ export function AsistenteIA({
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [entrada, setEntrada] = useState('');
   const [verTodas, setVerTodas] = useState(false);
+  const [amplio, setAmplio] = useState(false);
   const siguienteId = useRef(1);
   const listaRef = useRef<HTMLDivElement>(null);
   const entradaRef = useRef<HTMLInputElement>(null);
@@ -206,10 +223,11 @@ export function AsistenteIA({
   // En pantallas anchas el panel empuja la página en vez de taparla.
   useEffect(() => {
     document.body.classList.toggle('con-asistente', abierto);
+    document.body.classList.toggle('asis-amplio', abierto && amplio);
     // Los mapas y gráficos se ajustan al nuevo ancho cuando termina la transición.
     const t = window.setTimeout(() => window.dispatchEvent(new Event('resize')), 320);
     return () => window.clearTimeout(t);
-  }, [abierto]);
+  }, [abierto, amplio]);
 
   const enviar = (e: FormEvent) => {
     e.preventDefault();
@@ -262,6 +280,12 @@ export function AsistenteIA({
             <p>Busca, compara y explica con los datos de la calculadora</p>
           </div>
           <span className="asis-demo" title="Respuestas simuladas para la demostración, con datos reales">Demo</span>
+          <button type="button" className="asis-icono asis-ampliar" onClick={() => setAmplio(a => !a)}
+            title={amplio ? 'Achicar el panel' : 'Ampliar el panel'} aria-label={amplio ? 'Achicar el panel' : 'Ampliar el panel'} aria-pressed={amplio}>
+            {amplio
+              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 10l7-7M14 4v6h6M10 14l-7 7M10 20v-6H4" /></svg>
+              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 3h6v6M21 3l-7 7M9 21H3v-6M3 21l7-7" /></svg>}
+          </button>
           {mensajes.length > 0 && (
             <button type="button" className="asis-icono" onClick={() => setMensajes([])} disabled={ocupado}
               title="Nueva conversación" aria-label="Nueva conversación">
@@ -288,38 +312,44 @@ export function AsistenteIA({
               <div key={m.id} className="asis-burbuja-usuario">{m.texto}</div>
             ) : (
               <article key={m.id} className="asis-respuesta">
-                <Razonamiento respuesta={m.respuesta} pasos={m.pasos} fase={m.fase} abiertoInicial={m.id === ultimo?.id} />
+                <Razonamiento respuesta={m.respuesta} pasos={m.pasos} fase={m.fase} />
                 {m.fase !== 'pensando' && (
-                  <div className="asis-texto">
-                    <TextoRico texto={m.fase === 'listo' ? m.respuesta.texto : recortarPalabras(m.respuesta.texto, m.palabras)} />
-                    {m.fase === 'escribiendo' && <span className="asis-cursor" aria-hidden="true" />}
+                  <div className="asis-resultado-bloque">
+                    <div className="asis-resultado-cabeza">
+                      <span className="asis-avatar asis-avatar-chico"><IconoChispa tamano={12} /></span>
+                      Respuesta
+                    </div>
+                    <div className="asis-texto">
+                      <TextoRico texto={m.fase === 'listo' ? m.respuesta.texto : recortarPalabras(m.respuesta.texto, m.palabras)} />
+                      {m.fase === 'escribiendo' && <span className="asis-cursor" aria-hidden="true" />}
+                    </div>
+                    {m.fase === 'listo' && (
+                      <>
+                        {m.respuesta.universidades && m.respuesta.universidades.length > 0 && (
+                          <ul className="asis-fichas">
+                            {m.respuesta.universidades.map(f => (
+                              <li key={`${f.uni._id}-${f.etiqueta ?? ''}`}>
+                                <button type="button" className={`asis-ficha${f.etiqueta ? ` asis-ficha-${claseFicha(f.etiqueta)}` : ''}`} onClick={() => onSeleccionar(f.uni)}>
+                                  <span className="asis-ficha-cabeza">
+                                    <span className="asis-ficha-nombre">{f.uni.INSTNM}</span>
+                                    {f.etiqueta && <span className={claseEtiqueta(f.etiqueta)}>{f.etiqueta}</span>}
+                                  </span>
+                                  <span className="asis-ficha-lugar">{f.uni.CITY}, {f.uni.STABBR}</span>
+                                  <span className="asis-ficha-datos numero">{f.datos.join(' · ')}</span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        {m.respuesta.cierre && <div className="asis-texto"><TextoRico texto={m.respuesta.cierre} /></div>}
+                        {m.respuesta.filtros && Object.values(m.respuesta.filtros).some(v => v != null) && (
+                          <button type="button" className="boton asis-aplicar" onClick={() => onAplicarFiltros(m.respuesta.filtros!)}>
+                            Ver estos filtros en la calculadora →
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
-                )}
-                {m.fase === 'listo' && (
-                  <>
-                    {m.respuesta.universidades && m.respuesta.universidades.length > 0 && (
-                      <ul className="asis-fichas">
-                        {m.respuesta.universidades.map(f => (
-                          <li key={`${f.uni._id}-${f.etiqueta ?? ''}`}>
-                            <button type="button" className="asis-ficha" onClick={() => onSeleccionar(f.uni)}>
-                              <span className="asis-ficha-cabeza">
-                                <span className="asis-ficha-nombre">{f.uni.INSTNM}</span>
-                                {f.etiqueta && <span className={claseEtiqueta(f.etiqueta)}>{f.etiqueta}</span>}
-                              </span>
-                              <span className="asis-ficha-lugar">{f.uni.CITY}, {f.uni.STABBR}</span>
-                              <span className="asis-ficha-datos numero">{f.datos.join(' · ')}</span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    {m.respuesta.cierre && <div className="asis-texto"><TextoRico texto={m.respuesta.cierre} /></div>}
-                    {m.respuesta.filtros && Object.values(m.respuesta.filtros).some(v => v != null) && (
-                      <button type="button" className="boton asis-aplicar" onClick={() => onAplicarFiltros(m.respuesta.filtros!)}>
-                        Ver estos filtros en la calculadora →
-                      </button>
-                    )}
-                  </>
                 )}
               </article>
             ))
