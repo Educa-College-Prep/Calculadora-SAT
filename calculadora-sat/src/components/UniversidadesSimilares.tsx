@@ -13,12 +13,20 @@ function diferencia(otra: number | null | undefined, base: number | null | undef
     : { texto: `${formatDinero(d)} más`, clase: 'similar-mas' };
 }
 
+/** 8 llena sin huecos la grilla de 4 columnas, la de 2 y la de 1. */
+const CANTIDAD = 8;
+
 export function UniversidadesSimilares({ uni, universidades, onSeleccionar }: {
   uni: Universidad;
   universidades: Universidad[];
   onSeleccionar: (uni: Universidad) => void;
 }) {
-  const similares = useMemo(() => universidadesSimilares(uni, universidades), [uni, universidades]);
+  const similares = useMemo(() => {
+    const lista = universidadesSimilares(uni, universidades, CANTIDAD);
+    // Filas completas: en el raro caso de que haya menos de 8, se recorta a un múltiplo
+    // de 4 para que la grilla (4, 2 o 1 columnas) no quede con huecos.
+    return lista.length >= 4 ? lista.slice(0, lista.length - (lista.length % 4)) : lista;
+  }, [uni, universidades]);
   if (similares.length === 0) return null;
 
   return (
@@ -26,30 +34,33 @@ export function UniversidadesSimilares({ uni, universidades, onSeleccionar }: {
       <p className="ficha-intro">
         Parecidas en nivel SAT, selectividad, tamaño, matrícula y salario de egresados.
       </p>
-      <ul className="similares">
-        {similares.map(({ uni: otra, parecidaEn }) => {
-          const dif = diferencia(otra.TUITIONFEE_OUT, uni.TUITIONFEE_OUT);
-          return (
-            <li key={`${otra.INSTNM}|${otra.CITY}`}>
-              <button type="button" className="similar" onClick={() => onSeleccionar(otra)}>
-                <span className="similar-nombre">{otra.INSTNM}</span>
-                <span className="similar-lugar">{otra.CITY}, {otra.STABBR} · {otra.CONTROL}</span>
-                <span className="similar-datos numero">
-                  <span>
-                    Matrícula <strong>{formatDinero(otra.TUITIONFEE_OUT) ?? '—'}</strong>
-                    {dif && <span className={`similar-dif ${dif.clase}`}> ({dif.texto})</span>}
+      <div className="similares-envoltura">
+        <ul className="similares">
+          {similares.map(({ uni: otra, parecidaEn }) => {
+            const dif = diferencia(otra.TUITIONFEE_OUT, uni.TUITIONFEE_OUT);
+            return (
+              <li key={`${otra.INSTNM}|${otra.CITY}`}>
+                <button type="button" className="similar" onClick={() => onSeleccionar(otra)}>
+                  <span className="similar-nombre">{otra.INSTNM}</span>
+                  <span className="similar-lugar">{otra.CITY}, {otra.STABBR} · {otra.CONTROL}</span>
+                  <span className="similar-datos numero">
+                    <span>
+                      Matrícula <strong>{formatDinero(otra.TUITIONFEE_OUT) ?? '—'}</strong>
+                      {dif && <span className={`similar-dif ${dif.clase}`}> ({dif.texto})</span>}
+                    </span>
+                    <span>Admite <strong>{formatPorcentaje(otra.ADM_RATE) ?? '—'}</strong></span>
+                    {otra.SAT_AVG != null && <span>SAT prom. <strong>{otra.SAT_AVG}</strong></span>}
                   </span>
-                  <span>Admite <strong>{formatPorcentaje(otra.ADM_RATE) ?? '—'}</strong></span>
-                  {otra.SAT_AVG != null && <span>SAT prom. <strong>{otra.SAT_AVG}</strong></span>}
-                </span>
-                {parecidaEn.length > 0 && (
-                  <span className="similar-razon">Parecida en {parecidaEn.join(', ')}</span>
-                )}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+                  {parecidaEn.length > 0 && (
+                    <span className="similar-razon">Parecida en {parecidaEn.join(', ')}</span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="similares-pista" aria-hidden="true">Desliza para ver las {similares.length} →</p>
+      </div>
     </>
   );
 }
