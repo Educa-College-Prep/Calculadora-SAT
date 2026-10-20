@@ -756,17 +756,19 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   .foto-uni img { transition: none; }
 }
 
-/* "Lo esencial": cuatro casillas como las del recuadro de respuestas. */
+/* "Lo esencial": cinco casillas como las del recuadro de respuestas.
+   Las rayas entre casillas son el fondo que asoma por el espacio entre ellas. */
 .esenciales {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1.5px;
   margin: 0;
-  background: var(--hoja);
+  overflow: hidden;
+  background: var(--tinta-suave);
   border: 1.5px solid var(--tinta);
   border-radius: var(--radio);
 }
-.esencial { padding: 16px 20px; min-width: 0; }
-.esencial + .esencial { border-left: 1.5px solid var(--tinta-suave); }
+.esencial { padding: 16px 20px; min-width: 0; background: var(--hoja); }
 .esencial-etiqueta {
   display: flex;
   align-items: center;
@@ -776,7 +778,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 .esencial-valor {
   margin: 6px 0 0;
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: clamp(24px, 2.5vw, 32px);
   font-stretch: 112%;
   font-weight: 800;
   line-height: 1.05;
@@ -853,9 +855,9 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .pestana[aria-selected="true"] { color: #fff; background: var(--grafito); }
 
 @media (max-width: 860px) {
+  /* De a dos (admisión y SAT, vida y total) y el salario a lo ancho. */
   .esenciales { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .esencial:nth-child(3) { border-left: 0; }
-  .esencial:nth-child(n + 3) { border-top: 1.5px solid var(--tinta-suave); }
+  .esencial:last-child { grid-column: 1 / -1; }
   .ficha-grilla { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 600px) {

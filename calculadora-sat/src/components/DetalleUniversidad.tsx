@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
+import { calcularCostoVida } from '../utils/costos';
 import { InfoTooltip } from './InfoTooltip';
 import { BotonGuardar } from './BotonGuardar';
 import { FotoUniversidad } from './FotoUniversidad';
@@ -56,6 +57,10 @@ const claseControl = (control: string | null) =>
 
 export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista, universidades, onSeleccionar }: Props) {
   const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;
+  // Lo que cuesta un año para alguien de fuera del estado (el público de esta web): matrícula + vida.
+  const costoVida = calcularCostoVida(uni);
+  const costoTotal = matricula != null && costoVida ? matricula + costoVida.valor : null;
+  const aprox = costoVida?.estimado ? '~' : '';
   const ranking = posicionUSNews(uni);
   const programas = [uni.CIPTITLE1, uni.CIPTITLE2, uni.CIPTITLE3, uni.CIPTITLE4, uni.CIPTITLE5, uni.CIPTITLE6].filter(Boolean);
 
@@ -95,7 +100,10 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
       <dl className="esenciales" aria-label="Lo esencial">
         <Esencial etiqueta="Tasa de admisión" valor={formatPorcentaje(uni.ADM_RATE)} ayuda={glosarioCampos.ADM_RATE} />
         <Esencial etiqueta="Puntaje SAT promedio" valor={uni.SAT_AVG != null ? String(uni.SAT_AVG) : null} ayuda={glosarioCampos.SAT_AVG} />
-        <Esencial etiqueta="Matrícula anual" valor={formatDinero(matricula)} ayuda={glosarioCampos.TUITIONFEE_OUT} />
+        <Esencial etiqueta="Costo de vida al año" valor={costoVida ? aprox + formatDinero(costoVida.valor) : null}
+          ayuda={costoVida?.estimado ? glosarioCampos.COSTO_VIDA_ESTIMADO : glosarioCampos.COSTO_VIDA} />
+        <Esencial etiqueta="Costo anual total" valor={costoTotal != null ? aprox + formatDinero(costoTotal) : null}
+          ayuda={glosarioCampos.COSTO_TOTAL_ESENCIAL} />
         <Esencial etiqueta="Salario a 4 años de graduarse" valor={formatDinero(uni.MD_EARN_WNE_4YR)} ayuda={glosarioCampos.MD_EARN_4YR} />
       </dl>
 
