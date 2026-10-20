@@ -703,6 +703,20 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 .ficha-portada .marcas { margin: 0 0 12px; }
 .ficha-portada .ficha-ranking { color: var(--grafito); }
+/* Etiquetas de la ficha: más grandes y con fondo sólido, para que se lean sobre la foto. */
+.ficha-portada .marcas { gap: 8px; }
+.ficha-portada .marca {
+  padding: 5px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--grafito);
+  background: #fff;
+  border: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.ficha-portada .marca-publica { color: #fff; background: var(--tinta); }
+.ficha-portada .marca-privada { color: #fff; background: var(--boligrafo); }
+.ficha-portada .marca-lucro { color: var(--grafito); background: var(--alerta-borde); }
 .ficha-portada .ficha-nombre { color: #fff; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35); }
 .ficha-portada .ficha-lugar { color: rgba(255, 255, 255, 0.88); }
 
