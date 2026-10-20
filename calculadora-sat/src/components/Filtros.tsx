@@ -4,7 +4,7 @@ import { InfoTooltip } from './InfoTooltip';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { PRIVADAS } from '../utils/tipoControl';
 import type { TipoControl } from '../utils/tipoControl';
-import { NIVELES } from '../utils/nivelSAT';
+import { NIVELES, AYUDA_NIVELES } from '../utils/nivelSAT';
 import type { Nivel } from '../utils/nivelSAT';
 import { BarrasNivel } from './EtiquetaNivel';
 
@@ -42,10 +42,11 @@ interface Props {
   /** Nombres de los filtros activos; el botón "Limpiar" muestra cuántos son y cuáles. */
   filtrosActivos: readonly string[];
   onLimpiar: () => void;
-  /** Cuántos resultados hay de cada nivel (segura, buena opción, ambiciosa); null sin puntaje. */
+  /** Cuántos resultados hay de cada nivel (segura, buena opción, difícil); null sin puntaje. */
   conteoNiveles: Record<Nivel, number> | null;
-  nivelSAT: Nivel | 'todas';
-  setNivelSAT: (v: Nivel | 'todas') => void;
+  /** Niveles marcados; vacío = todos. */
+  nivelesSAT: Nivel[];
+  setNivelesSAT: (v: Nivel[]) => void;
 }
 
 const SAT_MIN = 200;
@@ -119,18 +120,19 @@ function Burbujas({ nombre, valor, opciones, onCambio }: {
 }
 
 /** Casilla cuadrada (selección múltiple), con el mismo estilo de la hoja de respuestas. */
-function Casilla({ marcada, parcial = false, texto, onCambio }: {
+function Casilla({ marcada, parcial = false, texto, onCambio, deshabilitada = false }: {
   marcada: boolean;
   parcial?: boolean;
-  texto: string;
+  texto: ReactNode;
   onCambio: () => void;
+  deshabilitada?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   // "indeterminate" solo se puede poner desde JS, no como atributo.
   useEffect(() => { if (ref.current) ref.current.indeterminate = parcial; }, [parcial]);
   return (
-    <label className="burbuja burbuja-casilla">
-      <input ref={ref} type="checkbox" checked={marcada} onChange={onCambio} />
+    <label className={`burbuja burbuja-casilla${deshabilitada ? ' burbuja-deshabilitada' : ''}`}>
+      <input ref={ref} type="checkbox" checked={marcada} onChange={onCambio} disabled={deshabilitada} />
       <span>{texto}</span>
     </label>
   );
@@ -237,7 +239,7 @@ export function Filtros({
   precioMaximo, setPrecioMaximo,
   filtrosActivos, onLimpiar,
   conteoNiveles,
-  nivelSAT, setNivelSAT,
+  nivelesSAT, setNivelesSAT,
 }: Props) {
   const satIncompleto = (puntajeMath > 0) !== (puntajeLectura > 0);
   const sinLimitePrecio = precioMaximo >= PRECIO_TOPE;
@@ -279,38 +281,31 @@ export function Filtros({
         </div>
         {satIncompleto && <p className="ayuda ayuda-aviso">Ingresa ambos puntajes para filtrar.</p>}
 
-        {/* Qué significa cada etiqueta de la lista y cuántas hay con tu puntaje. */}
-        <ul className="niveles-sat" aria-label="Tus posibilidades de entrar">
-          {NIVELES.map(({ nivel, clase, barras, explicacion }) => (
-            <li key={nivel} className={`nivel-sat nivel-sat-${clase}`}>
-              <span className="nivel-sat-nombre">
-                <BarrasNivel barras={barras} />
-                {nivel}
-                {conteoNiveles && <span className="nivel-sat-cuenta numero">{conteoNiveles[nivel].toLocaleString('en-US')}</span>}
-              </span>
-              <span className="nivel-sat-texto">{explicacion}</span>
-            </li>
+      </Seccion>
+
+      {/* Se marcan una o varias; sin marcar, se muestran todas. Solo con puntaje,
+          porque sin él no hay con qué comparar. */}
+      <Seccion titulo="Tus posibilidades de entrar" ayuda={AYUDA_NIVELES}>
+        <div className="burbujas">
+          {NIVELES.map(({ nivel, clase, barras }) => (
+            <Casilla
+              key={nivel}
+              marcada={!!conteoNiveles && nivelesSAT.includes(nivel)}
+              deshabilitada={!conteoNiveles}
+              onCambio={() => setNivelesSAT(nivelesSAT.includes(nivel) ? nivelesSAT.filter(n => n !== nivel) : [...nivelesSAT, nivel])}
+              texto={
+                <span className={`nivel-opcion nivel-opcion-${clase}`}>
+                  <BarrasNivel barras={barras} />
+                  {nivel}
+                  {conteoNiveles && <span className="nivel-opcion-cuenta numero">{conteoNiveles[nivel].toLocaleString('en-US')}</span>}
+                </span>
+              }
+            />
           ))}
-        </ul>
-        {/* Elegir por posibilidades: solo con puntaje, porque sin él no hay con qué comparar. */}
-        <label className="campo nivel-sat-campo">
-          <span className="campo-etiqueta">Tus posibilidades de entrar</span>
-          <select
-            value={conteoNiveles ? nivelSAT : 'todas'}
-            onChange={(e) => setNivelSAT(e.target.value as Nivel | 'todas')}
-            disabled={!conteoNiveles}
-          >
-            <option value="todas">Todas</option>
-            {NIVELES.map(({ nivel }) => (
-              <option key={nivel} value={nivel}>
-                {nivel}{conteoNiveles ? ` (${conteoNiveles[nivel].toLocaleString('en-US')})` : ''}
-              </option>
-            ))}
-          </select>
-        </label>
-        {!conteoNiveles && !satIncompleto && (
-          <p className="ayuda">Pon tu puntaje para ver en cuáles tienes más posibilidades de entrar.</p>
-        )}
+        </div>
+        <p className="ayuda">
+          {conteoNiveles ? 'Sin marcar, se muestran todas.' : 'Pon tu puntaje SAT para ver en cuáles tienes más posibilidades de entrar.'}
+        </p>
       </Seccion>
 
       {/* UBICACIÓN */}

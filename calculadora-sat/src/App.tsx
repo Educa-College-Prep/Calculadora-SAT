@@ -57,8 +57,8 @@ export default function App() {
   const [puntajeLectura, setPuntajeLectura] = useState<number>(0);
 
   const [exigirSAT, setExigirSAT] = useState<string>('todos');
-  /** "Tus posibilidades de entrar": 'todas' o un nivel; solo aplica con puntaje SAT. */
-  const [nivelSAT, setNivelSAT] = useState<Nivel | 'todas'>('todas');
+  /** "Tus posibilidades de entrar": niveles marcados (vacío = todos); solo con puntaje SAT. */
+  const [nivelesSAT, setNivelesSAT] = useState<Nivel[]>([]);
   const [tiposUniversidad, setTiposUniversidad] = useState<TipoControl[]>([]);
   const [precioMaximo, setPrecioMaximo] = useState<number>(90000);
 
@@ -137,8 +137,8 @@ export default function App() {
     precio: precioMaximo,
     politica: exigirSAT,
     sat: puntajeTotal,
-    nivel: nivelSAT,
-  }), [estadoSeleccionado, ciudadSeleccionada, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal, nivelSAT]));
+    niveles: nivelesSAT,
+  }), [estadoSeleccionado, ciudadSeleccionada, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal, nivelesSAT]));
 
   /**
    * Filtrado con manejo explícito de datos faltantes.
@@ -171,7 +171,7 @@ export default function App() {
 
       const falta: string[] = [];
 
-      // Quedan las seguras, buenas opciones y ambiciosas; solo salen las prácticamente inalcanzables.
+      // Quedan las seguras, buenas opciones y difíciles; solo salen las prácticamente inalcanzables.
       if (filtroSATActivo) {
         const entra = alcanzable(uni, sat);
         if (entra == null) falta.push('Sin datos SAT');
@@ -200,13 +200,17 @@ export default function App() {
     if (!filtroSATActivo) {
       return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes, conteoNiveles: null };
     }
-    const conteo: Record<Nivel, number> = { 'Segura': 0, 'Buena opción': 0, 'Ambiciosa': 0 };
+    const conteo: Record<Nivel, number> = { 'Segura': 0, 'Buena opción': 0, 'Difícil': 0 };
     for (const uni of lista) {
       const n = clasificar(uni, sat);
       if (n) conteo[n]++;
     }
-    // Con un nivel elegido quedan solo las de ese nivel (las sin rango SAT no se pueden clasificar).
-    const delNivel = (uni: Universidad) => filtros.nivel === 'todas' || clasificar(uni, sat) === filtros.nivel;
+    // Con niveles marcados quedan solo los de esos niveles (las sin rango SAT no se pueden clasificar).
+    const delNivel = (uni: Universidad) => {
+      if (filtros.niveles.length === 0) return true;
+      const n = clasificar(uni, sat);
+      return n != null && filtros.niveles.includes(n);
+    };
     return {
       universidadesFiltradas: lista.filter(delNivel),
       universidadesSinUbicacion: sinUbicacion.filter(delNivel),
@@ -221,7 +225,8 @@ export default function App() {
     [puntajeMath > 0 || puntajeLectura > 0, 'puntaje SAT'],
     [estadoSeleccionado !== 'todos', 'estado'],
     [exigirSAT !== 'todos', '¿piden el SAT?'],
-    [puntajeTotal > 0 && nivelSAT !== 'todas', 'tus posibilidades de entrar'],
+    // Marcar los tres niveles equivale a no filtrar.
+    [puntajeTotal > 0 && nivelesSAT.length > 0 && nivelesSAT.length < 3, 'tus posibilidades de entrar'],
     // Marcar los tres tipos equivale a no filtrar.
     [tiposUniversidad.length > 0 && tiposUniversidad.length < 3, 'tipo de universidad'],
     [precioMaximo < PRECIO_MAXIMO_SLIDER, 'matrícula máxima'],
@@ -235,7 +240,7 @@ export default function App() {
     setEstadoSeleccionado('todos');
     setCiudadSeleccionada('todas');
     setExigirSAT('todos');
-    setNivelSAT('todas');
+    setNivelesSAT([]);
     setTiposUniversidad([]);
     setPrecioMaximo(PRECIO_MAXIMO_SLIDER);
   }, []);
@@ -420,7 +425,7 @@ export default function App() {
     setPrecioMaximo(f.precioMaximo ?? PRECIO_MAXIMO_SLIDER);
     setTiposUniversidad(f.tipo === 'publica' ? ['publica'] : f.tipo === 'privada' ? PRIVADAS : []);
     setExigirSAT(f.exigirSAT ?? 'todos');
-    setNivelSAT('todas');
+    setNivelesSAT([]);
     if (universidadSeleccionada) volverDelDetalle();
     else document.querySelector('.resultado')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     // En el celular el panel tapa todo: se cierra para que se vea el resultado.
@@ -509,7 +514,7 @@ export default function App() {
             nombresEstados={NOMBRES_ESTADOS}
             filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
             conteoNiveles={conteoNiveles}
-            nivelSAT={nivelSAT} setNivelSAT={setNivelSAT}
+            nivelesSAT={nivelesSAT} setNivelesSAT={setNivelesSAT}
           />
 
           <main className="columna-principal">
