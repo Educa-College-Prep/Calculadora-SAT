@@ -4,6 +4,9 @@ import { InfoTooltip } from './InfoTooltip';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { PRIVADAS } from '../utils/tipoControl';
 import type { TipoControl } from '../utils/tipoControl';
+import { NIVELES } from '../utils/nivelSAT';
+import type { Nivel } from '../utils/nivelSAT';
+import { BarrasNivel } from './EtiquetaNivel';
 
 /** Qué significa cada opción de "¿Piden el SAT?", para que no se confundan opcional y no considerado. */
 const EXPLICACION_POLITICA: Record<string, string> = {
@@ -39,6 +42,8 @@ interface Props {
   /** Nombres de los filtros activos; el botón "Limpiar" muestra cuántos son y cuáles. */
   filtrosActivos: readonly string[];
   onLimpiar: () => void;
+  /** Cuántos resultados son seguros, objetivo y de alcance; null sin puntaje. */
+  conteoNiveles: Record<Nivel, number> | null;
 }
 
 const SAT_MIN = 200;
@@ -229,6 +234,7 @@ export function Filtros({
   tiposUniversidad, setTiposUniversidad,
   precioMaximo, setPrecioMaximo,
   filtrosActivos, onLimpiar,
+  conteoNiveles,
 }: Props) {
   const satIncompleto = (puntajeMath > 0) !== (puntajeLectura > 0);
   const sinLimitePrecio = precioMaximo >= PRECIO_TOPE;
@@ -257,7 +263,7 @@ export function Filtros({
       {/* PUNTAJE SAT (orden: Verbal, Math, Total) */}
       <Seccion
         titulo="Tu puntaje SAT"
-        ayuda="Con ambos puntajes, se muestran las universidades cuyo SAT promedio de admitidos es igual o menor a tu total."
+        ayuda="Con ambos puntajes se compara tu total con el de los admitidos de cada universidad. Se ocultan solo las que están muy por encima de tu puntaje (más de 100 puntos bajo el 25% de sus admitidos)."
       >
         <div className="casillas-sat">
           <InputSeccionSAT etiqueta="Verbal" valor={puntajeLectura} setValor={setPuntajeLectura} />
@@ -269,6 +275,23 @@ export function Filtros({
           <span className="total-sat-escala">/ 1600</span>
         </div>
         {satIncompleto && <p className="ayuda ayuda-aviso">Ingresa ambos puntajes para filtrar.</p>}
+
+        {/* Qué significa cada etiqueta de la lista y cuántas hay con tu puntaje. */}
+        <ul className="niveles-sat" aria-label="Qué tan alcanzable es cada universidad">
+          {NIVELES.map(({ nivel, barras, explicacion }) => (
+            <li key={nivel} className={`nivel-sat nivel-sat-${nivel.toLowerCase()}`}>
+              <span className="nivel-sat-nombre">
+                <BarrasNivel barras={barras} />
+                {nivel}
+                {conteoNiveles && <span className="nivel-sat-cuenta numero">{conteoNiveles[nivel].toLocaleString('en-US')}</span>}
+              </span>
+              <span className="nivel-sat-texto">{explicacion}</span>
+            </li>
+          ))}
+        </ul>
+        {!conteoNiveles && !satIncompleto && (
+          <p className="ayuda">Pon tu puntaje para ver cuáles son seguras, objetivo o de alcance para ti.</p>
+        )}
       </Seccion>
 
       {/* UBICACIÓN */}

@@ -19,6 +19,8 @@ import { AsistenteIA, EntradaAsistente } from './components/AsistenteIA';
 import type { SolicitudAsistente } from './components/AsistenteIA';
 import type { FiltrosSugeridos } from './asistente/tipos';
 import { ComparadorUniversidades } from './components/ComparadorUniversidades';
+import { alcanzable, clasificar } from './utils/nivelSAT';
+import type { Nivel } from './utils/nivelSAT';
 
 /** Opción del filtro "¿Piden el SAT?" → valor de ADMCON7 (política de puntajes de IPEDS). */
 const POLITICA_SAT: Record<string, string> = {
@@ -165,9 +167,11 @@ export default function App() {
 
       const falta: string[] = [];
 
+      // Quedan las seguras, objetivo y de alcance; solo salen las prácticamente inalcanzables.
       if (filtroSATActivo) {
-        if (uni.SAT_AVG == null) falta.push('Sin promedio SAT');
-        else if (sat < uni.SAT_AVG) return false;
+        const entra = alcanzable(uni, sat);
+        if (entra == null) falta.push('Sin datos SAT');
+        else if (!entra) return false;
       }
 
       if (filtroPrecioActivo) {
@@ -189,6 +193,17 @@ export default function App() {
 
     return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes };
   }, [universidades, resultadoBusqueda, filtros]);
+
+  // Cuántas de tus resultados son seguras, objetivo y de alcance (con el puntaje ya aplicado).
+  const conteoNiveles = useMemo(() => {
+    if (filtros.sat <= 0) return null;
+    const conteo: Record<Nivel, number> = { Segura: 0, Objetivo: 0, Alcance: 0 };
+    for (const uni of universidadesFiltradas) {
+      const nivel = clasificar(uni, filtros.sat);
+      if (nivel) conteo[nivel]++;
+    }
+    return conteo;
+  }, [universidadesFiltradas, filtros.sat]);
 
   // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
   // estado+ciudad cuentan como uno cada uno).
@@ -489,6 +504,7 @@ export default function App() {
             precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
             nombresEstados={NOMBRES_ESTADOS}
             filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
+            conteoNiveles={conteoNiveles}
           />
 
           <main className="columna-principal">
@@ -545,6 +561,7 @@ export default function App() {
               ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
               onSeleccionar={seleccionarUniversidad}
               guardadas={miLista.guardadas} onAlternarGuardada={miLista.alternar}
+              puntajeSAT={filtros.sat}
             />
           </main>
         </div>

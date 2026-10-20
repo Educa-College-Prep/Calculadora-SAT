@@ -3,6 +3,7 @@ import { NOMBRES_ESTADOS } from '../utils/estados';
 import { buscarUniversidades } from '../utils/busqueda';
 import type { IndiceBusqueda } from '../utils/busqueda';
 import type { FichaRecomendada, PerfilDetectado } from './tipos';
+import { rangoSAT } from '../utils/nivelSAT';
 
 /**
  * "Herramientas" del agente: funciones puras sobre la data cargada.
@@ -23,11 +24,9 @@ export const esPublica = (u: Universidad) => u.CONTROL === 'Pública';
 export const esPrivada = (u: Universidad) => u.CONTROL?.includes('Privada') ?? false;
 export const esCuatroAnios = (u: Universidad) => u.ICLEVEL === '4-Year';
 
-/** Rango SAT total (percentil 25 y 75) sumando Math + Lectura. */
-export function rangoSAT(u: Universidad): [number, number] | null {
-  if (u.SATVR25 == null || u.SATMT25 == null || u.SATVR75 == null || u.SATMT75 == null) return null;
-  return [u.SATVR25 + u.SATMT25, u.SATVR75 + u.SATMT75];
-}
+// La clasificación por SAT vive en utils/nivelSAT: la misma que usan la lista y los filtros.
+export { rangoSAT, clasificar } from '../utils/nivelSAT';
+export type { Nivel } from '../utils/nivelSAT';
 
 /** Universidad "tradicional": publica datos SAT. Deja fuera escuelas de salud, de posgrado
  *  y community colleges, que no son opciones típicas para quien rinde el SAT. */
@@ -44,16 +43,6 @@ export const mediana = (valores: number[]): number | null => {
   return o.length % 2 ? o[m] : (o[m - 1] + o[m]) / 2;
 };
 
-export type Nivel = 'Segura' | 'Objetivo' | 'Alcance';
-
-/** Clasificación clásica de consejería: segura / objetivo / alcance según el rango 25–75. */
-export function clasificar(u: Universidad, sat: number): Nivel | null {
-  const r = rangoSAT(u);
-  if (!r) return null;
-  if (sat >= r[1]) return 'Segura';
-  if (sat >= r[0]) return 'Objetivo';
-  return 'Alcance';
-}
 
 /** Busca una universidad por nombre o sigla ("NYU", "MIT"), solo coincidencias claras. */
 export function encontrarPorNombre(indice: IndiceBusqueda, texto: string): Universidad | null {
