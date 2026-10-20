@@ -14,7 +14,7 @@ export function BarraEduca() {
     <header className="barra-educa">
       <div className="barra-educa-interior">
         <a className="barra-educa-marca" href={WEB_EDUCA} target="_blank" rel="noopener noreferrer">
-          <img src={logoEduca} alt="Educa College Prep" width="160" height="30" />
+          <img src={logoEduca} alt="Educa College Prep" width="210" height="40" />
         </a>
         <span className="barra-educa-producto">College Finder</span>
         <a className="barra-educa-contacto" href={CONTACTO} target="_blank" rel="noopener noreferrer">
@@ -23,7 +23,11 @@ export function BarraEduca() {
         </a>
       </div>
       <p className="barra-educa-aviso">
-        <span className="barra-educa-aviso-icono" aria-hidden="true">!</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="11" fill="#0c1f4a" />
+          <path d="M12 6.5v7" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="12" cy="17" r="1.25" fill="#fff" />
+        </svg>
         Toma un simulacro de SAT
         <a href={SIMULACRO} target="_blank" rel="noopener noreferrer">Regístrate ahora</a>
       </p>
