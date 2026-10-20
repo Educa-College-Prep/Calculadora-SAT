@@ -808,7 +808,15 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   border: 1.5px solid var(--tinta);
   border-radius: var(--radio);
 }
-.esencial { padding: 16px 20px; min-width: 0; background: var(--hoja); }
+.esencial {
+  /* En columna con la cifra abajo: si una etiqueta ocupa dos líneas ("Salario a 4 años
+     de graduado"), las cifras de las cinco casillas siguen a la misma altura. */
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  min-width: 0;
+  background: var(--hoja);
+}
 .esencial:first-child { border-radius: var(--radio-casilla) 0 0 var(--radio-casilla); }
 .esencial:last-child { border-radius: 0 var(--radio-casilla) var(--radio-casilla) 0; }
 .esencial-etiqueta {
@@ -819,7 +827,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   color: var(--tinta-fuerte);
 }
 .esencial-valor {
-  margin: 6px 0 0;
+  margin: auto 0 0;
+  padding-top: 6px;
   font-size: clamp(24px, 2.5vw, 32px);
   font-weight: 800;
   line-height: 1.05;
