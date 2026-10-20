@@ -31,7 +31,7 @@ const stateMapOptions = {
   keepAspectRatio: true,
   enableRegionInteractivity: true,
   tooltip: { isHtml: true, trigger: 'focus' },
-  legend: { textStyle: { color: '#26292b', fontName: 'Archivo', fontSize: 12 } },
+  legend: { textStyle: { color: '#26292b', fontName: 'Lexend', fontSize: 12 } },
 };
 
 // Con un estado elegido: solo ese en azul, el resto en gris (pero clickeable).
