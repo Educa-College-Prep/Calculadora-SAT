@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { Universidad } from '../types';
 
@@ -30,6 +30,15 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
 
   const abierto = mostrarSugerencias && busquedaNombre.length > 0;
 
+  // Opción marcada con las flechas. Se guarda junto al texto buscado: si el texto cambia,
+  // la marca deja de valer sola y se vuelve a empezar desde el campo.
+  const [marcada, setMarcada] = useState({ busqueda: '', indice: -1 });
+  const indiceMarcado = abierto && marcada.busqueda === busquedaNombre ? marcada.indice : -1;
+  const marcar = (indice: number) => {
+    setMarcada({ busqueda: busquedaNombre, indice });
+    document.getElementById(`sugerencia-${indice}`)?.scrollIntoView({ block: 'nearest' });
+  };
+
   // El nombre queda en el buscador: al volver del detalle, la lista ya está filtrada.
   const elegir = (uni: Universidad) => {
     setBusquedaNombre(uni.INSTNM);
@@ -39,10 +48,19 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
 
   const alPresionarTecla = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') setMostrarSugerencias(false);
-    // Con un solo resultado, Enter abre esa universidad sin tener que hacer clic.
-    if (e.key === 'Enter' && abierto && sugerencias.length === 1) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if (!busquedaNombre || sugerencias.length === 0) return;
       e.preventDefault();
-      elegir(sugerencias[0]);
+      if (!abierto) { setMostrarSugerencias(true); return; }
+      // Abajo baja hasta la última; arriba sube hasta volver al campo (-1).
+      marcar(e.key === 'ArrowDown'
+        ? Math.min(indiceMarcado + 1, sugerencias.length - 1)
+        : Math.max(indiceMarcado - 1, -1));
+    }
+    if (e.key === 'Enter' && abierto) {
+      // La marcada con las flechas; o, si hay un solo resultado, ese sin tener que marcarlo.
+      const uni = indiceMarcado >= 0 ? sugerencias[indiceMarcado] : sugerencias.length === 1 ? sugerencias[0] : null;
+      if (uni) { e.preventDefault(); elegir(uni); }
     }
   };
 
@@ -63,8 +81,11 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
           onFocus={() => setMostrarSugerencias(true)}
           onKeyDown={alPresionarTecla}
           placeholder="Nombre o sigla: Harvard, MIT, UCLA…"
+          role="combobox"
+          aria-autocomplete="list"
           aria-expanded={abierto}
           aria-controls="buscador-sugerencias"
+          aria-activedescendant={indiceMarcado >= 0 ? `sugerencia-${indiceMarcado}` : undefined}
         />
         {busquedaNombre && (
           <button
@@ -87,8 +108,9 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
             sugerencias.map((uni, idx) => (
               <li key={uni._id ?? idx}>
                 <button
+                  id={`sugerencia-${idx}`}
                   type="button"
-                  className="sugerencia"
+                  className={idx === indiceMarcado ? 'sugerencia sugerencia-marcada' : 'sugerencia'}
                   onClick={() => elegir(uni)}
                 >
                   <span className="sugerencia-nombre">{uni.INSTNM}</span>

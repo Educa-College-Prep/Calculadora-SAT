@@ -457,7 +457,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   border-radius: var(--radio-chico);
   cursor: pointer;
 }
-.sugerencia:hover, .sugerencia:focus-visible { background: var(--tinta-fondo); }
+.sugerencia:hover, .sugerencia:focus-visible, .sugerencia-marcada { background: var(--tinta-fondo); }
 .sugerencia-nombre { font-weight: 700; }
 .sugerencia-lugar { font-size: 13px; color: var(--grafito-suave); }
 
