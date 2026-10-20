@@ -5,7 +5,7 @@ import { crearIndiceBusqueda, buscarUniversidades } from './utils/busqueda';
 
 import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
-import { tipoControl, PRIVADAS } from './utils/tipoControl';
+import { tipoControl } from './utils/tipoControl';
 import { useValorEstable } from './utils/useValorEstable';
 import { posicionUSNews } from './data/rankingUSNews';
 import { useMiLista, claveUniversidad } from './utils/useMiLista';
@@ -16,9 +16,6 @@ import { elegirTop } from './utils/topUniversidades';
 import { ListaUniversidades } from './components/ListaUniversidades';
 import { ResumenEstado } from './components/ResumenEstado';
 import { DetalleUniversidad } from './components/DetalleUniversidad';
-import { AsistenteIA, EntradaAsistente } from './components/AsistenteIA';
-import type { SolicitudAsistente } from './components/AsistenteIA';
-import type { FiltrosSugeridos } from './asistente/tipos';
 import { ComparadorUniversidades } from './components/ComparadorUniversidades';
 import { alcanzable, clasificar } from './utils/nivelSAT';
 import type { Nivel } from './utils/nivelSAT';
@@ -420,49 +417,6 @@ export default function App() {
     }
   }, [universidadSeleccionada, viendoMiLista]);
 
-  // --- ASISTENTE IA (demo) ---
-  const [asistenteAbierto, setAsistenteAbierto] = useState(false);
-  const [solicitudAsistente, setSolicitudAsistente] = useState<SolicitudAsistente | null>(null);
-
-  const preguntarAlAsistente = useCallback((texto: string) => {
-    setSolicitudAsistente(prev => ({ texto, id: (prev?.id ?? 0) + 1 }));
-    setAsistenteAbierto(true);
-  }, []);
-  const abrirAsistente = useCallback(() => setAsistenteAbierto(true), []);
-  const cerrarAsistente = useCallback(() => setAsistenteAbierto(false), []);
-
-  // El asistente puede "mover" la página: reemplaza los filtros por los que sugiere.
-  const aplicarFiltrosAsistente = useCallback((f: FiltrosSugeridos) => {
-    setBusquedaNombre('');
-    setEstadoSeleccionado(f.estado ?? 'todos');
-    setCiudadSeleccionada('todas');
-    setPuntajeMath(f.math ?? 0);
-    setPuntajeLectura(f.lectura ?? 0);
-    setPrecioMaximo(f.precioMaximo ?? PRECIO_MAXIMO_SLIDER);
-    setTiposUniversidad(f.tipo === 'publica' ? ['publica'] : f.tipo === 'privada' ? PRIVADAS : []);
-    setExigirSAT(f.exigirSAT ?? 'todos');
-    setNivelesSAT([]);
-    if (universidadSeleccionada) volverDelDetalle();
-    else document.querySelector('.resultado')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // En el celular el panel tapa todo: se cierra para que se vea el resultado.
-    if (window.matchMedia('(max-width: 600px)').matches) setAsistenteAbierto(false);
-  }, [universidadSeleccionada, volverDelDetalle]);
-
-  const seleccionarDesdeAsistente = useCallback((uni: Universidad) => {
-    seleccionarUniversidad(uni);
-    if (window.matchMedia('(max-width: 600px)').matches) setAsistenteAbierto(false);
-  }, [seleccionarUniversidad]);
-
-  const asistente = (
-    <AsistenteIA
-      abierto={asistenteAbierto} onAbrir={abrirAsistente} onCerrar={cerrarAsistente}
-      solicitud={solicitudAsistente}
-      universidades={universidades} indice={indiceBusqueda}
-      onSeleccionar={seleccionarDesdeAsistente}
-      onAplicarFiltros={aplicarFiltrosAsistente}
-    />
-  );
-
   // Contenido de la vista actual: ficha, Mi lista o la página principal.
   const vista = (() => {
     if (universidadSeleccionada) {
@@ -531,8 +485,6 @@ export default function App() {
           />
 
           <main className="columna-principal">
-            <EntradaAsistente onPreguntar={preguntarAlAsistente} />
-
             {/* Lo primero que se lee: cuántas universidades quedan con lo que marcaste. */}
             <div className="resultado" aria-live="polite">
               <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
@@ -597,13 +549,10 @@ export default function App() {
     );
   })();
 
-  // El asistente va siempre en el mismo lugar del árbol: así no se vuelve a crear
-  // (ni pierde la conversación, ni repite la última pregunta) al pasar entre vistas.
   return (
     <>
       {vista}
       <AvisoFuentes />
-      {asistente}
     </>
   );
 }

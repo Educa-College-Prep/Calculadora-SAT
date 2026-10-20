@@ -4,7 +4,7 @@ import { formatNivel, formatDinero, formatPorcentaje } from '../utils/formatters
 import { BotonGuardar } from './BotonGuardar';
 import { claveUniversidad } from '../utils/useMiLista';
 import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
-import { clasificar } from '../utils/nivelSAT';
+import { clasificar, rangoSAT } from '../utils/nivelSAT';
 import type { Nivel } from '../utils/nivelSAT';
 import { EtiquetaNivel } from './EtiquetaNivel';
 
@@ -56,6 +56,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
 }) {
   const incompleta = !!faltantes?.length;
   const ranking = posicionUSNews(uni);
+  const rango = rangoSAT(uni);
   return (
     <li className={`fila${incompleta ? ' fila-incompleta' : ''}`}>
       <button
@@ -88,9 +89,11 @@ const FilaUniversidad = memo(function FilaUniversidad({
             <span className="dato-valor numero">{formatPorcentaje(uni.ADM_RATE) ?? '—'}</span>
             <span className="dato-etiqueta">admisión</span>
           </span>
-          <span className="dato">
-            <span className="dato-valor numero">{uni.SAT_AVG ?? '—'}</span>
-            <span className="dato-etiqueta">SAT prom.</span>
+          {/* El rango (percentiles 25 y 75) y no el promedio: es con lo que se decide
+              si es Segura, Buena opción o Difícil, así la etiqueta y el número cuadran. */}
+          <span className="dato" title="El 50% de los admitidos sacó un puntaje dentro de este rango">
+            <span className="dato-valor numero">{rango ? `${rango[0]}–${rango[1]}` : '—'}</span>
+            <span className="dato-etiqueta">rango SAT</span>
           </span>
           <span className="dato">
             <span className="dato-valor numero">{formatDinero(uni.TUITIONFEE_OUT) ?? '—'}</span>
