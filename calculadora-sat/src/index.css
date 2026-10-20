@@ -33,7 +33,10 @@
   font: 15px/1.55 var(--fuente);
   font-optical-sizing: auto;
   color: var(--grafito);
-  background: var(--papel);
+  /* Blanco como la barra de Educa: al estirar la página hacia abajo estando arriba del todo
+     (el rebote de Mac y celulares) se ve blanco sobre la barra, no un corte gris. El gris
+     de la página lo pone body. */
+  background: #fff;
   -webkit-font-smoothing: antialiased;
 }
 
