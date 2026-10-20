@@ -11,7 +11,8 @@ import { posicionUSNews } from './data/rankingUSNews';
 import { useMiLista, claveUniversidad } from './utils/useMiLista';
 import type { TipoControl } from './utils/tipoControl';
 import { MapaGeo } from './components/MapaGeo';
-import { GraficoBarras } from './components/GraficoBarras';
+import { TopUniversidades } from './components/TopUniversidades';
+import { elegirTop } from './utils/topUniversidades';
 import { ListaUniversidades } from './components/ListaUniversidades';
 import { ResumenEstado } from './components/ResumenEstado';
 import { DetalleUniversidad } from './components/DetalleUniversidad';
@@ -256,20 +257,11 @@ export default function App() {
     });
   }, [universidadesFiltradas, faltantesPorId, ordenarPor, ordenDireccion, resultadoBusqueda]);
 
-  const datosGrafico = useMemo(
-    () => universidadesFiltradas
-      .filter(uni => uni.TUITIONFEE_OUT !== null && uni.TUITIONFEE_OUT !== undefined)
-      .sort((a, b) => (b.TUITIONFEE_OUT || 0) - (a.TUITIONFEE_OUT || 0))
-      .slice(0, 10)
-      .map(uni => ({
-        // Clave única por barra: con el nombre recortado, las sedes de una misma
-        // universidad ("Keiser University-...") se confundían entre sí.
-        id: String(uni._id),
-        costo: uni.TUITIONFEE_OUT,
-        nombreCompleto: uni.INSTNM,
-        uni,
-      })),
-    [universidadesFiltradas]
+  // "Top universidades": ranking U.S. News y, si no alcanza, SAT promedio más alto.
+  // 8 en todo el país; 5 con un estado elegido, porque arriba va también su resumen.
+  const topUniversidades = useMemo(
+    () => elegirTop(universidadesFiltradas, filtros.estado !== 'todos' ? 5 : 8),
+    [universidadesFiltradas, filtros.estado]
   );
 
   // --- PREPARACIÓN DE DATOS DEL MAPA GEO ---
@@ -544,13 +536,18 @@ export default function App() {
               {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
                   va el resumen en vez de estirar las barras. */}
               <div className="tablero-lateral">
-                <GraficoBarras datosGrafico={datosGrafico} onSeleccionar={seleccionarUniversidad} />
+                {/* Primero lo que se sabe del lugar elegido; debajo, las mejores de ahí. */}
                 {hayFiltrosUbicacion && (
                   <ResumenEstado
                     universidades={universidadesFiltradas}
                     estadoSeleccionado={filtros.estado}
                   />
                 )}
+                <TopUniversidades
+                  universidades={topUniversidades}
+                  lugar={hayFiltrosUbicacion ? (filtros.ciudad !== 'todas' ? filtros.ciudad : NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado) : null}
+                  onSeleccionar={seleccionarUniversidad}
+                />
               </div>
             </section>
 
