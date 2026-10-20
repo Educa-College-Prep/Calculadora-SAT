@@ -801,18 +801,22 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 
 /* "Lo esencial": cinco casillas como las del recuadro de respuestas.
-   Las rayas entre casillas son el fondo que asoma por el espacio entre ellas. */
+   Las rayas entre casillas son el fondo que asoma por el espacio entre ellas.
+   Sin overflow: hidden (cortaría los textos de ayuda): las casillas de las esquinas
+   se redondean solas. */
 .esenciales {
+  --radio-casilla: calc(var(--radio) - 1.5px);
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1.5px;
   margin: 0;
-  overflow: hidden;
   background: var(--tinta-suave);
   border: 1.5px solid var(--tinta);
   border-radius: var(--radio);
 }
 .esencial { padding: 16px 20px; min-width: 0; background: var(--hoja); }
+.esencial:first-child { border-radius: var(--radio-casilla) 0 0 var(--radio-casilla); }
+.esencial:last-child { border-radius: 0 var(--radio-casilla) var(--radio-casilla) 0; }
 .esencial-etiqueta {
   display: flex;
   align-items: center;
@@ -901,7 +905,9 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 @media (max-width: 860px) {
   /* De a dos (admisión y SAT, vida y total) y el salario a lo ancho. */
   .esenciales { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .esencial:last-child { grid-column: 1 / -1; }
+  .esencial:last-child { grid-column: 1 / -1; border-radius: 0 0 var(--radio-casilla) var(--radio-casilla); }
+  .esencial:first-child { border-radius: var(--radio-casilla) 0 0 0; }
+  .esencial:nth-child(2) { border-radius: 0 var(--radio-casilla) 0 0; }
   .ficha-grilla { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 600px) {
