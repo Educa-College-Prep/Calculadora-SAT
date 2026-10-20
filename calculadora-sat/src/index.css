@@ -1630,8 +1630,8 @@ body.asis-amplio .asis-fichas { grid-template-columns: repeat(2, minmax(0, 1fr))
 
 .marca-nivel { color: var(--grafito); font-weight: 700; }
 .marca-nivel-segura { background: var(--resaltador); border-color: #e6c400; }
-.marca-nivel-objetivo { background: #fff3a6; border-color: #f0d75a; }
-.marca-nivel-alcance { background: var(--hoja); border: 1px dashed #d9b400; }
+.marca-nivel-buena { background: #fff3a6; border-color: #f0d75a; }
+.marca-nivel-ambiciosa { background: var(--hoja); border: 1px dashed #d9b400; }
 
 .niveles-sat { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
 .nivel-sat { display: flex; flex-direction: column; gap: 1px; }
@@ -1647,8 +1647,8 @@ body.asis-amplio .asis-fichas { grid-template-columns: repeat(2, minmax(0, 1fr))
   border-radius: 999px;
 }
 .nivel-sat-segura .nivel-sat-nombre { background: var(--resaltador); }
-.nivel-sat-objetivo .nivel-sat-nombre { background: #fff3a6; }
-.nivel-sat-alcance .nivel-sat-nombre { background: var(--hoja); border: 1px dashed #d9b400; }
+.nivel-sat-buena .nivel-sat-nombre { background: #fff3a6; }
+.nivel-sat-ambiciosa .nivel-sat-nombre { background: var(--hoja); border: 1px dashed #d9b400; }
 .nivel-sat-cuenta { margin-left: 2px; padding-left: 7px; border-left: 1px solid rgba(38, 41, 43, 0.25); }
 .nivel-sat-texto { padding-left: 2px; font-size: 12px; line-height: 1.4; color: var(--grafito-suave); }
 

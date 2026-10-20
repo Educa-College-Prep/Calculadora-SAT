@@ -1,7 +1,7 @@
 import type { Nivel } from '../utils/nivelSAT';
 import { NIVELES } from '../utils/nivelSAT';
 
-/** Tres barras como las de señal: 3 = segura, 2 = objetivo, 1 = alcance. */
+/** Tres barras como las de señal: 3 = segura, 2 = buena opción, 1 = ambiciosa. */
 export function BarrasNivel({ barras }: { barras: number }) {
   return (
     <svg className="barras-nivel" width="14" height="12" viewBox="0 0 14 12" aria-hidden="true">
@@ -13,11 +13,11 @@ export function BarrasNivel({ barras }: { barras: number }) {
   );
 }
 
-/** Etiqueta Segura / Objetivo / Alcance de una universidad según tu puntaje. */
+/** Etiqueta Segura / Buena opción / Ambiciosa de una universidad según tu puntaje. */
 export function EtiquetaNivel({ nivel }: { nivel: Nivel }) {
   const info = NIVELES.find(n => n.nivel === nivel)!;
   return (
-    <span className={`marca marca-nivel marca-nivel-${nivel.toLowerCase()}`} title={info.explicacion}>
+    <span className={`marca marca-nivel marca-nivel-${info.clase}`} title={info.explicacion}>
       <BarrasNivel barras={info.barras} />
       {nivel}
     </span>

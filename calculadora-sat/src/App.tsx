@@ -57,7 +57,7 @@ export default function App() {
   const [puntajeLectura, setPuntajeLectura] = useState<number>(0);
 
   const [exigirSAT, setExigirSAT] = useState<string>('todos');
-  /** "¿Qué tan segura?": 'todas' o un nivel; solo aplica con puntaje SAT. */
+  /** "Tus posibilidades de entrar": 'todas' o un nivel; solo aplica con puntaje SAT. */
   const [nivelSAT, setNivelSAT] = useState<Nivel | 'todas'>('todas');
   const [tiposUniversidad, setTiposUniversidad] = useState<TipoControl[]>([]);
   const [precioMaximo, setPrecioMaximo] = useState<number>(90000);
@@ -171,7 +171,7 @@ export default function App() {
 
       const falta: string[] = [];
 
-      // Quedan las seguras, objetivo y de alcance; solo salen las prácticamente inalcanzables.
+      // Quedan las seguras, buenas opciones y ambiciosas; solo salen las prácticamente inalcanzables.
       if (filtroSATActivo) {
         const entra = alcanzable(uni, sat);
         if (entra == null) falta.push('Sin datos SAT');
@@ -195,12 +195,12 @@ export default function App() {
       return true;
     });
 
-    // Cuántas son seguras, objetivo y de alcance, contadas ANTES de elegir un nivel:
-    // así el menú "¿Qué tan segura?" muestra cuántas hay de cada una.
+    // Cuántas hay de cada nivel, contadas ANTES de elegir uno: así el menú
+    // "Tus posibilidades de entrar" muestra cuántas hay de cada una.
     if (!filtroSATActivo) {
       return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes, conteoNiveles: null };
     }
-    const conteo: Record<Nivel, number> = { Segura: 0, Objetivo: 0, Alcance: 0 };
+    const conteo: Record<Nivel, number> = { 'Segura': 0, 'Buena opción': 0, 'Ambiciosa': 0 };
     for (const uni of lista) {
       const n = clasificar(uni, sat);
       if (n) conteo[n]++;
@@ -221,7 +221,7 @@ export default function App() {
     [puntajeMath > 0 || puntajeLectura > 0, 'puntaje SAT'],
     [estadoSeleccionado !== 'todos', 'estado'],
     [exigirSAT !== 'todos', '¿piden el SAT?'],
-    [puntajeTotal > 0 && nivelSAT !== 'todas', '¿qué tan segura?'],
+    [puntajeTotal > 0 && nivelSAT !== 'todas', 'tus posibilidades de entrar'],
     // Marcar los tres tipos equivale a no filtrar.
     [tiposUniversidad.length > 0 && tiposUniversidad.length < 3, 'tipo de universidad'],
     [precioMaximo < PRECIO_MAXIMO_SLIDER, 'matrícula máxima'],

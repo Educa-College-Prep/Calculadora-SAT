@@ -42,7 +42,7 @@ interface Props {
   /** Nombres de los filtros activos; el botón "Limpiar" muestra cuántos son y cuáles. */
   filtrosActivos: readonly string[];
   onLimpiar: () => void;
-  /** Cuántos resultados son seguros, objetivo y de alcance; null sin puntaje. */
+  /** Cuántos resultados hay de cada nivel (segura, buena opción, ambiciosa); null sin puntaje. */
   conteoNiveles: Record<Nivel, number> | null;
   nivelSAT: Nivel | 'todas';
   setNivelSAT: (v: Nivel | 'todas') => void;
@@ -280,9 +280,9 @@ export function Filtros({
         {satIncompleto && <p className="ayuda ayuda-aviso">Ingresa ambos puntajes para filtrar.</p>}
 
         {/* Qué significa cada etiqueta de la lista y cuántas hay con tu puntaje. */}
-        <ul className="niveles-sat" aria-label="Qué tan alcanzable es cada universidad">
-          {NIVELES.map(({ nivel, barras, explicacion }) => (
-            <li key={nivel} className={`nivel-sat nivel-sat-${nivel.toLowerCase()}`}>
+        <ul className="niveles-sat" aria-label="Tus posibilidades de entrar">
+          {NIVELES.map(({ nivel, clase, barras, explicacion }) => (
+            <li key={nivel} className={`nivel-sat nivel-sat-${clase}`}>
               <span className="nivel-sat-nombre">
                 <BarrasNivel barras={barras} />
                 {nivel}
@@ -292,9 +292,9 @@ export function Filtros({
             </li>
           ))}
         </ul>
-        {/* Elegir qué tan segura: solo con puntaje, porque sin él no hay con qué comparar. */}
+        {/* Elegir por posibilidades: solo con puntaje, porque sin él no hay con qué comparar. */}
         <label className="campo nivel-sat-campo">
-          <span className="campo-etiqueta">¿Qué tan segura?</span>
+          <span className="campo-etiqueta">Tus posibilidades de entrar</span>
           <select
             value={conteoNiveles ? nivelSAT : 'todas'}
             onChange={(e) => setNivelSAT(e.target.value as Nivel | 'todas')}
@@ -309,7 +309,7 @@ export function Filtros({
           </select>
         </label>
         {!conteoNiveles && !satIncompleto && (
-          <p className="ayuda">Pon tu puntaje para ver cuáles son seguras, objetivo o de alcance para ti.</p>
+          <p className="ayuda">Pon tu puntaje para ver en cuáles tienes más posibilidades de entrar.</p>
         )}
       </Seccion>
 

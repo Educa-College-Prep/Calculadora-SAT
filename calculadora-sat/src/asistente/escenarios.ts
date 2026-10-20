@@ -96,37 +96,37 @@ export function recomendarPorPerfil({ universidades, perfil: p }: Contexto): Res
       universidades: mejores.map(u => ficha(u, [...datosBasicos(u), `Egresados ganan ${usd(u.MD_EARN_WNE_4YR)}`])),
       cierre: sinRango
         ? 'Si quieres que tu SAT sí cuente, prueba con otro estado o sube un poco el presupuesto.'
-        : 'Si me dices tu puntaje SAT, te separo cuáles son **seguras**, **objetivo** y **de alcance** para ti.',
+        : 'Si me dices tu puntaje SAT, te separo cuáles son **seguras**, **buenas opciones** y **ambiciosas** para ti.',
       filtros,
     };
   }
 
   const sat = p.sat;
-  const grupos: Record<Nivel, Universidad[]> = { Segura: [], Objetivo: [], Alcance: [] };
+  const grupos: Record<Nivel, Universidad[]> = { 'Segura': [], 'Buena opción': [], 'Ambiciosa': [] };
   for (const u of candidatas) {
     const nivel = clasificar(u, sat);
     if (nivel) grupos[nivel].push(u);
   }
-  const conRango = grupos.Segura.length + grupos.Objetivo.length + grupos.Alcance.length;
+  const conRango = grupos['Segura'].length + grupos['Buena opción'].length + grupos['Ambiciosa'].length;
   pasos.push(usar('clasificar_por_sat', `sat=${sat} · comparar con percentiles 25–75`,
-    `${grupos.Segura.length} seguras · ${grupos.Objetivo.length} objetivo · ${grupos.Alcance.length} de alcance`));
-  pasos.push(pensar('Armo una lista balanceada como lo haría un consejero: un par de alcance cercanas, varias objetivo y un par de seguras con buenos resultados.'));
+    `${grupos['Segura'].length} seguras · ${grupos['Buena opción'].length} buenas opciones · ${grupos['Ambiciosa'].length} ambiciosas`));
+  pasos.push(pensar('Armo una lista balanceada como lo haría un consejero: un par de ambiciosas cercanas, varias buenas opciones y un par de seguras con buenos resultados.'));
 
-  const alcance = grupos.Alcance
+  const alcance = grupos['Ambiciosa']
     .sort((a, b) => rangoSAT(a)![0] - rangoSAT(b)![0])
     .filter(u => rangoSAT(u)![0] - sat <= 100)
     .slice(0, 2);
-  const objetivo = grupos.Objetivo.sort(porSalario).slice(0, 3);
-  const seguras = grupos.Segura.sort(porSalario).slice(0, 2);
+  const objetivo = grupos['Buena opción'].sort(porSalario).slice(0, 3);
+  const seguras = grupos['Segura'].sort(porSalario).slice(0, 2);
   const lista = [
-    ...alcance.map(u => ficha(u, datosBasicos(u), 'Alcance')),
-    ...objetivo.map(u => ficha(u, datosBasicos(u), 'Objetivo')),
+    ...alcance.map(u => ficha(u, datosBasicos(u), 'Ambiciosa')),
+    ...objetivo.map(u => ficha(u, datosBasicos(u), 'Buena opción')),
     ...seguras.map(u => ficha(u, datosBasicos(u), 'Segura')),
   ];
 
   return {
     pasos,
-    texto: `Con ${entendido.join(', ')} encontré **${miles(candidatas.length)} universidades de 4 años**. De las ${miles(conRango)} que publican su rango SAT, tu puntaje te deja así:\n\n**${grupos.Segura.length} seguras** (estás por encima del 75% de sus admitidos), **${grupos.Objetivo.length} objetivo** (estás dentro del rango) y **${grupos.Alcance.length} de alcance**.\n\nEsta es una lista balanceada para empezar:`,
+    texto: `Con ${entendido.join(', ')} encontré **${miles(candidatas.length)} universidades de 4 años**. De las ${miles(conRango)} que publican su rango SAT, tu puntaje te deja así:\n\n**${grupos['Segura'].length} seguras** (muy buenas posibilidades), **${grupos['Buena opción'].length} buenas opciones** (posibilidades reales) y **${grupos['Ambiciosa'].length} ambiciosas** (más difíciles).\n\nEsta es una lista balanceada para empezar:`,
     universidades: lista,
     cierre: 'Un consejo: postula a 2–3 de cada grupo. Toca cualquier universidad para ver su ficha completa.',
     filtros,
@@ -154,13 +154,13 @@ export const ESCENARIOS: Escenario[] = [
       const l = lugar(perfil);
       const con = universidades.filter(u => esCuatroAnios(u) && rangoSAT(u) && l.ok(u));
       const seguras = con.filter(u => clasificar(u, sat) === 'Segura');
-      const objetivo = con.filter(u => clasificar(u, sat) === 'Objetivo');
+      const objetivo = con.filter(u => clasificar(u, sat) === 'Buena opción');
       const top = seguras.filter(u => u.MD_EARN_WNE_4YR != null).sort(porSalario).slice(0, 6);
       return {
         pasos: [
           pensar(`Tiene ${sat} de SAT. "Buenas posibilidades" significa que su puntaje esté por encima del percentil 75 de los admitidos: ahí se considera una universidad segura.`),
           usar('buscar_universidades', `${l.arg}nivel=4 años · con_rango_sat=sí`, `${miles(con.length)} universidades`),
-          usar('clasificar_por_sat', `sat=${sat}`, `${seguras.length} seguras · ${objetivo.length} objetivo`),
+          usar('clasificar_por_sat', `sat=${sat}`, `${seguras.length} seguras · ${objetivo.length} buenas opciones`),
           pensar('Entre las seguras, priorizo las que mejores resultados dan a sus egresados, para que "segura" no signifique "peor".'),
           usar('ordenar', 'por=salario_egresados · orden=desc', `top ${top.length}`),
         ],
@@ -180,7 +180,7 @@ export const ESCENARIOS: Escenario[] = [
       const sat = perfil.sat ?? 1450;
       const ivies = IVY_LEAGUE.map(n => universidades.find(u => u.INSTNM === n)).filter((u): u is Universidad => !!u);
       const niveles = ivies.map(u => ({ u, nivel: clasificar(u, sat), r: rangoSAT(u) }));
-      const enRango = niveles.filter(x => x.nivel === 'Objetivo' || x.nivel === 'Segura').length;
+      const enRango = niveles.filter(x => x.nivel === 'Buena opción' || x.nivel === 'Segura').length;
       const minimo25 = Math.min(...niveles.map(x => x.r?.[0] ?? Infinity));
       return {
         pasos: [
@@ -190,11 +190,11 @@ export const ESCENARIOS: Escenario[] = [
           pensar('También miro la tasa de admisión: aunque el puntaje alcance, en estas universidades casi todos los postulantes tienen puntajes altos.'),
         ],
         texto: enRango > 0
-          ? `Con **${sat}** estás **dentro del rango en ${enRango} de las 8** Ivy League. Eso significa que tu SAT no te descarta, pero ojo: todas admiten **menos del ${pct(Math.max(...ivies.map(u => u.ADM_RATE ?? 0)) + 0.01)}** de postulantes, así que siempre son de alcance.`
+          ? `Con **${sat}** estás **dentro del rango en ${enRango} de las 8** Ivy League. Eso significa que tu SAT no te descarta, pero ojo: todas admiten **menos del ${pct(Math.max(...ivies.map(u => u.ADM_RATE ?? 0)) + 0.01)}** de postulantes, así que siempre son ambiciosas.`
           : `Con **${sat}** estás **por debajo del rango en las 8** Ivy League (la más accesible empieza en **${minimo25}**). No es imposible —el 25% de sus admitidos tiene menos que ese número— pero tu SAT no te ayudaría. Si puedes, vale la pena volver a rendirlo.\n\nAdemás, todas admiten **menos del ${pct(Math.max(...ivies.map(u => u.ADM_RATE ?? 0)) + 0.01)}** de postulantes.`,
         universidades: niveles
           .sort((a, b) => (a.r?.[0] ?? 0) - (b.r?.[0] ?? 0))
-          .map(({ u, nivel }) => ficha(u, [...datosBasicos(u)].slice(0, 2), nivel === 'Alcance' ? 'Por debajo' : 'En rango')),
+          .map(({ u, nivel }) => ficha(u, [...datosBasicos(u)].slice(0, 2), nivel === 'Ambiciosa' ? 'Por debajo' : 'En rango')),
         cierre: 'En universidades así de selectivas el SAT abre la puerta, pero deciden el ensayo, las actividades y las cartas de recomendación.',
       };
     },
@@ -247,7 +247,7 @@ export const ESCENARIOS: Escenario[] = [
         ],
         texto: `${bajo10 > 0 ? `Solo **${bajo10} universidades**${l.texto} admiten a menos del 10% de quienes postulan.` : `Ninguna universidad${l.texto} admite a menos del 10%.`} Las más selectivas${l.texto || ' del país'}:`,
         universidades: top.map(u => ficha(u, datosBasicos(u))),
-        cierre: 'En universidades así, incluso un puntaje perfecto no asegura la admisión: son de alcance para casi cualquier estudiante.',
+        cierre: 'En universidades así, incluso un puntaje perfecto no asegura la admisión: son ambiciosas para casi cualquier estudiante.',
       };
     },
   },

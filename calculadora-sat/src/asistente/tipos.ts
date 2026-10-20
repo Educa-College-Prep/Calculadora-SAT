@@ -19,7 +19,7 @@ export type PasoAgente =
 export interface FichaRecomendada {
   uni: Universidad;
   datos: string[];
-  /** Etiqueta corta opcional: "Segura", "Objetivo", "Alcance"... */
+  /** Etiqueta corta opcional: "Segura", "Buena opción", "Ambiciosa"... */
   etiqueta?: string;
 }
 

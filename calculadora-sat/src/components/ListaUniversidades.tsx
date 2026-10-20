@@ -22,7 +22,7 @@ interface Props {
   /** Claves (claveUniversidad) de las universidades en "Mi lista". */
   guardadas: Set<string>;
   onAlternarGuardada: (uni: Universidad) => void;
-  /** Tu puntaje SAT total (0 = sin puntaje): para la etiqueta Segura / Objetivo / Alcance. */
+  /** Tu puntaje SAT total (0 = sin puntaje): para la etiqueta Segura / Buena opción / Ambiciosa. */
   puntajeSAT: number;
 }
 

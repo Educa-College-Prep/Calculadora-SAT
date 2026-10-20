@@ -1,16 +1,17 @@
 import type { Universidad } from '../types';
 
 /**
- * Segura / Objetivo / Alcance: la clasificación clásica de consejería, comparando tu
- * puntaje SAT con el rango de los admitidos (percentiles 25 y 75). La usan la lista,
- * los filtros y el asistente, para que todos digan lo mismo.
+ * Tus posibilidades de entrar: Segura / Buena opción / Ambiciosa. Es la clasificación de
+ * consejería (safety / target / reach), comparando tu puntaje SAT con el rango de los
+ * admitidos (percentiles 25 y 75). La usan la lista, los filtros y el asistente, para que
+ * todos digan lo mismo. Los nombres en español evitan "objetivo" y "alcance", que confunden.
  */
-export type Nivel = 'Segura' | 'Objetivo' | 'Alcance';
+export type Nivel = 'Segura' | 'Buena opción' | 'Ambiciosa';
 
-export const NIVELES: { nivel: Nivel; barras: number; explicacion: string }[] = [
-  { nivel: 'Segura', barras: 3, explicacion: 'Sacaste más que 3 de cada 4 de sus admitidos.' },
-  { nivel: 'Objetivo', barras: 2, explicacion: 'Sacaste lo mismo que la mayoría de sus admitidos.' },
-  { nivel: 'Alcance', barras: 1, explicacion: 'Sacaste menos que 3 de cada 4 de sus admitidos: es posible, pero difícil.' },
+export const NIVELES: { nivel: Nivel; clase: string; barras: number; explicacion: string }[] = [
+  { nivel: 'Segura', clase: 'segura', barras: 3, explicacion: 'Tienes muy buenas posibilidades de entrar.' },
+  { nivel: 'Buena opción', clase: 'buena', barras: 2, explicacion: 'Tienes posibilidades reales de entrar.' },
+  { nivel: 'Ambiciosa', clase: 'ambiciosa', barras: 1, explicacion: 'Puedes intentarlo, pero entrar es más difícil.' },
 ];
 
 /** Rango SAT total (percentil 25 y 75) sumando Math + Lectura. */
@@ -23,17 +24,17 @@ export function clasificar(u: Universidad, sat: number): Nivel | null {
   const r = rangoSAT(u);
   if (!r) return null;
   if (sat >= r[1]) return 'Segura';
-  if (sat >= r[0]) return 'Objetivo';
-  return 'Alcance';
+  if (sat >= r[0]) return 'Buena opción';
+  return 'Ambiciosa';
 }
 
-/** Más de esto por debajo del percentil 25 ya no es "alcance": es prácticamente inalcanzable. */
+/** Más de esto por debajo del percentil 25 ya no es "ambiciosa": es prácticamente inalcanzable. */
 const MARGEN_ALCANCE = 100;
 /** Sin rango, solo con el promedio: el percentil 25 suele estar ~80 puntos bajo el promedio. */
 const MARGEN_PROMEDIO = 80 + MARGEN_ALCANCE;
 
 /**
- * ¿Entra en la lista con este puntaje? true = segura, objetivo o alcance; false = muy por
+ * ¿Entra en la lista con este puntaje? true = segura, buena opción o ambiciosa; false = muy por
  * encima de tu puntaje; null = la universidad no publica datos SAT y no se puede saber.
  */
 export function alcanzable(u: Universidad, sat: number): boolean | null {

@@ -93,7 +93,7 @@ function IconoChispa({ tamano = 18 }: { tamano?: number }) {
 }
 
 const claseEtiqueta = (e: string) =>
-  e === 'Alcance' || e === 'Por debajo' ? 'asis-etiqueta asis-etiqueta-alcance'
+  e === 'Ambiciosa' || e === 'Por debajo' ? 'asis-etiqueta asis-etiqueta-alcance'
     : e === 'Segura' ? 'asis-etiqueta asis-etiqueta-segura'
     : 'asis-etiqueta';
 
@@ -110,7 +110,7 @@ function IconoHerramienta() {
  * solo cuando empieza la respuesta, para que lo importante sea el resultado.
  */
 const claseFicha = (e: string) =>
-  e === 'Alcance' || e === 'Por debajo' ? 'alcance' : e === 'Segura' ? 'segura' : 'objetivo';
+  e === 'Ambiciosa' || e === 'Por debajo' ? 'alcance' : e === 'Segura' ? 'segura' : 'objetivo';
 
 function Razonamiento({ respuesta, pasos, fase }: { respuesta: RespuestaAgente; pasos: number; fase: Fase }) {
   // null = sigue lo automático; true/false = la persona lo abrió o cerró a mano.
