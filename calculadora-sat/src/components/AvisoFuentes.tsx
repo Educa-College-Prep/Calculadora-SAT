@@ -6,7 +6,7 @@ export function AvisoFuentes() {
         Datos de{' '}
         <a href="https://collegescorecard.ed.gov/" target="_blank" rel="noopener noreferrer">College Scorecard</a>{' '}
         e <a href="https://nces.ed.gov/ipeds/" target="_blank" rel="noopener noreferrer">IPEDS</a>{' '}
-        (gobierno de EE.&nbsp;UU.). Pueden estar desactualizados: analízalos con cuidado y confírmalos con cada universidad.
+        (gobierno de EE.&nbsp;UU.). Son referenciales: analízalos con cuidado y confírmalos con cada universidad.
       </p>
     </footer>
   );
