@@ -44,6 +44,8 @@ interface Props {
   onLimpiar: () => void;
   /** Cuántos resultados son seguros, objetivo y de alcance; null sin puntaje. */
   conteoNiveles: Record<Nivel, number> | null;
+  nivelSAT: Nivel | 'todas';
+  setNivelSAT: (v: Nivel | 'todas') => void;
 }
 
 const SAT_MIN = 200;
@@ -235,6 +237,7 @@ export function Filtros({
   precioMaximo, setPrecioMaximo,
   filtrosActivos, onLimpiar,
   conteoNiveles,
+  nivelSAT, setNivelSAT,
 }: Props) {
   const satIncompleto = (puntajeMath > 0) !== (puntajeLectura > 0);
   const sinLimitePrecio = precioMaximo >= PRECIO_TOPE;
@@ -289,6 +292,22 @@ export function Filtros({
             </li>
           ))}
         </ul>
+        {/* Elegir qué tan segura: solo con puntaje, porque sin él no hay con qué comparar. */}
+        <label className="campo nivel-sat-campo">
+          <span className="campo-etiqueta">¿Qué tan segura?</span>
+          <select
+            value={conteoNiveles ? nivelSAT : 'todas'}
+            onChange={(e) => setNivelSAT(e.target.value as Nivel | 'todas')}
+            disabled={!conteoNiveles}
+          >
+            <option value="todas">Todas</option>
+            {NIVELES.map(({ nivel }) => (
+              <option key={nivel} value={nivel}>
+                {nivel}{conteoNiveles ? ` (${conteoNiveles[nivel].toLocaleString('en-US')})` : ''}
+              </option>
+            ))}
+          </select>
+        </label>
         {!conteoNiveles && !satIncompleto && (
           <p className="ayuda">Pon tu puntaje para ver cuáles son seguras, objetivo o de alcance para ti.</p>
         )}

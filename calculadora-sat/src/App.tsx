@@ -57,6 +57,8 @@ export default function App() {
   const [puntajeLectura, setPuntajeLectura] = useState<number>(0);
 
   const [exigirSAT, setExigirSAT] = useState<string>('todos');
+  /** "¿Qué tan segura?": 'todas' o un nivel; solo aplica con puntaje SAT. */
+  const [nivelSAT, setNivelSAT] = useState<Nivel | 'todas'>('todas');
   const [tiposUniversidad, setTiposUniversidad] = useState<TipoControl[]>([]);
   const [precioMaximo, setPrecioMaximo] = useState<number>(90000);
 
@@ -135,7 +137,8 @@ export default function App() {
     precio: precioMaximo,
     politica: exigirSAT,
     sat: puntajeTotal,
-  }), [estadoSeleccionado, ciudadSeleccionada, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal]));
+    nivel: nivelSAT,
+  }), [estadoSeleccionado, ciudadSeleccionada, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal, nivelSAT]));
 
   /**
    * Filtrado con manejo explícito de datos faltantes.
@@ -145,7 +148,7 @@ export default function App() {
    * filtro activo distingue tres casos: cumple (se queda), no cumple (se descarta)
    * y no se puede saber (se queda, pero marcada y ordenada al final).
    */
-  const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId } = useMemo(() => {
+  const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId, conteoNiveles } = useMemo(() => {
     const { estado, ciudad, tipos, precio, politica, sat } = filtros;
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
     const filtroSATActivo = sat > 0;
@@ -192,19 +195,25 @@ export default function App() {
       return true;
     });
 
-    return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes };
-  }, [universidades, resultadoBusqueda, filtros]);
-
-  // Cuántas de tus resultados son seguras, objetivo y de alcance (con el puntaje ya aplicado).
-  const conteoNiveles = useMemo(() => {
-    if (filtros.sat <= 0) return null;
-    const conteo: Record<Nivel, number> = { Segura: 0, Objetivo: 0, Alcance: 0 };
-    for (const uni of universidadesFiltradas) {
-      const nivel = clasificar(uni, filtros.sat);
-      if (nivel) conteo[nivel]++;
+    // Cuántas son seguras, objetivo y de alcance, contadas ANTES de elegir un nivel:
+    // así el menú "¿Qué tan segura?" muestra cuántas hay de cada una.
+    if (!filtroSATActivo) {
+      return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes, conteoNiveles: null };
     }
-    return conteo;
-  }, [universidadesFiltradas, filtros.sat]);
+    const conteo: Record<Nivel, number> = { Segura: 0, Objetivo: 0, Alcance: 0 };
+    for (const uni of lista) {
+      const n = clasificar(uni, sat);
+      if (n) conteo[n]++;
+    }
+    // Con un nivel elegido quedan solo las de ese nivel (las sin rango SAT no se pueden clasificar).
+    const delNivel = (uni: Universidad) => filtros.nivel === 'todas' || clasificar(uni, sat) === filtros.nivel;
+    return {
+      universidadesFiltradas: lista.filter(delNivel),
+      universidadesSinUbicacion: sinUbicacion.filter(delNivel),
+      faltantesPorId: faltantes,
+      conteoNiveles: conteo,
+    };
+  }, [universidades, resultadoBusqueda, filtros]);
 
   // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
   // estado+ciudad cuentan como uno cada uno).
@@ -212,6 +221,7 @@ export default function App() {
     [puntajeMath > 0 || puntajeLectura > 0, 'puntaje SAT'],
     [estadoSeleccionado !== 'todos', 'estado'],
     [exigirSAT !== 'todos', '¿piden el SAT?'],
+    [puntajeTotal > 0 && nivelSAT !== 'todas', '¿qué tan segura?'],
     // Marcar los tres tipos equivale a no filtrar.
     [tiposUniversidad.length > 0 && tiposUniversidad.length < 3, 'tipo de universidad'],
     [precioMaximo < PRECIO_MAXIMO_SLIDER, 'matrícula máxima'],
@@ -225,6 +235,7 @@ export default function App() {
     setEstadoSeleccionado('todos');
     setCiudadSeleccionada('todas');
     setExigirSAT('todos');
+    setNivelSAT('todas');
     setTiposUniversidad([]);
     setPrecioMaximo(PRECIO_MAXIMO_SLIDER);
   }, []);
@@ -409,6 +420,7 @@ export default function App() {
     setPrecioMaximo(f.precioMaximo ?? PRECIO_MAXIMO_SLIDER);
     setTiposUniversidad(f.tipo === 'publica' ? ['publica'] : f.tipo === 'privada' ? PRIVADAS : []);
     setExigirSAT(f.exigirSAT ?? 'todos');
+    setNivelSAT('todas');
     if (universidadSeleccionada) volverDelDetalle();
     else document.querySelector('.resultado')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     // En el celular el panel tapa todo: se cierra para que se vea el resultado.
@@ -497,6 +509,7 @@ export default function App() {
             nombresEstados={NOMBRES_ESTADOS}
             filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
             conteoNiveles={conteoNiveles}
+            nivelSAT={nivelSAT} setNivelSAT={setNivelSAT}
           />
 
           <main className="columna-principal">
