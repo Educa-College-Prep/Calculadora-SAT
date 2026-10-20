@@ -1611,10 +1611,12 @@ body.asis-amplio .asis-fichas { grid-template-columns: repeat(2, minmax(0, 1fr))
 .barra-llena { fill: currentColor; }
 .barra-vacia { fill: currentColor; opacity: 0.22; }
 
-.marca-nivel { color: var(--grafito); font-weight: 700; }
-.marca-nivel-segura { background: var(--resaltador); border-color: #e6c400; }
-.marca-nivel-buena { background: #fff3a6; border-color: #f0d75a; }
-.marca-nivel-dificil { background: var(--hoja); border: 1px dashed #d9b400; }
+/* Semáforo: verde = segura, ámbar = buena opción, rojo = difícil. Texto oscuro del mismo
+   tono para que se lea bien; las barras de señal lo dicen también sin depender del color. */
+.marca-nivel { font-weight: 700; }
+.marca-nivel-segura { color: #166534; background: #dcfce7; border-color: #86efac; }
+.marca-nivel-buena { color: #9a3412; background: #ffedd5; border-color: #fdba74; }
+.marca-nivel-dificil { color: #991b1b; background: #fee2e2; border-color: #fca5a5; }
 
 .nivel-opcion-cuenta { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--grafito-suave); }
 .burbuja-deshabilitada { opacity: 0.55; cursor: not-allowed; }
