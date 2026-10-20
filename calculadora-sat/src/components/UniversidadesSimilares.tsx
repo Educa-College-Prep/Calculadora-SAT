@@ -1,7 +1,6 @@
-import { useMemo } from 'react';
 import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje } from '../utils/formatters';
-import { universidadesSimilares } from '../utils/similares';
+import type { Similar } from '../utils/similares';
 
 /** Diferencia de matrícula respecto de la universidad que se está viendo. */
 function diferencia(otra: number | null | undefined, base: number | null | undefined): { texto: string; clase: string } | null {
@@ -13,21 +12,12 @@ function diferencia(otra: number | null | undefined, base: number | null | undef
     : { texto: `${formatDinero(d)} más`, clase: 'similar-mas' };
 }
 
-/** 4 llena sin huecos la grilla de 4 columnas, la de 2 y la de 1. */
-const CANTIDAD = 4;
-
-export function UniversidadesSimilares({ uni, universidades, onSeleccionar }: {
+/** Tarjetas de universidades similares. La ficha las calcula (y oculta la sección si no hay). */
+export function UniversidadesSimilares({ uni, similares, onSeleccionar }: {
   uni: Universidad;
-  universidades: Universidad[];
+  similares: Similar[];
   onSeleccionar: (uni: Universidad) => void;
 }) {
-  const similares = useMemo(() => {
-    const lista = universidadesSimilares(uni, universidades, CANTIDAD);
-    // Filas completas: en el raro caso de que haya menos de 4, se deja un número par
-    // para que la grilla de 2 columnas no quede con un hueco.
-    return lista.length > 1 ? lista.slice(0, lista.length - (lista.length % 2)) : lista;
-  }, [uni, universidades]);
-  if (similares.length === 0) return null;
 
   return (
     <>
