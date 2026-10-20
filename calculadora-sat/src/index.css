@@ -879,6 +879,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 
 /* ---------- Minipestañas ---------- */
 .pestanas {
+  position: relative;
   display: inline-flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -901,8 +902,21 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
+.pestana { position: relative; z-index: 1; }
 .pestana:hover { color: var(--grafito); background: var(--tinta-fondo); }
-.pestana[aria-selected="true"] { color: #fff; background: var(--grafito); }
+.pestana[aria-selected="true"] { color: #fff; background: transparent; }
+/* La píldora oscura de la pestaña elegida: una sola que se desliza hasta la nueva. */
+.pestanas-indicador {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--grafito);
+  border-radius: 999px;
+  transition: transform 0.3s cubic-bezier(0.3, 0.7, 0.2, 1), width 0.3s cubic-bezier(0.3, 0.7, 0.2, 1), height 0.3s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pestanas-indicador { transition: none; }
+}
 
 @media (max-width: 860px) {
   /* De a dos (admisión y SAT, vida y total) y el salario a lo ancho. */
