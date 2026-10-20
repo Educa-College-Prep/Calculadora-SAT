@@ -115,6 +115,21 @@ function Controlador({
     limitesEstado.current = limites;
     mapa.fitBounds(limites, { padding: [12, 12] });
   }, [geo, mapa, mapaRef, limitesEstado]);
+
+  // El mapa crece para emparejar la columna de al lado: al cambiar de tamaño se
+  // vuelve a medir y, si se está viendo el estado completo, se reencuadra.
+  useEffect(() => {
+    const contenedor = mapa.getContainer();
+    const observador = new ResizeObserver(() => {
+      // Leaflet guarda el tamaño que tenía al crearse: se compara con el real.
+      if (mapa.getSize().y === contenedor.clientHeight && mapa.getSize().x === contenedor.clientWidth) return;
+      const vistaEstado = limitesEstado.current && mapa.getBounds().contains(limitesEstado.current);
+      mapa.invalidateSize();
+      if (vistaEstado && limitesEstado.current) mapa.fitBounds(limitesEstado.current, { padding: [12, 12] });
+    });
+    observador.observe(contenedor);
+    return () => observador.disconnect();
+  }, [mapa, limitesEstado]);
   return null;
 }
 
@@ -264,7 +279,7 @@ export const MapaCondados = memo(function MapaCondados({ universidades, estadoSe
   const claveCapa = `${estadoSeleccionado}-${maximo}-${Object.keys(conteoPorCondado).length}-${condadoEnfocado ?? 'todo'}`;
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '340px' }}>
+    <div className="mapa-condados-lienzo">
       <MapContainer
         style={{ height: '100%', width: '100%', borderRadius: '6px', background: '#ffffff' }}
         scrollWheelZoom={false}

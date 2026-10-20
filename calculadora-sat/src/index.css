@@ -212,7 +212,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
 }
 .tablero-lateral {
   display: flex;
@@ -220,6 +220,15 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   gap: 20px;
   min-width: 0;
 }
+/* Las dos columnas terminan a la misma altura: el último cuadro de la derecha se
+   estira, y a la izquierda crece el mapa de condados (o se centra el del país). */
+.tablero-lateral > :last-child { flex: 1; }
+.panel-mapa { display: flex; flex-direction: column; }
+.panel-mapa > .panel-cuerpo { flex: 1; display: flex; flex-direction: column; }
+.panel-mapa .mapa-nacional { display: flex; flex-direction: column; justify-content: center; }
+.panel-mapa .mapa-nacional:only-child { flex: 1; }
+.panel-mapa .mapa-condados { flex: 1; display: flex; flex-direction: column; }
+.mapa-condados-lienzo { position: relative; flex: 1; width: 100%; min-height: 340px; }
 
 @media (max-width: 1180px) {
   .tablero { grid-template-columns: minmax(0, 1fr); }
