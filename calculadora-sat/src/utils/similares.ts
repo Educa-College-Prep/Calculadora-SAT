@@ -86,3 +86,15 @@ export function universidadesSimilares(uni: Universidad, todas: Universidad[], c
     .slice(0, cantidad)
     .map(({ uni, parecidaEn }) => ({ uni, parecidaEn }));
 }
+
+/** 4 llena sin huecos la grilla de la ficha: 4, 2 o 1 columnas. */
+const CANTIDAD_FICHA = 4;
+
+/**
+ * Las similares que muestra la ficha. Si hay menos de 4 (raro), se deja un número par
+ * para que la grilla de 2 columnas no quede con un hueco.
+ */
+export function similaresParaFicha(uni: Universidad, todas: Universidad[]): Similar[] {
+  const lista = universidadesSimilares(uni, todas, CANTIDAD_FICHA);
+  return lista.length > 1 ? lista.slice(0, lista.length - (lista.length % 2)) : lista;
+}

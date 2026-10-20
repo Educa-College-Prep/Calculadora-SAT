@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { calcularCostoVida } from '../utils/costos';
+import { similaresParaFicha } from '../utils/similares';
 import { InfoTooltip } from './InfoTooltip';
 import { BotonGuardar } from './BotonGuardar';
 import { FotoUniversidad, CreditoFoto } from './FotoUniversidad';
@@ -62,6 +64,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
   const costoTotal = matricula != null && costoVida ? matricula + costoVida.valor : null;
   const aprox = costoVida?.estimado ? '~' : '';
   const ranking = posicionUSNews(uni);
+  const similares = useMemo(() => similaresParaFicha(uni, universidades), [uni, universidades]);
   const programas = [uni.CIPTITLE1, uni.CIPTITLE2, uni.CIPTITLE3, uni.CIPTITLE4, uni.CIPTITLE5, uni.CIPTITLE6].filter(Boolean);
 
   return (
@@ -172,9 +175,11 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
           </Seccion>
         )}
 
-        <Seccion titulo="Universidades similares" ancha>
-          <UniversidadesSimilares uni={uni} universidades={universidades} onSeleccionar={onSeleccionar} />
-        </Seccion>
+        {similares.length > 0 && (
+          <Seccion titulo="Universidades similares" ancha>
+            <UniversidadesSimilares uni={uni} similares={similares} onSeleccionar={onSeleccionar} />
+          </Seccion>
+        )}
 
       </div>
     </main>
