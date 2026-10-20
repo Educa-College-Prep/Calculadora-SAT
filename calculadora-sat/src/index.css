@@ -1121,7 +1121,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .comparar-sub { display: block; font-size: 12px; color: var(--grafito-suave); font-weight: 400; }
 
 /* Universidades similares (al final de la ficha) */
-/* Columnas según el ancho disponible: 4, 2 o 1, siempre divisores de 8 (sin huecos). */
+/* Columnas según el ancho disponible: 4, 2 o 1, siempre divisores de 4 (sin huecos). */
 .similares-envoltura { container-type: inline-size; }
 .similares-pista { display: none; margin: 8px 0 0; font-size: 12px; color: var(--grafito-suave); text-align: right; }
 .similares {
