@@ -5,7 +5,7 @@ import { glosarioCampos } from '../utils/glosarioCampos';
 import { calcularCostoVida } from '../utils/costos';
 import { InfoTooltip } from './InfoTooltip';
 import { BotonGuardar } from './BotonGuardar';
-import { FotoUniversidad } from './FotoUniversidad';
+import { FotoUniversidad, CreditoFoto } from './FotoUniversidad';
 import { UniversidadesSimilares } from './UniversidadesSimilares';
 import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
@@ -70,20 +70,26 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
         ← Volver a resultados
       </button>
 
+      {/* Banner: la foto de fondo y el nombre encima; debajo, las acciones y el crédito. */}
       <header className="ficha-cabecera">
-        <div className="ficha-cabecera-texto">
-          <div className="marcas">
-            {uni.CONTROL && <span className={claseControl(uni.CONTROL)}>{uni.CONTROL}</span>}
-            {uni.ICLEVEL && <span className="marca">{formatNivel(uni.ICLEVEL)}</span>}
-            {uni.ADMCON7 === 'Requerido' && <span className="marca marca-sat">SAT obligatorio</span>}
+        <div className="ficha-portada">
+          <FotoUniversidad uni={uni} />
+          <div className="ficha-portada-texto">
+            <div className="marcas">
+              {uni.CONTROL && <span className={claseControl(uni.CONTROL)}>{uni.CONTROL}</span>}
+              {uni.ICLEVEL && <span className="marca">{formatNivel(uni.ICLEVEL)}</span>}
+              {uni.ADMCON7 === 'Requerido' && <span className="marca marca-sat">SAT obligatorio</span>}
+            </div>
+            {ranking && (
+              <p className="ficha-ranking" title={`Fuente: ${FUENTE_USNEWS}`}>
+                <strong>{textoPuesto(ranking)}</strong> en {NOMBRE_LISTA[ranking.lista]} · U.S. News {EDICION_USNEWS}
+              </p>
+            )}
+            <h1 className="ficha-nombre">{uni.INSTNM}</h1>
+            <p className="ficha-lugar">{uni.CITY}, {uni.STABBR}</p>
           </div>
-          {ranking && (
-            <p className="ficha-ranking" title={`Fuente: ${FUENTE_USNEWS}`}>
-              <strong>{textoPuesto(ranking)}</strong> en {NOMBRE_LISTA[ranking.lista]} · U.S. News {EDICION_USNEWS}
-            </p>
-          )}
-          <h1 className="ficha-nombre">{uni.INSTNM}</h1>
-          <p className="ficha-lugar">{uni.CITY}, {uni.STABBR}</p>
+        </div>
+        <div className="ficha-cabecera-pie">
           <div className="ficha-acciones">
             <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} conTexto />
             {cantidadMiLista > 0 && (
@@ -92,8 +98,8 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
               </button>
             )}
           </div>
+          <CreditoFoto uni={uni} />
         </div>
-        <FotoUniversidad uni={uni} />
       </header>
 
       {/* Lo más importante, legible en pocos segundos. */}
@@ -104,7 +110,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
           ayuda={costoVida?.estimado ? glosarioCampos.COSTO_VIDA_ESTIMADO : glosarioCampos.COSTO_VIDA} />
         <Esencial etiqueta="Costo anual total" valor={costoTotal != null ? aprox + formatDinero(costoTotal) : null}
           ayuda={glosarioCampos.COSTO_TOTAL_ESENCIAL} />
-        <Esencial etiqueta="Salario a 4 años de graduarse" valor={formatDinero(uni.MD_EARN_WNE_4YR)} ayuda={glosarioCampos.MD_EARN_4YR} />
+        <Esencial etiqueta="Salario a 4 años de graduado" valor={formatDinero(uni.MD_EARN_WNE_4YR)} ayuda={glosarioCampos.MD_EARN_4YR} />
       </dl>
 
       <div className="ficha-grilla">
