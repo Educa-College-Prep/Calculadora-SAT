@@ -7,6 +7,7 @@ import type { Universidad } from '../types';
  * los datos del sitio, la lista empieza vacía.
  */
 
+// El nombre viejo se queda: cambiarlo borraría las listas que la gente ya guardó.
 const CLAVE_ALMACEN = 'calculadora-sat:mi-lista';
 
 /** Identificador estable entre recargas: _id es la posición en el JSON y cambia si cambia la data. */
@@ -35,7 +36,7 @@ export function useMiLista() {
   // En el orden en que se guardaron: así se comparan en ese mismo orden.
   const [claves, setClaves] = useState<string[]>(leer);
 
-  // Si la persona tiene la calculadora abierta en otra pestaña, se mantienen sincronizadas.
+  // Si la persona tiene la página abierta en otra pestaña, se mantienen sincronizadas.
   useEffect(() => {
     const alCambiar = (e: StorageEvent) => { if (e.key === CLAVE_ALMACEN) setClaves(leer()); };
     window.addEventListener('storage', alCambiar);

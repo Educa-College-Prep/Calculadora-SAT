@@ -22,6 +22,7 @@ import type { FiltrosSugeridos } from './asistente/tipos';
 import { ComparadorUniversidades } from './components/ComparadorUniversidades';
 import { alcanzable, clasificar } from './utils/nivelSAT';
 import type { Nivel } from './utils/nivelSAT';
+import { EVENTO_INICIO } from './components/BarraEduca';
 
 /** Opción del filtro "¿Piden el SAT?" → valor de ADMCON7 (política de puntajes de IPEDS). */
 const POLITICA_SAT: Record<string, string> = {
@@ -396,6 +397,20 @@ export default function App() {
     return () => window.removeEventListener('popstate', alNavegar);
   }, [universidades]);
 
+  // El logo y "College Finder" de la barra llevan a la vista principal (con los filtros
+  // como estaban). Desde una ficha o Mi lista es una entrada nueva: "atrás" vuelve ahí.
+  useEffect(() => {
+    const alInicio = () => {
+      const estado = window.history.state;
+      if (estado?.detalleId != null || estado?.vista != null) window.history.pushState(null, '');
+      setUniversidadSeleccionada(null);
+      setViendoMiLista(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.addEventListener(EVENTO_INICIO, alInicio);
+    return () => window.removeEventListener(EVENTO_INICIO, alInicio);
+  }, []);
+
   // Al volver a la lista, se recupera la posición donde estaba el usuario.
   useLayoutEffect(() => {
     if (universidadSeleccionada == null && !viendoMiLista && restaurarScroll.current) {
@@ -415,7 +430,7 @@ export default function App() {
   const abrirAsistente = useCallback(() => setAsistenteAbierto(true), []);
   const cerrarAsistente = useCallback(() => setAsistenteAbierto(false), []);
 
-  // El asistente puede "mover" la calculadora: reemplaza los filtros por los que sugiere.
+  // El asistente puede "mover" la página: reemplaza los filtros por los que sugiere.
   const aplicarFiltrosAsistente = useCallback((f: FiltrosSugeridos) => {
     setBusquedaNombre('');
     setEstadoSeleccionado(f.estado ?? 'todos');
@@ -483,7 +498,7 @@ export default function App() {
       <>
         <header className="cabecera">
           <div>
-            <h1>Calculadora SAT</h1>
+            <h1>Educa College Finder</h1>
             <p className="cabecera-bajada">
               Encuentra universidades de EE.&nbsp;UU. que encajan con tu puntaje, tu presupuesto y el lugar donde quieres estudiar.
             </p>

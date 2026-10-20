@@ -416,7 +416,7 @@ export const ESCENARIOS: Escenario[] = [
         ],
         texto: `Los estados donde las universidades públicas cobran **menos matrícula** a estudiantes de fuera:\n\n${baratos.map((b, i) => `${i + 1}. **${nombreEstado(b.st)}**: ${usd(b.med)} típico`).join('\n')}\n\nEn el otro extremo está **${nombreEstado(caro.st)}**, con ${usd(caro.med)}.\n\nLa opción más barata en cada uno de los tres primeros:`,
         universidades: ejemplos.map(u => ficha(u, datosBasicos(u))),
-        cierre: 'Toca un estado en el mapa de la calculadora para ver todas sus universidades.',
+        cierre: 'Toca un estado en el mapa para ver todas sus universidades.',
         filtros: { estado: baratos[0].st, tipo: 'publica' },
       };
     },
