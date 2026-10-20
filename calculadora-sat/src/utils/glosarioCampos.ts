@@ -27,6 +27,7 @@ export const glosarioCampos: Record<string, string> = {
   TUITIONFEE_UNICA: 'Matrícula anual (incluye cuotas obligatorias). Las universidades privadas cobran lo mismo a todos los estudiantes, sin importar el estado donde vivan.',
   COSTT4_A: 'Costo total estimado de un año completo: incluye matrícula, alojamiento, comida, libros y otros gastos.',
   COSTO_TOTAL_ANUAL: 'Matrícula + costo de vida, antes de becas.',
+  COSTO_TOTAL_ESENCIAL: 'Matrícula para alumnos de otros estados y del extranjero + costo de vida, antes de becas. Abajo, en "Costos y financiamiento", lo ves según tu perfil.',
   COSTO_APROX_BECA: 'Aproximado: costo total menos la beca típica de la universidad. Solo si la universidad te la otorga; no todos la reciben.',
   NPT4: 'Promedio de alumnos de EE.UU. con ayuda federal. No incluye a estudiantes extranjeros.',
   NPT4_PUB: 'Promedio de residentes del estado con ayuda federal. No incluye a alumnos de otros estados ni extranjeros.',

@@ -666,10 +666,60 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .ficha-volver { align-self: flex-start; }
 
 .ficha-cabecera {
-  padding-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
   border-bottom: 2px solid var(--grafito);
 }
-.ficha-cabecera .marcas { margin: 0 0 12px; }
+
+/* Banner: la foto a todo el ancho y el nombre encima, sobre un degradado que asegura
+   que el texto blanco se lea con cualquier foto. */
+.ficha-portada {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(300px, 34vw, 460px);
+  overflow: hidden;
+  background: var(--tinta-fuerte);
+  border: 1.5px solid var(--grafito);
+  border-radius: var(--radio);
+  isolation: isolate;
+}
+.ficha-portada::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(12, 22, 38, 0.86) 0%, rgba(12, 22, 38, 0.55) 38%, rgba(12, 22, 38, 0) 72%);
+  pointer-events: none;
+}
+.ficha-portada-texto {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  padding: clamp(20px, 3vw, 36px);
+  color: #fff;
+}
+.ficha-portada .marcas { margin: 0 0 12px; }
+.ficha-portada .ficha-ranking { color: var(--grafito); }
+/* Etiquetas de la ficha: más grandes y con fondo sólido, para que se lean sobre la foto. */
+.ficha-portada .marcas { gap: 8px; }
+.ficha-portada .marca {
+  padding: 5px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--grafito);
+  background: #fff;
+  border: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.ficha-portada .marca-publica { color: #fff; background: var(--tinta); }
+.ficha-portada .marca-privada { color: #fff; background: var(--boligrafo); }
+.ficha-portada .marca-lucro { color: var(--grafito); background: var(--alerta-borde); }
+.ficha-portada .ficha-nombre { color: #fff; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35); }
+.ficha-portada .ficha-lugar { color: rgba(255, 255, 255, 0.88); }
+
 .ficha-nombre {
   max-width: 22ch;
   font-size: clamp(30px, 5vw, 56px);
@@ -680,23 +730,19 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 .ficha-lugar { margin: 10px 0 0; font-size: 18px; color: var(--grafito-suave); }
 
-/* Cabecera con foto: texto a la izquierda, foto a la derecha. En el celular, la foto arriba. */
-.ficha-cabecera {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 40%);
-  gap: 20px 40px;
-  align-items: end;
+.ficha-cabecera-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
 }
-.ficha-cabecera-texto { min-width: 0; }
+.ficha-cabecera-pie .ficha-acciones { margin-top: 0; }
 
-.foto-uni-figura { margin: 0; display: flex; flex-direction: column; gap: 6px; }
 .foto-uni {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background: var(--tinta-fondo);
-  border: 1.5px solid var(--grafito);
-  border-radius: var(--radio);
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
 .foto-uni img {
   display: block;
@@ -709,64 +755,68 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .foto-uni-lista img { opacity: 1; }
 /* Mientras llega la foto: un brillo suave, sin saltos de tamaño. */
 .foto-uni-cargando {
-  background: linear-gradient(100deg, var(--tinta-fondo) 30%, #f4f8fd 50%, var(--tinta-fondo) 70%) 0 0 / 300% 100%;
-  animation: foto-brillo 1.4s ease-in-out infinite;
+  background: linear-gradient(100deg, var(--tinta-fuerte) 30%, var(--tinta) 50%, var(--tinta-fuerte) 70%) 0 0 / 300% 100%;
+  animation: foto-brillo 1.6s ease-in-out infinite;
 }
 @keyframes foto-brillo { from { background-position: 100% 0; } to { background-position: 0 0; } }
 .foto-uni-credito {
+  min-width: 0;
+  margin: 0;
   font-size: 11px;
   line-height: 1.4;
   color: var(--grafito-suave);
-  text-align: right;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .foto-uni-credito a { color: inherit; }
 
-/* Sin foto libre: portada en tinta azul, rayada como un formulario, con las iniciales. */
+/* Sin foto libre: portada en tinta azul, rayada como un formulario, con las iniciales de fondo. */
 .foto-uni-portada {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   justify-content: flex-end;
-  gap: 4px;
-  padding: 20px 22px;
-  color: #fff;
+  padding: 18px 28px;
   background:
-    repeating-linear-gradient(0deg, transparent 0 27px, rgba(255, 255, 255, 0.09) 27px 28px),
+    repeating-linear-gradient(0deg, transparent 0 27px, rgba(255, 255, 255, 0.07) 27px 28px),
     linear-gradient(135deg, var(--tinta), var(--tinta-fuerte));
 }
 .foto-uni-iniciales {
-  font-size: clamp(56px, 8vw, 96px);
+  font-size: clamp(96px, 16vw, 220px);
   font-weight: 800;
   font-stretch: 125%;
   line-height: 0.9;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
+  color: rgba(255, 255, 255, 0.12);
 }
-.foto-uni-portada-lugar { font-size: 14px; font-weight: 600; opacity: 0.85; }
 
-@media (max-width: 900px) {
-  .ficha-cabecera { grid-template-columns: minmax(0, 1fr); }
-  .foto-uni-figura, .ficha-cabecera > .foto-uni { order: -1; }
-  .foto-uni { aspect-ratio: 16 / 9; }
-  .foto-uni-portada { aspect-ratio: 16 / 7; padding: 16px 18px; }
+@media (max-width: 600px) {
+  .ficha-portada { min-height: 340px; }
+  .ficha-lugar { font-size: 16px; }
+  .foto-uni-credito { white-space: normal; }
 }
 @media (prefers-reduced-motion: reduce) {
   .foto-uni-cargando { animation: none; }
   .foto-uni img { transition: none; }
 }
 
-/* "Lo esencial": cuatro casillas como las del recuadro de respuestas. */
+/* "Lo esencial": cinco casillas como las del recuadro de respuestas.
+   Las rayas entre casillas son el fondo que asoma por el espacio entre ellas.
+   Sin overflow: hidden (cortaría los textos de ayuda): las casillas de las esquinas
+   se redondean solas. */
 .esenciales {
+  --radio-casilla: calc(var(--radio) - 1.5px);
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1.5px;
   margin: 0;
-  background: var(--hoja);
+  background: var(--tinta-suave);
   border: 1.5px solid var(--tinta);
   border-radius: var(--radio);
 }
-.esencial { padding: 16px 20px; min-width: 0; }
-.esencial + .esencial { border-left: 1.5px solid var(--tinta-suave); }
+.esencial { padding: 16px 20px; min-width: 0; background: var(--hoja); }
+.esencial:first-child { border-radius: var(--radio-casilla) 0 0 var(--radio-casilla); }
+.esencial:last-child { border-radius: 0 var(--radio-casilla) var(--radio-casilla) 0; }
 .esencial-etiqueta {
   display: flex;
   align-items: center;
@@ -776,7 +826,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 .esencial-valor {
   margin: 6px 0 0;
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: clamp(24px, 2.5vw, 32px);
   font-stretch: 112%;
   font-weight: 800;
   line-height: 1.05;
@@ -853,9 +903,11 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .pestana[aria-selected="true"] { color: #fff; background: var(--grafito); }
 
 @media (max-width: 860px) {
+  /* De a dos (admisión y SAT, vida y total) y el salario a lo ancho. */
   .esenciales { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .esencial:nth-child(3) { border-left: 0; }
-  .esencial:nth-child(n + 3) { border-top: 1.5px solid var(--tinta-suave); }
+  .esencial:last-child { grid-column: 1 / -1; border-radius: 0 0 var(--radio-casilla) var(--radio-casilla); }
+  .esencial:first-child { border-radius: var(--radio-casilla) 0 0 0; }
+  .esencial:nth-child(2) { border-radius: 0 var(--radio-casilla) 0 0; }
   .ficha-grilla { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 600px) {
@@ -886,6 +938,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   font-weight: 700;
 }
 .costos-nota { margin: 12px 0 0; }
+.costos-intl { margin: 12px 0 0; }
+.costos-sin-beca { flex-basis: 100%; font-size: 14px; color: var(--grafito-suave); }
 .costos-enlace { margin-top: 16px; text-decoration: none; }
 .con-ayuda { display: flex; align-items: center; flex-wrap: wrap; }
 
@@ -970,7 +1024,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   padding: 4px 12px;
   font-size: 15px;
   background: var(--resaltador);
-  border-radius: 999px;
+  border-radius: 16px;
 }
 
 /* Mi lista: estrella para guardar (en cada fila y en la ficha). */
@@ -1089,7 +1143,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .comparar-sub { display: block; font-size: 12px; color: var(--grafito-suave); font-weight: 400; }
 
 /* Universidades similares (al final de la ficha) */
-/* Columnas según el ancho disponible: 4, 2 o 1, siempre divisores de 8 (sin huecos). */
+/* Columnas según el ancho disponible: 4, 2 o 1, siempre divisores de 4 (sin huecos). */
 .similares-envoltura { container-type: inline-size; }
 .similares-pista { display: none; margin: 8px 0 0; font-size: 12px; color: var(--grafito-suave); text-align: right; }
 .similares {

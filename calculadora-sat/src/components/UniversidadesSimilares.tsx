@@ -13,8 +13,8 @@ function diferencia(otra: number | null | undefined, base: number | null | undef
     : { texto: `${formatDinero(d)} más`, clase: 'similar-mas' };
 }
 
-/** 8 llena sin huecos la grilla de 4 columnas, la de 2 y la de 1. */
-const CANTIDAD = 8;
+/** 4 llena sin huecos la grilla de 4 columnas, la de 2 y la de 1. */
+const CANTIDAD = 4;
 
 export function UniversidadesSimilares({ uni, universidades, onSeleccionar }: {
   uni: Universidad;
@@ -23,9 +23,9 @@ export function UniversidadesSimilares({ uni, universidades, onSeleccionar }: {
 }) {
   const similares = useMemo(() => {
     const lista = universidadesSimilares(uni, universidades, CANTIDAD);
-    // Filas completas: en el raro caso de que haya menos de 8, se recorta a un múltiplo
-    // de 4 para que la grilla (4, 2 o 1 columnas) no quede con huecos.
-    return lista.length >= 4 ? lista.slice(0, lista.length - (lista.length % 4)) : lista;
+    // Filas completas: en el raro caso de que haya menos de 4, se deja un número par
+    // para que la grilla de 2 columnas no quede con un hueco.
+    return lista.length > 1 ? lista.slice(0, lista.length - (lista.length % 2)) : lista;
   }, [uni, universidades]);
   if (similares.length === 0) return null;
 

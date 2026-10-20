@@ -12,8 +12,9 @@ function iniciales(nombre: string): string {
 }
 
 /**
- * Foto de referencia en la cabecera de la ficha. Si la universidad no tiene foto libre
- * (o no carga), se muestra una portada con sus iniciales: ninguna ficha queda con un hueco.
+ * Fondo del banner de la ficha: la foto de la universidad. Si no tiene foto libre
+ * (o no carga), una portada en tinta azul con sus iniciales: ninguna ficha queda vacía.
+ * Ocupa todo su contenedor; el texto va encima.
  */
 export function FotoUniversidad({ uni }: { uni: Universidad }) {
   const foto = useFoto(uni);
@@ -27,30 +28,35 @@ export function FotoUniversidad({ uni }: { uni: Universidad }) {
 
   if (foto === null || fallida === foto.f) {
     return (
-      <div className="foto-uni foto-uni-portada" role="img" aria-label={`Portada de ${uni.INSTNM}`}>
+      <div className="foto-uni foto-uni-portada" aria-hidden="true">
         <span className="foto-uni-iniciales">{iniciales(uni.INSTNM)}</span>
-        <span className="foto-uni-portada-lugar">{uni.CITY}, {uni.STABBR}</span>
       </div>
     );
   }
 
+  return (
+    <div className={`foto-uni${cargada === foto.f ? ' foto-uni-lista' : ' foto-uni-cargando'}`}>
+      <img
+        src={urlFoto(foto, 1280)}
+        srcSet={`${urlFoto(foto, 640)} 640w, ${urlFoto(foto, 1280)} 1280w, ${urlFoto(foto, 1920)} 1920w`}
+        sizes="(max-width: 1320px) 100vw, 1280px"
+        alt={`Foto de ${uni.INSTNM}`}
+        decoding="async"
+        onLoad={() => setCargada(foto.f)}
+        onError={() => setFallida(foto.f)}
+      />
+    </div>
+  );
+}
+
+/** Autor y licencia de la foto, con enlace a Commons (lo piden las licencias libres). */
+export function CreditoFoto({ uni }: { uni: Universidad }) {
+  const foto = useFoto(uni);
+  if (!foto) return null;
   const credito = [foto.a, foto.l].filter(Boolean).join(' · ');
   return (
-    <figure className="foto-uni-figura">
-      <div className={`foto-uni${cargada === foto.f ? ' foto-uni-lista' : ' foto-uni-cargando'}`}>
-        <img
-          src={urlFoto(foto, 960)}
-          srcSet={`${urlFoto(foto, 640)} 640w, ${urlFoto(foto, 960)} 960w, ${urlFoto(foto, 1280)} 1280w`}
-          sizes="(max-width: 900px) 100vw, 520px"
-          alt={`Foto de ${uni.INSTNM}`}
-          decoding="async"
-          onLoad={() => setCargada(foto.f)}
-          onError={() => setFallida(foto.f)}
-        />
-      </div>
-      <figcaption className="foto-uni-credito">
-        Foto: <a href={paginaFoto(foto)} target="_blank" rel="noopener noreferrer">{credito || 'ver autor'}</a>, vía Wikimedia Commons
-      </figcaption>
-    </figure>
+    <p className="foto-uni-credito">
+      Foto: <a href={paginaFoto(foto)} target="_blank" rel="noopener noreferrer">{credito || 'ver autor'}</a>, vía Wikimedia Commons
+    </p>
   );
 }
