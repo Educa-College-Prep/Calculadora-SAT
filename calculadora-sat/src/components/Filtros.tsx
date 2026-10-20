@@ -264,48 +264,6 @@ export function Filtros({
         <p className="ayuda">Los resultados cambian al instante.</p>
       </div>
 
-      {/* PUNTAJE SAT (orden: Verbal, Math, Total) */}
-      <Seccion
-        titulo="Tu puntaje SAT"
-        ayuda="Con ambos puntajes se compara tu total con el de los admitidos de cada universidad. Se ocultan solo las que están muy por encima de tu puntaje (más de 100 puntos bajo el 25% de sus admitidos)."
-      >
-        <div className="casillas-sat">
-          <InputSeccionSAT etiqueta="Verbal" valor={puntajeLectura} setValor={setPuntajeLectura} />
-          <InputSeccionSAT etiqueta="Math" valor={puntajeMath} setValor={setPuntajeMath} />
-        </div>
-        <div className={`total-sat${puntajeTotal > 0 ? ' total-sat-listo' : ''}`}>
-          <span>Total</span>
-          <strong className="numero">{puntajeTotal > 0 ? puntajeTotal : '—'}</strong>
-          <span className="total-sat-escala">/ 1600</span>
-        </div>
-        {satIncompleto && <p className="ayuda ayuda-aviso">Ingresa ambos puntajes para filtrar.</p>}
-
-      </Seccion>
-
-      {/* Se marcan una o varias; sin marcar, se muestran todas. Solo con puntaje,
-          porque sin él no hay con qué comparar. */}
-      <Seccion titulo="Tus posibilidades de entrar" ayuda={AYUDA_NIVELES}>
-        <div className="burbujas">
-          {NIVELES.map(({ nivel }) => (
-            <Casilla
-              key={nivel}
-              marcada={!!conteoNiveles && nivelesSAT.includes(nivel)}
-              deshabilitada={!conteoNiveles}
-              onCambio={() => setNivelesSAT(nivelesSAT.includes(nivel) ? nivelesSAT.filter(n => n !== nivel) : [...nivelesSAT, nivel])}
-              texto={
-                <>
-                  {nivel}
-                  {conteoNiveles && <span className="nivel-opcion-cuenta numero">{conteoNiveles[nivel].toLocaleString('en-US')}</span>}
-                </>
-              }
-            />
-          ))}
-        </div>
-        <p className="ayuda">
-          {conteoNiveles ? 'Sin marcar, se muestran todas.' : 'Pon tu puntaje SAT para ver en cuáles tienes más posibilidades de entrar.'}
-        </p>
-      </Seccion>
-
       {/* UBICACIÓN */}
       <Seccion titulo="Dónde quieres estudiar">
         <label className="campo">
@@ -349,6 +307,48 @@ export function Filtros({
         ) : (
           <p className="ayuda">También puedes elegir un estado en el mapa.</p>
         )}
+      </Seccion>
+
+      {/* PUNTAJE SAT (orden: Verbal, Math, Total) */}
+      <Seccion
+        titulo="Tu puntaje SAT"
+        ayuda="Con ambos puntajes se compara tu total con el de los admitidos de cada universidad. Se ocultan solo las que están muy por encima de tu puntaje (más de 100 puntos bajo el 25% de sus admitidos)."
+      >
+        <div className="casillas-sat">
+          <InputSeccionSAT etiqueta="Verbal" valor={puntajeLectura} setValor={setPuntajeLectura} />
+          <InputSeccionSAT etiqueta="Math" valor={puntajeMath} setValor={setPuntajeMath} />
+        </div>
+        <div className={`total-sat${puntajeTotal > 0 ? ' total-sat-listo' : ''}`}>
+          <span>Total</span>
+          <strong className="numero">{puntajeTotal > 0 ? puntajeTotal : '—'}</strong>
+          <span className="total-sat-escala">/ 1600</span>
+        </div>
+        {satIncompleto && <p className="ayuda ayuda-aviso">Ingresa ambos puntajes para filtrar.</p>}
+
+      </Seccion>
+
+      {/* Se marcan una o varias; sin marcar, se muestran todas. Solo con puntaje,
+          porque sin él no hay con qué comparar. */}
+      <Seccion titulo="Tus posibilidades de entrar" ayuda={AYUDA_NIVELES}>
+        <div className="burbujas">
+          {NIVELES.map(({ nivel }) => (
+            <Casilla
+              key={nivel}
+              marcada={!!conteoNiveles && nivelesSAT.includes(nivel)}
+              deshabilitada={!conteoNiveles}
+              onCambio={() => setNivelesSAT(nivelesSAT.includes(nivel) ? nivelesSAT.filter(n => n !== nivel) : [...nivelesSAT, nivel])}
+              texto={
+                <>
+                  {nivel}
+                  {conteoNiveles && <span className="nivel-opcion-cuenta numero">{conteoNiveles[nivel].toLocaleString('en-US')}</span>}
+                </>
+              }
+            />
+          ))}
+        </div>
+        <p className="ayuda">
+          {conteoNiveles ? 'Sin marcar, se muestran todas.' : 'Pon tu puntaje SAT para ver en cuáles tienes más posibilidades de entrar.'}
+        </p>
       </Seccion>
 
       {/* POLÍTICA Y TIPO */}
