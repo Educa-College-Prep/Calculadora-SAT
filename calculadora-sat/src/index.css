@@ -166,13 +166,6 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   line-height: 1;
 }
 
-.cabecera-bajada {
-  max-width: 52ch;
-  margin: 10px 0 0;
-  font-size: 16px;
-  color: var(--grafito-suave);
-}
-
 .cuerpo {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
@@ -1043,7 +1036,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .ficha-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 
 /* Mi lista y comparar */
-.boton-mi-lista { margin-top: 14px; }
+.boton-mi-lista { margin-top: 18px; }
 .boton-mi-lista svg { color: #c79a00; }
 .contador {
   min-width: 22px;
