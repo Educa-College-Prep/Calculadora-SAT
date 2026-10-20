@@ -52,15 +52,18 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
   const matUS = matOut ?? matIn; // privadas/sin distinción: la matrícula que haya
   const hayDistincionEstado = matIn != null && matOut != null && matIn !== matOut;
 
+  // Sin dato de becas no se muestra el aviso de internacionales del bloque de becas: va aquí.
+  const notaIntl = uni.IGRNT_P == null ? 'Los internacionales no reciben ayuda del gobierno de EE.UU.; solo becas de la universidad, si las otorga.' : null;
+
   const perfiles: Perfil[] = hayDistincionEstado
     ? [
         { id: 'in', label: 'Residente del estado', matricula: matIn, netoReal: uni.NPT4_PUB ?? null, netoPorIngreso: porIngreso(uni, 'PUB'), nota: null },
         { id: 'out', label: 'Otro estado (EE.UU.)', matricula: matOut, netoReal: null, netoPorIngreso: [], nota: 'Los alumnos de otros estados pagan la matrícula más alta y no reciben becas estatales.' },
-        { id: 'intl', label: 'Internacional', matricula: matOut, netoReal: null, netoPorIngreso: [], nota: 'Los internacionales no reciben ayuda del gobierno de EE.UU.; solo becas de la universidad, si las otorga.' },
+        { id: 'intl', label: 'Internacional', matricula: matOut, netoReal: null, netoPorIngreso: [], nota: notaIntl },
       ]
     : [
         { id: 'us', label: 'EE.UU.', matricula: matUS, netoReal: uni.NPT4_PRIV ?? uni.NPT4_PUB ?? null, netoPorIngreso: porIngreso(uni, 'PRIV').length ? porIngreso(uni, 'PRIV') : porIngreso(uni, 'PUB'), nota: null },
-        { id: 'intl', label: 'Internacional', matricula: matUS, netoReal: null, netoPorIngreso: [], nota: 'Los internacionales no reciben ayuda del gobierno de EE.UU.; solo becas de la universidad, si las otorga.' },
+        { id: 'intl', label: 'Internacional', matricula: matUS, netoReal: null, netoPorIngreso: [], nota: notaIntl },
       ];
 
   const [activo, setActivo] = useState<PerfilId>('intl');
@@ -116,10 +119,15 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
                 <strong className="numero">{uni.IGRNT_P}%</strong> de los alumnos de 1er año la recibe
                 {uni.IGRNT_A != null && <>, con un promedio de <strong className="numero">{formatDinero(uni.IGRNT_A)}</strong> al año</>}.
               </p>
-              {p.id === 'intl' && (
-                <p className="ayuda">Dato general de todos los alumnos; los internacionales suelen recibir menos.</p>
-              )}
               <p className="fuente">Año 2023-24. Fuente: IPEDS</p>
+              {/* El gobierno no publica becas por nacionalidad: para extranjeros el % no es su probabilidad. */}
+              {p.id === 'intl' && (
+                <p className="nota-alerta costos-intl">
+                  <strong>Si eres internacional:</strong> no recibes ayuda del gobierno de EE.UU., solo becas de la
+                  universidad. Ese {uni.IGRNT_P}% es de todos los alumnos: la universidad no publica cuántos
+                  extranjeros la reciben, y suelen ser bastantes menos. Confírmalo con su oficina de admisión.
+                </p>
+              )}
             </div>
           )}
 
@@ -141,6 +149,8 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
                   al año si recibes la beca promedio de {formatDinero(uni.IGRNT_A)}
                   <InfoTooltip texto={glosarioCampos.COSTO_APROX_BECA} />
                 </span>
+                {/* La beca no está garantizada: también el escenario sin ella. */}
+                <span className="costos-sin-beca">Sin beca: <strong className="numero">{cv?.estimado && '~'}{formatDinero(total)}</strong> al año</span>
               </div>
             ) : (
               <p className="ayuda">No hay un costo después de becas publicado para este perfil.</p>

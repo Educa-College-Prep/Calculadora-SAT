@@ -918,6 +918,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   font-weight: 700;
 }
 .costos-nota { margin: 12px 0 0; }
+.costos-intl { margin: 12px 0 0; }
+.costos-sin-beca { flex-basis: 100%; font-size: 14px; color: var(--grafito-suave); }
 .costos-enlace { margin-top: 16px; text-decoration: none; }
 .con-ayuda { display: flex; align-items: center; flex-wrap: wrap; }
 
