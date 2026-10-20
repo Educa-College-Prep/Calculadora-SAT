@@ -1,4 +1,5 @@
 import { memo, useEffect, useRef } from 'react';
+import type { KeyboardEvent } from 'react';
 import type { Universidad } from '../types';
 
 interface Props {
@@ -29,6 +30,22 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
 
   const abierto = mostrarSugerencias && busquedaNombre.length > 0;
 
+  // El nombre queda en el buscador: al volver del detalle, la lista ya está filtrada.
+  const elegir = (uni: Universidad) => {
+    setBusquedaNombre(uni.INSTNM);
+    setMostrarSugerencias(false);
+    onSeleccionar(uni);
+  };
+
+  const alPresionarTecla = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') setMostrarSugerencias(false);
+    // Con un solo resultado, Enter abre esa universidad sin tener que hacer clic.
+    if (e.key === 'Enter' && abierto && sugerencias.length === 1) {
+      e.preventDefault();
+      elegir(sugerencias[0]);
+    }
+  };
+
   return (
     <div ref={contenedorRef} className="buscador">
       <label htmlFor="buscador-universidad" className="buscador-etiqueta">Busca una universidad</label>
@@ -44,7 +61,7 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
           value={busquedaNombre}
           onChange={(e) => { setBusquedaNombre(e.target.value); setMostrarSugerencias(true); }}
           onFocus={() => setMostrarSugerencias(true)}
-          onKeyDown={(e) => { if (e.key === 'Escape') setMostrarSugerencias(false); }}
+          onKeyDown={alPresionarTecla}
           placeholder="Nombre o sigla: Harvard, MIT, UCLA…"
           aria-expanded={abierto}
           aria-controls="buscador-sugerencias"
@@ -72,12 +89,7 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
                 <button
                   type="button"
                   className="sugerencia"
-                  onClick={() => {
-                    // El nombre queda en el buscador: al volver del detalle, la lista ya está filtrada.
-                    setBusquedaNombre(uni.INSTNM);
-                    setMostrarSugerencias(false);
-                    onSeleccionar(uni);
-                  }}
+                  onClick={() => elegir(uni)}
                 >
                   <span className="sugerencia-nombre">{uni.INSTNM}</span>
                   <span className="sugerencia-lugar">{uni.CITY}, {uni.STABBR}</span>
