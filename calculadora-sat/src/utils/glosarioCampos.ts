@@ -35,7 +35,6 @@ export const glosarioCampos: Record<string, string> = {
   BECAS_1ER_ANIO: 'Becas que no se devuelven, para alumnos de 1er año a tiempo completo (in-state y out-of-state juntos). Los extranjeros no reciben becas federales ni estatales.',
 
   // Programas
-  PRGMOFR: 'Cantidad total de programas académicos (carreras) diferentes que ofrece la institución.',
 
   // Resultados económicos
   MD_EARN_4YR: 'Lo que gana al año el egresado típico, 4 años después de graduarse. Solo cuenta a quienes trabajan y ya no estudian.',

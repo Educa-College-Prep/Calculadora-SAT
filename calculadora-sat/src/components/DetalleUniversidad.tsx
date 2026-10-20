@@ -65,7 +65,6 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
   const aprox = costoVida?.estimado ? '~' : '';
   const ranking = posicionUSNews(uni);
   const similares = useMemo(() => similaresParaFicha(uni, universidades), [uni, universidades]);
-  const programas = [uni.CIPTITLE1, uni.CIPTITLE2, uni.CIPTITLE3, uni.CIPTITLE4, uni.CIPTITLE5, uni.CIPTITLE6].filter(Boolean);
 
   return (
     <main className="ficha">
@@ -154,24 +153,6 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
         {(uni.TUITIONFEE_OUT != null || uni.TUITIONFEE_IN != null || uni.COSTT4_A != null || uni.NPT4_PUB != null || uni.NPT4_PRIV != null) && (
           <Seccion titulo="Costos y financiamiento" ancha>
             <CostosFinanciamiento uni={uni} />
-          </Seccion>
-        )}
-
-        {/* Oferta académica */}
-        {(uni.CIPTITLE1 || uni.PRGMOFR) && (
-          <Seccion
-            titulo={uni.PRGMOFR ? `Carreras (${uni.PRGMOFR} programas)` : 'Carreras'}
-            ayuda={glosarioCampos.PRGMOFR}
-            ancha
-          >
-            {programas.length > 0 && (
-              <>
-                <p className="ficha-intro">Las más populares, de mayor a menor:</p>
-                <ol className="programas">
-                  {programas.map((titulo) => <li key={titulo}>{titulo}</li>)}
-                </ol>
-              </>
-            )}
           </Seccion>
         )}
 
