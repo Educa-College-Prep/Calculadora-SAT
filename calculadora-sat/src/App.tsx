@@ -415,7 +415,7 @@ export default function App() {
   const abrirAsistente = useCallback(() => setAsistenteAbierto(true), []);
   const cerrarAsistente = useCallback(() => setAsistenteAbierto(false), []);
 
-  // El asistente puede "mover" la calculadora: reemplaza los filtros por los que sugiere.
+  // El asistente puede "mover" la página: reemplaza los filtros por los que sugiere.
   const aplicarFiltrosAsistente = useCallback((f: FiltrosSugeridos) => {
     setBusquedaNombre('');
     setEstadoSeleccionado(f.estado ?? 'todos');
@@ -483,7 +483,7 @@ export default function App() {
       <>
         <header className="cabecera">
           <div>
-            <h1>Calculadora SAT</h1>
+            <h1>Educa College Finder</h1>
             <p className="cabecera-bajada">
               Encuentra universidades de EE.&nbsp;UU. que encajan con tu puntaje, tu presupuesto y el lugar donde quieres estudiar.
             </p>

@@ -277,7 +277,7 @@ export function AsistenteIA({
           <span className="asis-avatar"><IconoChispa tamano={16} /></span>
           <div className="asis-cabecera-texto">
             <h2>Asistente de universidades</h2>
-            <p>Busca, compara y explica con los datos de la calculadora</p>
+            <p>Busca, compara y explica con los datos de College Finder</p>
           </div>
           <span className="asis-demo" title="Respuestas simuladas para la demostración, con datos reales">Demo</span>
           <button type="button" className="asis-icono asis-ampliar" onClick={() => setAmplio(a => !a)}
@@ -344,7 +344,7 @@ export function AsistenteIA({
                         {m.respuesta.cierre && <div className="asis-texto"><TextoRico texto={m.respuesta.cierre} /></div>}
                         {m.respuesta.filtros && Object.values(m.respuesta.filtros).some(v => v != null) && (
                           <button type="button" className="boton asis-aplicar" onClick={() => onAplicarFiltros(m.respuesta.filtros!)}>
-                            Ver estos filtros en la calculadora →
+                            Ver estos filtros en la página →
                           </button>
                         )}
                       </>
@@ -386,7 +386,7 @@ export function AsistenteIA({
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </button>
           </form>
-          <p className="asis-nota">Demo: el razonamiento es simulado, pero las cifras salen de los datos reales de la calculadora.</p>
+          <p className="asis-nota">Demo: el razonamiento es simulado, pero las cifras salen de los datos reales de College Finder.</p>
         </footer>
       </aside>
     </>
