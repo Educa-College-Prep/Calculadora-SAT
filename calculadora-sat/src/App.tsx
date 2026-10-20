@@ -22,6 +22,7 @@ import type { FiltrosSugeridos } from './asistente/tipos';
 import { ComparadorUniversidades } from './components/ComparadorUniversidades';
 import { alcanzable, clasificar } from './utils/nivelSAT';
 import type { Nivel } from './utils/nivelSAT';
+import { AvisoFuentes } from './components/AvisoFuentes';
 import { EVENTO_INICIO } from './components/BarraEduca';
 
 /** Opción del filtro "¿Piden el SAT?" → valor de ADMCON7 (política de puntajes de IPEDS). */
@@ -604,6 +605,7 @@ export default function App() {
   return (
     <>
       {vista}
+      <AvisoFuentes />
       {asistente}
     </>
   );

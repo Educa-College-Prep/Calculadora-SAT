@@ -1744,3 +1744,15 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
   .barra-educa-contacto { transition: none; }
   .barra-educa-contacto:hover { transform: none; }
 }
+
+/* ── Aviso de fuentes (pie de todas las vistas) ───────────────── */
+.aviso-fuentes {
+  margin-top: 40px;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--linea);
+  font-size: 13px;
+  color: var(--grafito-suave);
+  max-width: 820px;
+}
+.aviso-fuentes p { margin: 0; }
+.aviso-fuentes a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
