@@ -296,7 +296,7 @@ export default function App() {
 
     Object.keys(conteoPorEstado).sort().forEach(estado => {
       const nombreEstado = NOMBRES_ESTADOS[estado] ?? estado;
-      const tooltip = `<div style="padding:8px 10px; line-height:1.35; color:#26292b; font-family:Archivo, sans-serif;">
+      const tooltip = `<div style="padding:8px 10px; line-height:1.35; color:#26292b; font-family:Lexend, sans-serif;">
       <strong style="font-size:15px;">${nombreEstado}</strong><br />
       <span style="font-size:13px; color:#5d6467;">${conteoPorEstado[estado]} universidades · clic para ver condados</span>
     </div>`;
@@ -500,9 +500,6 @@ export default function App() {
         <header className="cabecera">
           <div>
             <h1>Educa College Finder</h1>
-            <p className="cabecera-bajada">
-              Encuentra universidades de EE.&nbsp;UU. que encajan con tu puntaje, tu presupuesto y el lugar donde quieres estudiar.
-            </p>
             <button type="button" className="boton boton-mi-lista" onClick={abrirMiLista}>
               <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
               Mi lista y comparar
