@@ -4,6 +4,9 @@ import { formatNivel, formatDinero, formatPorcentaje } from '../utils/formatters
 import { BotonGuardar } from './BotonGuardar';
 import { claveUniversidad } from '../utils/useMiLista';
 import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
+import { clasificar } from '../utils/nivelSAT';
+import type { Nivel } from '../utils/nivelSAT';
+import { EtiquetaNivel } from './EtiquetaNivel';
 
 interface Props {
   universidadesFiltradas: Universidad[];
@@ -19,6 +22,8 @@ interface Props {
   /** Claves (claveUniversidad) de las universidades en "Mi lista". */
   guardadas: Set<string>;
   onAlternarGuardada: (uni: Universidad) => void;
+  /** Tu puntaje SAT total (0 = sin puntaje): para la etiqueta Segura / Buena opción / Difícil. */
+  puntajeSAT: number;
 }
 
 const OPCIONES_POR_PAGINA = [25, 50, 100, 200];
@@ -40,12 +45,14 @@ const FilaUniversidad = memo(function FilaUniversidad({
   onSeleccionar,
   guardada,
   onAlternarGuardada,
+  nivel,
 }: {
   uni: Universidad;
   faltantes?: string[];
   onSeleccionar: (uni: Universidad) => void;
   guardada: boolean;
   onAlternarGuardada: (uni: Universidad) => void;
+  nivel: Nivel | null;
 }) {
   const incompleta = !!faltantes?.length;
   const ranking = posicionUSNews(uni);
@@ -61,6 +68,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
           <span className="fila-nombre">{uni.INSTNM}</span>
           <span className="fila-lugar">{uni.CITY}, {uni.STABBR}</span>
           <span className="marcas">
+            {nivel && <EtiquetaNivel nivel={nivel} />}
             {ranking && (
               <span className="marca marca-ranking" title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
                 U.S. News {textoPuesto(ranking)}
@@ -116,6 +124,7 @@ export function ListaUniversidades({
   onSeleccionar,
   guardadas,
   onAlternarGuardada,
+  puntajeSAT,
 }: Props) {
   const [porPagina, setPorPagina] = useState<number>(50);
   const [pagina, setPagina] = useState<number>(1);
@@ -232,6 +241,7 @@ export function ListaUniversidades({
                 onSeleccionar={onSeleccionar}
                 guardada={guardadas.has(claveUniversidad(uni))}
                 onAlternarGuardada={onAlternarGuardada}
+                nivel={puntajeSAT > 0 ? clasificar(uni, puntajeSAT) : null}
               />
             ))}
           </ul>

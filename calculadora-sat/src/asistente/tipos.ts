@@ -19,7 +19,7 @@ export type PasoAgente =
 export interface FichaRecomendada {
   uni: Universidad;
   datos: string[];
-  /** Etiqueta corta opcional: "Segura", "Objetivo", "Alcance"... */
+  /** Etiqueta corta opcional: "Segura", "Buena opción", "Difícil"... */
   etiqueta?: string;
 }
 
@@ -30,7 +30,7 @@ export interface FiltrosSugeridos {
   lectura?: number;
   precioMaximo?: number;
   tipo?: 'publica' | 'privada';
-  exigirSAT?: 'requerido' | 'opcional';
+  exigirSAT?: 'requerido' | 'opcional' | 'no-considera';
 }
 
 export interface RespuestaAgente {

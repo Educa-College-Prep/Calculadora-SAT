@@ -11,7 +11,8 @@ import { posicionUSNews } from './data/rankingUSNews';
 import { useMiLista, claveUniversidad } from './utils/useMiLista';
 import type { TipoControl } from './utils/tipoControl';
 import { MapaGeo } from './components/MapaGeo';
-import { GraficoBarras } from './components/GraficoBarras';
+import { TopUniversidades } from './components/TopUniversidades';
+import { elegirTop } from './utils/topUniversidades';
 import { ListaUniversidades } from './components/ListaUniversidades';
 import { ResumenEstado } from './components/ResumenEstado';
 import { DetalleUniversidad } from './components/DetalleUniversidad';
@@ -19,6 +20,15 @@ import { AsistenteIA, EntradaAsistente } from './components/AsistenteIA';
 import type { SolicitudAsistente } from './components/AsistenteIA';
 import type { FiltrosSugeridos } from './asistente/tipos';
 import { ComparadorUniversidades } from './components/ComparadorUniversidades';
+import { alcanzable, clasificar } from './utils/nivelSAT';
+import type { Nivel } from './utils/nivelSAT';
+
+/** Opción del filtro "¿Piden el SAT?" → valor de ADMCON7 (política de puntajes de IPEDS). */
+const POLITICA_SAT: Record<string, string> = {
+  requerido: 'Requerido',
+  opcional: 'Considerado pero no requerido',
+  'no-considera': 'Ni requerido ni recomendado',
+};
 
 type TooltipCell = { role: 'tooltip'; p: { html: true } };
 
@@ -47,6 +57,8 @@ export default function App() {
   const [puntajeLectura, setPuntajeLectura] = useState<number>(0);
 
   const [exigirSAT, setExigirSAT] = useState<string>('todos');
+  /** "Tus posibilidades de entrar": niveles marcados (vacío = todos); solo con puntaje SAT. */
+  const [nivelesSAT, setNivelesSAT] = useState<Nivel[]>([]);
   const [tiposUniversidad, setTiposUniversidad] = useState<TipoControl[]>([]);
   const [precioMaximo, setPrecioMaximo] = useState<number>(90000);
 
@@ -125,7 +137,8 @@ export default function App() {
     precio: precioMaximo,
     politica: exigirSAT,
     sat: puntajeTotal,
-  }), [estadoSeleccionado, ciudadSeleccionada, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal]));
+    niveles: nivelesSAT,
+  }), [estadoSeleccionado, ciudadSeleccionada, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal, nivelesSAT]));
 
   /**
    * Filtrado con manejo explícito de datos faltantes.
@@ -135,7 +148,7 @@ export default function App() {
    * filtro activo distingue tres casos: cumple (se queda), no cumple (se descarta)
    * y no se puede saber (se queda, pero marcada y ordenada al final).
    */
-  const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId } = useMemo(() => {
+  const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId, conteoNiveles } = useMemo(() => {
     const { estado, ciudad, tipos, precio, politica, sat } = filtros;
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
     const filtroSATActivo = sat > 0;
@@ -158,9 +171,11 @@ export default function App() {
 
       const falta: string[] = [];
 
+      // Quedan las seguras, buenas opciones y difíciles; solo salen las prácticamente inalcanzables.
       if (filtroSATActivo) {
-        if (uni.SAT_AVG == null) falta.push('Sin promedio SAT');
-        else if (sat < uni.SAT_AVG) return false;
+        const entra = alcanzable(uni, sat);
+        if (entra == null) falta.push('Sin datos SAT');
+        else if (!entra) return false;
       }
 
       if (filtroPrecioActivo) {
@@ -168,11 +183,9 @@ export default function App() {
         else if (uni.TUITIONFEE_OUT > precio) return false;
       }
 
-      if (filtroPoliticaActivo) {
-        if (uni.ADMCON7 == null) falta.push('Política SAT no informada');
-        else if (politica === 'requerido' && uni.ADMCON7 !== 'Requerido') return false;
-        else if (politica === 'opcional' && uni.ADMCON7 === 'Requerido') return false;
-      }
+      // Las que no informan su política solo aparecen en "Todos": mostrarlas bajo
+      // "Obligatorio" u "Opcional" haría creer que lo son.
+      if (filtroPoliticaActivo && uni.ADMCON7 !== POLITICA_SAT[politica]) return false;
 
       sinUbicacion.push(uni);
       if (estado !== 'todos' && uni.STABBR !== estado) return false;
@@ -182,7 +195,28 @@ export default function App() {
       return true;
     });
 
-    return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes };
+    // Cuántas hay de cada nivel, contadas ANTES de elegir uno: así el menú
+    // "Tus posibilidades de entrar" muestra cuántas hay de cada una.
+    if (!filtroSATActivo) {
+      return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes, conteoNiveles: null };
+    }
+    const conteo: Record<Nivel, number> = { 'Segura': 0, 'Buena opción': 0, 'Difícil': 0 };
+    for (const uni of lista) {
+      const n = clasificar(uni, sat);
+      if (n) conteo[n]++;
+    }
+    // Con niveles marcados quedan solo los de esos niveles (las sin rango SAT no se pueden clasificar).
+    const delNivel = (uni: Universidad) => {
+      if (filtros.niveles.length === 0) return true;
+      const n = clasificar(uni, sat);
+      return n != null && filtros.niveles.includes(n);
+    };
+    return {
+      universidadesFiltradas: lista.filter(delNivel),
+      universidadesSinUbicacion: sinUbicacion.filter(delNivel),
+      faltantesPorId: faltantes,
+      conteoNiveles: conteo,
+    };
   }, [universidades, resultadoBusqueda, filtros]);
 
   // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
@@ -191,6 +225,8 @@ export default function App() {
     [puntajeMath > 0 || puntajeLectura > 0, 'puntaje SAT'],
     [estadoSeleccionado !== 'todos', 'estado'],
     [exigirSAT !== 'todos', '¿piden el SAT?'],
+    // Marcar los tres niveles equivale a no filtrar.
+    [puntajeTotal > 0 && nivelesSAT.length > 0 && nivelesSAT.length < 3, 'tus posibilidades de entrar'],
     // Marcar los tres tipos equivale a no filtrar.
     [tiposUniversidad.length > 0 && tiposUniversidad.length < 3, 'tipo de universidad'],
     [precioMaximo < PRECIO_MAXIMO_SLIDER, 'matrícula máxima'],
@@ -204,6 +240,7 @@ export default function App() {
     setEstadoSeleccionado('todos');
     setCiudadSeleccionada('todas');
     setExigirSAT('todos');
+    setNivelesSAT([]);
     setTiposUniversidad([]);
     setPrecioMaximo(PRECIO_MAXIMO_SLIDER);
   }, []);
@@ -236,20 +273,11 @@ export default function App() {
     });
   }, [universidadesFiltradas, faltantesPorId, ordenarPor, ordenDireccion, resultadoBusqueda]);
 
-  const datosGrafico = useMemo(
-    () => universidadesFiltradas
-      .filter(uni => uni.TUITIONFEE_OUT !== null && uni.TUITIONFEE_OUT !== undefined)
-      .sort((a, b) => (b.TUITIONFEE_OUT || 0) - (a.TUITIONFEE_OUT || 0))
-      .slice(0, 10)
-      .map(uni => ({
-        // Clave única por barra: con el nombre recortado, las sedes de una misma
-        // universidad ("Keiser University-...") se confundían entre sí.
-        id: String(uni._id),
-        costo: uni.TUITIONFEE_OUT,
-        nombreCompleto: uni.INSTNM,
-        uni,
-      })),
-    [universidadesFiltradas]
+  // "Top universidades": ranking U.S. News y, si no alcanza, SAT promedio más alto.
+  // 8 en todo el país; 5 con un estado elegido, porque arriba va también su resumen.
+  const topUniversidades = useMemo(
+    () => elegirTop(universidadesFiltradas, filtros.estado !== 'todos' ? 5 : 8),
+    [universidadesFiltradas, filtros.estado]
   );
 
   // --- PREPARACIÓN DE DATOS DEL MAPA GEO ---
@@ -397,6 +425,7 @@ export default function App() {
     setPrecioMaximo(f.precioMaximo ?? PRECIO_MAXIMO_SLIDER);
     setTiposUniversidad(f.tipo === 'publica' ? ['publica'] : f.tipo === 'privada' ? PRIVADAS : []);
     setExigirSAT(f.exigirSAT ?? 'todos');
+    setNivelesSAT([]);
     if (universidadSeleccionada) volverDelDetalle();
     else document.querySelector('.resultado')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     // En el celular el panel tapa todo: se cierra para que se vea el resultado.
@@ -484,6 +513,8 @@ export default function App() {
             precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
             nombresEstados={NOMBRES_ESTADOS}
             filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
+            conteoNiveles={conteoNiveles}
+            nivelesSAT={nivelesSAT} setNivelesSAT={setNivelesSAT}
           />
 
           <main className="columna-principal">
@@ -523,13 +554,18 @@ export default function App() {
               {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
                   va el resumen en vez de estirar las barras. */}
               <div className="tablero-lateral">
-                <GraficoBarras datosGrafico={datosGrafico} onSeleccionar={seleccionarUniversidad} />
+                {/* Primero lo que se sabe del lugar elegido; debajo, las mejores de ahí. */}
                 {hayFiltrosUbicacion && (
                   <ResumenEstado
                     universidades={universidadesFiltradas}
                     estadoSeleccionado={filtros.estado}
                   />
                 )}
+                <TopUniversidades
+                  universidades={topUniversidades}
+                  lugar={hayFiltrosUbicacion ? (filtros.ciudad !== 'todas' ? filtros.ciudad : NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado) : null}
+                  onSeleccionar={seleccionarUniversidad}
+                />
               </div>
             </section>
 
@@ -540,6 +576,7 @@ export default function App() {
               ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
               onSeleccionar={seleccionarUniversidad}
               guardadas={miLista.guardadas} onAlternarGuardada={miLista.alternar}
+              puntajeSAT={filtros.sat}
             />
           </main>
         </div>

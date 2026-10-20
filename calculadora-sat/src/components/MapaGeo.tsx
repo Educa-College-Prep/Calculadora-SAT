@@ -69,7 +69,7 @@ export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidade
   const nombreEstado = !esNacional ? (NOMBRES_ESTADOS[estadoSeleccionado] ?? estadoSeleccionado) : null;
 
   return (
-    <div className="panel">
+    <div className="panel panel-mapa">
       <div className="panel-cabecera">
         <h2 className="titulo-seccion">{esNacional ? 'Dónde están' : `Dónde están en ${nombreEstado}`}</h2>
         <p className="ayuda">

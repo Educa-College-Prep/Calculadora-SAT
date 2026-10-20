@@ -4,6 +4,16 @@ import { InfoTooltip } from './InfoTooltip';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { PRIVADAS } from '../utils/tipoControl';
 import type { TipoControl } from '../utils/tipoControl';
+import { NIVELES, AYUDA_NIVELES } from '../utils/nivelSAT';
+import type { Nivel } from '../utils/nivelSAT';
+
+/** Qué significa cada opción de "¿Piden el SAT?", para que no se confundan opcional y no considerado. */
+const EXPLICACION_POLITICA: Record<string, string> = {
+  todos: 'Muestra todas, pidan o no el SAT.',
+  requerido: 'Tienes que enviar tu puntaje SAT (o ACT) para postular.',
+  opcional: 'No es obligatorio, pero si lo envías lo toman en cuenta: un buen puntaje suma.',
+  'no-considera': 'No lo piden y no lo miran aunque lo envíes: deciden con tus notas, ensayos y actividades.',
+};
 
 interface Props {
   // Ubicación
@@ -31,6 +41,11 @@ interface Props {
   /** Nombres de los filtros activos; el botón "Limpiar" muestra cuántos son y cuáles. */
   filtrosActivos: readonly string[];
   onLimpiar: () => void;
+  /** Cuántos resultados hay de cada nivel (segura, buena opción, difícil); null sin puntaje. */
+  conteoNiveles: Record<Nivel, number> | null;
+  /** Niveles marcados; vacío = todos. */
+  nivelesSAT: Nivel[];
+  setNivelesSAT: (v: Nivel[]) => void;
 }
 
 const SAT_MIN = 200;
@@ -104,18 +119,19 @@ function Burbujas({ nombre, valor, opciones, onCambio }: {
 }
 
 /** Casilla cuadrada (selección múltiple), con el mismo estilo de la hoja de respuestas. */
-function Casilla({ marcada, parcial = false, texto, onCambio }: {
+function Casilla({ marcada, parcial = false, texto, onCambio, deshabilitada = false }: {
   marcada: boolean;
   parcial?: boolean;
-  texto: string;
+  texto: ReactNode;
   onCambio: () => void;
+  deshabilitada?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   // "indeterminate" solo se puede poner desde JS, no como atributo.
   useEffect(() => { if (ref.current) ref.current.indeterminate = parcial; }, [parcial]);
   return (
-    <label className="burbuja burbuja-casilla">
-      <input ref={ref} type="checkbox" checked={marcada} onChange={onCambio} />
+    <label className={`burbuja burbuja-casilla${deshabilitada ? ' burbuja-deshabilitada' : ''}`}>
+      <input ref={ref} type="checkbox" checked={marcada} onChange={onCambio} disabled={deshabilitada} />
       <span>{texto}</span>
     </label>
   );
@@ -221,6 +237,8 @@ export function Filtros({
   tiposUniversidad, setTiposUniversidad,
   precioMaximo, setPrecioMaximo,
   filtrosActivos, onLimpiar,
+  conteoNiveles,
+  nivelesSAT, setNivelesSAT,
 }: Props) {
   const satIncompleto = (puntajeMath > 0) !== (puntajeLectura > 0);
   const sinLimitePrecio = precioMaximo >= PRECIO_TOPE;
@@ -245,23 +263,6 @@ export function Filtros({
         </div>
         <p className="ayuda">Los resultados cambian al instante.</p>
       </div>
-
-      {/* PUNTAJE SAT (orden: Verbal, Math, Total) */}
-      <Seccion
-        titulo="Tu puntaje SAT"
-        ayuda="Con ambos puntajes, se muestran las universidades cuyo SAT promedio de admitidos es igual o menor a tu total."
-      >
-        <div className="casillas-sat">
-          <InputSeccionSAT etiqueta="Verbal" valor={puntajeLectura} setValor={setPuntajeLectura} />
-          <InputSeccionSAT etiqueta="Math" valor={puntajeMath} setValor={setPuntajeMath} />
-        </div>
-        <div className={`total-sat${puntajeTotal > 0 ? ' total-sat-listo' : ''}`}>
-          <span>Total</span>
-          <strong className="numero">{puntajeTotal > 0 ? puntajeTotal : '—'}</strong>
-          <span className="total-sat-escala">/ 1600</span>
-        </div>
-        {satIncompleto && <p className="ayuda ayuda-aviso">Ingresa ambos puntajes para filtrar.</p>}
-      </Seccion>
 
       {/* UBICACIÓN */}
       <Seccion titulo="Dónde quieres estudiar">
@@ -308,21 +309,62 @@ export function Filtros({
         )}
       </Seccion>
 
-      {/* POLÍTICA Y TIPO */}
+      {/* PUNTAJE SAT (orden: Verbal, Math, Total) */}
       <Seccion
-        titulo="¿Piden el SAT?"
-        ayuda="Obligatorio: la universidad exige el SAT para postular. Opcional: muestra las que no lo exigen, aunque igual puedes enviarlo."
+        titulo="Tu puntaje SAT"
+        ayuda="Con ambos puntajes se compara tu total con el de los admitidos de cada universidad. Se ocultan solo las que están muy por encima de tu puntaje (más de 100 puntos bajo el 25% de sus admitidos)."
       >
+        <div className="casillas-sat">
+          <InputSeccionSAT etiqueta="Verbal" valor={puntajeLectura} setValor={setPuntajeLectura} />
+          <InputSeccionSAT etiqueta="Math" valor={puntajeMath} setValor={setPuntajeMath} />
+        </div>
+        <div className={`total-sat${puntajeTotal > 0 ? ' total-sat-listo' : ''}`}>
+          <span>Total</span>
+          <strong className="numero">{puntajeTotal > 0 ? puntajeTotal : '—'}</strong>
+          <span className="total-sat-escala">/ 1600</span>
+        </div>
+        {satIncompleto && <p className="ayuda ayuda-aviso">Ingresa ambos puntajes para filtrar.</p>}
+
+      </Seccion>
+
+      {/* Se marcan una o varias; sin marcar, se muestran todas. Solo con puntaje,
+          porque sin él no hay con qué comparar. */}
+      <Seccion titulo="Tus posibilidades de entrar" ayuda={AYUDA_NIVELES}>
+        <div className="burbujas">
+          {NIVELES.map(({ nivel }) => (
+            <Casilla
+              key={nivel}
+              marcada={!!conteoNiveles && nivelesSAT.includes(nivel)}
+              deshabilitada={!conteoNiveles}
+              onCambio={() => setNivelesSAT(nivelesSAT.includes(nivel) ? nivelesSAT.filter(n => n !== nivel) : [...nivelesSAT, nivel])}
+              texto={
+                <>
+                  {nivel}
+                  {conteoNiveles && <span className="nivel-opcion-cuenta numero">{conteoNiveles[nivel].toLocaleString('en-US')}</span>}
+                </>
+              }
+            />
+          ))}
+        </div>
+        <p className="ayuda">
+          {conteoNiveles ? 'Sin marcar, se muestran todas.' : 'Pon tu puntaje SAT para ver en cuáles tienes más posibilidades de entrar.'}
+        </p>
+      </Seccion>
+
+      {/* POLÍTICA Y TIPO */}
+      <Seccion titulo="¿Piden el SAT?" ayuda={glosarioCampos.ADMCON7}>
         <Burbujas
           nombre="politica-sat"
           valor={exigirSAT}
           onCambio={setExigirSAT}
           opciones={[
-            { valor: 'todos', texto: 'No importa' },
+            { valor: 'todos', texto: 'Todos' },
             { valor: 'requerido', texto: 'Obligatorio' },
             { valor: 'opcional', texto: 'Opcional' },
+            { valor: 'no-considera', texto: 'No lo toman en cuenta' },
           ]}
         />
+        <p className="ayuda politica-explicacion">{EXPLICACION_POLITICA[exigirSAT]}</p>
       </Seccion>
 
       <Seccion titulo="Tipo de universidad" ayuda={glosarioCampos.CONTROL}>
