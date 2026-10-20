@@ -104,42 +104,17 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
           )}
         </div>
 
-        {/* Cuadrícula 2: lo que pagarías tras becas, según el perfil */}
+        {/* Cuadrícula 2: primero la beca de la universidad y debajo lo que pagarías con ella,
+            para que se vea de dónde sale ese número sin tener que hacer la cuenta. */}
         <div className="costos-columna costos-pagarias">
-          <h3 className="subtitulo">Lo que pagarías</h3>
-
-          {/* Después de becas: dato real o aproximado */}
-          {p.netoReal != null ? (
-            <div className="cifra-destacada">
-              <span className="cifra-destacada-valor numero">{formatDinero(p.netoReal)}</span>
-              <span className="cifra-destacada-texto">
-                al año en promedio, después de becas
-                <InfoTooltip texto={glosarioCampos.NPT4_PUB} />
-              </span>
-            </div>
-          ) : aprox != null && aprox > 0 ? (
-            <div className="cifra-destacada">
-              <span className="cifra-destacada-valor numero">~{formatDinero(aprox)}</span>
-              <span className="cifra-destacada-texto">
-                al año con la beca típica de la universidad
-                <InfoTooltip texto={glosarioCampos.COSTO_APROX_BECA} />
-              </span>
-            </div>
-          ) : (
-            <p className="ayuda">No hay un costo después de becas publicado para este perfil.</p>
-          )}
-
-          {p.nota && <p className="nota-alerta costos-nota">{p.nota}</p>}
-
-          {/* Becas de la universidad (aplica a todos los perfiles) */}
           {uni.IGRNT_P != null && (
-            <div className="ficha-bloque">
-              <p className="con-ayuda"><strong>Becas de la universidad</strong>
+            <div className="costos-beca">
+              <h3 className="subtitulo con-ayuda">Becas de la universidad
                 <InfoTooltip texto={glosarioCampos.BECAS_1ER_ANIO} />
-              </p>
+              </h3>
               <p>
                 <strong className="numero">{uni.IGRNT_P}%</strong> de los alumnos de 1er año la recibe
-                {uni.IGRNT_A != null && <>, con un promedio de <strong className="numero">{formatDinero(uni.IGRNT_A)}</strong></>}.
+                {uni.IGRNT_A != null && <>, con un promedio de <strong className="numero">{formatDinero(uni.IGRNT_A)}</strong> al año</>}.
               </p>
               {p.id === 'intl' && (
                 <p className="ayuda">Dato general de todos los alumnos; los internacionales suelen recibir menos.</p>
@@ -147,6 +122,32 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
               <p className="fuente">Año 2023-24. Fuente: IPEDS</p>
             </div>
           )}
+
+          <div className={uni.IGRNT_P != null ? 'ficha-bloque' : undefined}>
+            <h3 className="subtitulo">Lo que pagarías</h3>
+            {/* Después de becas: dato real o aproximado */}
+            {p.netoReal != null ? (
+              <div className="cifra-destacada">
+                <span className="cifra-destacada-valor numero">{formatDinero(p.netoReal)}</span>
+                <span className="cifra-destacada-texto">
+                  al año en promedio, después de becas y ayudas
+                  <InfoTooltip texto={glosarioCampos.NPT4_PUB} />
+                </span>
+              </div>
+            ) : aprox != null && aprox > 0 ? (
+              <div className="cifra-destacada">
+                <span className="cifra-destacada-valor numero">~{formatDinero(aprox)}</span>
+                <span className="cifra-destacada-texto">
+                  al año si recibes la beca promedio de {formatDinero(uni.IGRNT_A)}
+                  <InfoTooltip texto={glosarioCampos.COSTO_APROX_BECA} />
+                </span>
+              </div>
+            ) : (
+              <p className="ayuda">No hay un costo después de becas publicado para este perfil.</p>
+            )}
+          </div>
+
+          {p.nota && <p className="nota-alerta costos-nota">{p.nota}</p>}
 
           {/* Precio neto por ingreso: solo donde hay dato real */}
           {p.netoPorIngreso.length > 0 && (
