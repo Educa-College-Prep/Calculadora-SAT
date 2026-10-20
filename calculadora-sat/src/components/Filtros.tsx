@@ -64,7 +64,9 @@ function useTopeSticky() {
     const hoja = ref.current;
     if (!hoja) return;
     const actualizar = () => {
-      const tope = Math.min(MARGEN_STICKY, window.innerHeight - hoja.offsetHeight - MARGEN_STICKY);
+      // La barra de Educa queda fija arriba: la hoja se pega justo debajo de ella.
+      const barra = document.getElementById('barra')?.offsetHeight ?? 0;
+      const tope = barra + Math.min(MARGEN_STICKY, window.innerHeight - barra - hoja.offsetHeight - MARGEN_STICKY);
       hoja.style.setProperty('--hoja-tope', `${tope}px`);
     };
     actualizar();
