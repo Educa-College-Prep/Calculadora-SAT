@@ -20,6 +20,13 @@ import type { SolicitudAsistente } from './components/AsistenteIA';
 import type { FiltrosSugeridos } from './asistente/tipos';
 import { ComparadorUniversidades } from './components/ComparadorUniversidades';
 
+/** Opción del filtro "¿Piden el SAT?" → valor de ADMCON7 (política de puntajes de IPEDS). */
+const POLITICA_SAT: Record<string, string> = {
+  requerido: 'Requerido',
+  opcional: 'Considerado pero no requerido',
+  'no-considera': 'Ni requerido ni recomendado',
+};
+
 type TooltipCell = { role: 'tooltip'; p: { html: true } };
 
 /** Convierte "123" → 123; "PS" (Privacy Suppressed), vacío o texto raro → null. */
@@ -168,11 +175,9 @@ export default function App() {
         else if (uni.TUITIONFEE_OUT > precio) return false;
       }
 
-      if (filtroPoliticaActivo) {
-        if (uni.ADMCON7 == null) falta.push('Política SAT no informada');
-        else if (politica === 'requerido' && uni.ADMCON7 !== 'Requerido') return false;
-        else if (politica === 'opcional' && uni.ADMCON7 === 'Requerido') return false;
-      }
+      // Las que no informan su política solo aparecen en "Todos": mostrarlas bajo
+      // "Obligatorio" u "Opcional" haría creer que lo son.
+      if (filtroPoliticaActivo && uni.ADMCON7 !== POLITICA_SAT[politica]) return false;
 
       sinUbicacion.push(uni);
       if (estado !== 'todos' && uni.STABBR !== estado) return false;

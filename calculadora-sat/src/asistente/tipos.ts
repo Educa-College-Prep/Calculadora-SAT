@@ -30,7 +30,7 @@ export interface FiltrosSugeridos {
   lectura?: number;
   precioMaximo?: number;
   tipo?: 'publica' | 'privada';
-  exigirSAT?: 'requerido' | 'opcional';
+  exigirSAT?: 'requerido' | 'opcional' | 'no-considera';
 }
 
 export interface RespuestaAgente {

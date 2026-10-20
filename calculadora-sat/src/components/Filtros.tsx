@@ -5,6 +5,14 @@ import { glosarioCampos } from '../utils/glosarioCampos';
 import { PRIVADAS } from '../utils/tipoControl';
 import type { TipoControl } from '../utils/tipoControl';
 
+/** Qué significa cada opción de "¿Piden el SAT?", para que no se confundan opcional y no considerado. */
+const EXPLICACION_POLITICA: Record<string, string> = {
+  todos: 'Muestra todas, pidan o no el SAT.',
+  requerido: 'Tienes que enviar tu puntaje SAT (o ACT) para postular.',
+  opcional: 'No es obligatorio, pero si lo envías lo toman en cuenta: un buen puntaje suma.',
+  'no-considera': 'No lo piden y no lo miran aunque lo envíes: deciden con tus notas, ensayos y actividades.',
+};
+
 interface Props {
   // Ubicación
   estadoSeleccionado: string;
@@ -309,20 +317,19 @@ export function Filtros({
       </Seccion>
 
       {/* POLÍTICA Y TIPO */}
-      <Seccion
-        titulo="¿Piden el SAT?"
-        ayuda="Obligatorio: la universidad exige el SAT para postular. Opcional: muestra las que no lo exigen, aunque igual puedes enviarlo."
-      >
+      <Seccion titulo="¿Piden el SAT?" ayuda={glosarioCampos.ADMCON7}>
         <Burbujas
           nombre="politica-sat"
           valor={exigirSAT}
           onCambio={setExigirSAT}
           opciones={[
-            { valor: 'todos', texto: 'No importa' },
+            { valor: 'todos', texto: 'Todos' },
             { valor: 'requerido', texto: 'Obligatorio' },
             { valor: 'opcional', texto: 'Opcional' },
+            { valor: 'no-considera', texto: 'No lo toman en cuenta' },
           ]}
         />
+        <p className="ayuda politica-explicacion">{EXPLICACION_POLITICA[exigirSAT]}</p>
       </Seccion>
 
       <Seccion titulo="Tipo de universidad" ayuda={glosarioCampos.CONTROL}>
