@@ -1633,19 +1633,7 @@ body.asis-amplio .asis-fichas { grid-template-columns: repeat(2, minmax(0, 1fr))
 .marca-nivel-buena { background: #fff3a6; border-color: #f0d75a; }
 .marca-nivel-dificil { background: var(--hoja); border: 1px dashed #d9b400; }
 
-.nivel-opcion {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 1px 9px;
-  font-weight: 700;
-  color: var(--grafito);
-  border-radius: 999px;
-}
-.nivel-opcion-segura { background: var(--resaltador); }
-.nivel-opcion-buena { background: #fff3a6; }
-.nivel-opcion-dificil { background: var(--hoja); border: 1px dashed #d9b400; }
-.nivel-opcion-cuenta { font-weight: 600; color: var(--grafito-suave); }
+.nivel-opcion-cuenta { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--grafito-suave); }
 .burbuja-deshabilitada { opacity: 0.55; cursor: not-allowed; }
 .burbuja-deshabilitada input { cursor: not-allowed; }
 

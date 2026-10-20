@@ -6,7 +6,6 @@ import { PRIVADAS } from '../utils/tipoControl';
 import type { TipoControl } from '../utils/tipoControl';
 import { NIVELES, AYUDA_NIVELES } from '../utils/nivelSAT';
 import type { Nivel } from '../utils/nivelSAT';
-import { BarrasNivel } from './EtiquetaNivel';
 
 /** Qué significa cada opción de "¿Piden el SAT?", para que no se confundan opcional y no considerado. */
 const EXPLICACION_POLITICA: Record<string, string> = {
@@ -287,18 +286,17 @@ export function Filtros({
           porque sin él no hay con qué comparar. */}
       <Seccion titulo="Tus posibilidades de entrar" ayuda={AYUDA_NIVELES}>
         <div className="burbujas">
-          {NIVELES.map(({ nivel, clase, barras }) => (
+          {NIVELES.map(({ nivel }) => (
             <Casilla
               key={nivel}
               marcada={!!conteoNiveles && nivelesSAT.includes(nivel)}
               deshabilitada={!conteoNiveles}
               onCambio={() => setNivelesSAT(nivelesSAT.includes(nivel) ? nivelesSAT.filter(n => n !== nivel) : [...nivelesSAT, nivel])}
               texto={
-                <span className={`nivel-opcion nivel-opcion-${clase}`}>
-                  <BarrasNivel barras={barras} />
+                <>
                   {nivel}
                   {conteoNiveles && <span className="nivel-opcion-cuenta numero">{conteoNiveles[nivel].toLocaleString('en-US')}</span>}
-                </span>
+                </>
               }
             />
           ))}
