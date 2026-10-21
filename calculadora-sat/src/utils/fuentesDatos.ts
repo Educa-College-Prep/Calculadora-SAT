@@ -9,10 +9,8 @@ export interface FuentesDatos {
   scorecard: {
     nombre: string;
     organismo: string;
-    /** Fecha de publicación, AAAA-MM-DD (viene en el nombre del archivo CSV). */
-    publicado?: string;
-    /** Si los datos vinieron de la API, que no da la fecha de publicación: cuándo se detectó el cambio. */
-    actualizado?: string;
+    /** Fecha en que Scorecard publicó el paquete de datos, AAAA-MM-DD. */
+    publicado: string;
     url: string;
     /** "otoño 2024", "2025-26"... Puede faltar alguno si el diccionario cambió de formato. */
     anios: Partial<Record<'admision_y_sat' | 'matricula_y_costo_de_vida' | 'precio_neto' | 'salario_4_anios', string>>;
