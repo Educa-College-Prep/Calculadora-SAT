@@ -2,10 +2,17 @@
 Actualiza los datos de la web con lo último que publicó el gobierno de EE.UU.
 
   - College Scorecard (Departamento de Educación): admisión, SAT, costos, precio neto,
-    salarios... Es el mismo archivo que antes se procesaba en el Colab, con los mismos
-    filtros, más UNITID y el costo de vida fuera del campus.
+    salarios... Las mismas columnas y filtros que antes se procesaban en el Colab, más
+    UNITID y el costo de vida fuera del campus.
   - IPEDS (NCES): postulantes/admitidos/matriculados por sexo (ADM) y becas de 1er año (SFA).
     Se une por UNITID.
+
+De dónde se baja Scorecard:
+  - Con la variable de entorno SCORECARD_API_KEY (así corre en GitHub): de su API oficial.
+    Su página y su servidor de descargas responden 403 a los servidores de GitHub.
+    La clave es gratis: https://api.data.gov/signup/
+  - Sin clave (en una computadora normal): el archivo CSV de su página de datos, como el Colab.
+  Las dos dan los mismos valores.
 
 Escribe:
   public/universidades.json   la base de la web (Scorecard + IPEDS en un solo archivo).
@@ -25,6 +32,9 @@ import json
 import os
 import re
 import sys
+import time
+import urllib.error
+import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
@@ -38,9 +48,8 @@ RESUMEN = os.path.join(CACHE, 'resumen_pr.md')
 
 PAGINA_SCORECARD = 'https://collegescorecard.ed.gov/data/'
 DICCIONARIO_SCORECARD = 'https://collegescorecard.ed.gov/files/CollegeScorecardDataDictionary.xlsx'
-# Servidor de descargas de Scorecard (Amazon S3). A diferencia de su página, no bloquea a
-# los servidores de GitHub: si la página responde 403, el archivo se busca aquí por fecha.
-DESCARGAS_SCORECARD = 'https://ed-public-download.scorecard.network/downloads/Most-Recent-Cohorts-Institution_{:%m%d%Y}.zip'
+API_SCORECARD = 'https://api.data.gov/ed/collegescorecard/v1/schools.json'
+CLAVE_API = os.environ.get('SCORECARD_API_KEY', '').strip()
 IPEDS = 'https://nces.ed.gov/ipeds/complete-data-files/'
 # Como un navegador: algunos sitios del gobierno rechazan pedidos que no lo parecen.
 AGENTE = {
@@ -65,6 +74,68 @@ COLUMNAS = [
 #   UNITID: ID oficial de la universidad (para unir fuentes; la web no lo muestra).
 #   *_OFF: viviendo fuera del campus; OTHEREXPENSE_FAM: viviendo con la familia.
 COLUMNAS_NUEVAS = ['UNITID', 'ROOMBOARD_OFF', 'OTHEREXPENSE_OFF', 'OTHEREXPENSE_FAM']
+# Nombre de cada columna en la API (sale del diccionario de Scorecard, columna
+# "developer-friendly name"). Verificado: dan los mismos valores que el CSV.
+CAMPOS_API = {
+    'INSTNM': 'school.name',
+    'CITY': 'school.city',
+    'STABBR': 'school.state',
+    'CONTROL': 'school.ownership',
+    'UGDS': 'latest.student.size',
+    'UGDS_HISP': 'latest.student.demographics.race_ethnicity.hispanic',
+    'ADM_RATE': 'latest.admissions.admission_rate.overall',
+    'SATVR25': 'latest.admissions.sat_scores.25th_percentile.critical_reading',
+    'SATMT25': 'latest.admissions.sat_scores.25th_percentile.math',
+    'SATVR75': 'latest.admissions.sat_scores.75th_percentile.critical_reading',
+    'SATMT75': 'latest.admissions.sat_scores.75th_percentile.math',
+    'SATVR50': 'latest.admissions.sat_scores.50th_percentile.critical_reading',
+    'SATMT50': 'latest.admissions.sat_scores.50th_percentile.math',
+    'SAT_AVG': 'latest.admissions.sat_scores.average.overall',
+    'ADMCON7': 'latest.admissions.test_requirements',
+    'OPENADMP': 'school.open_admissions_policy',
+    'PRGMOFR': 'latest.academics.program_reporter.programs_offered',
+    'CIPTITLE1': 'latest.academics.program_reporter.program_1.cip_6_digit.title',
+    'CIPTITLE2': 'latest.academics.program_reporter.program_2.cip_6_digit.title',
+    'CIPTITLE3': 'latest.academics.program_reporter.program_3.cip_6_digit.title',
+    'CIPTITLE4': 'latest.academics.program_reporter.program_4.cip_6_digit.title',
+    'CIPTITLE5': 'latest.academics.program_reporter.program_5.cip_6_digit.title',
+    'CIPTITLE6': 'latest.academics.program_reporter.program_6.cip_6_digit.title',
+    'MD_EARN_WNE_4YR': 'latest.earnings.4_yrs_after_completion.median',
+    'COUNT_WNE_4YR': 'latest.earnings.4_yrs_after_completion.working_not_enrolled.overall_count',
+    'ICLEVEL': 'school.institutional_characteristics.level',
+    'TUITIONFEE_OUT': 'latest.cost.tuition.out_of_state',
+    'TUITIONFEE_IN': 'latest.cost.tuition.in_state',
+    'COSTT4_A': 'latest.cost.attendance.academic_year',
+    'NPT4_PRIV': 'latest.cost.avg_net_price.private',
+    'NPT4_PUB': 'latest.cost.avg_net_price.public',
+    'MD_EARN_WNE_P6': 'latest.earnings.6_yrs_after_entry.median',
+    'MD_EARN_WNE_P8': 'latest.earnings.8_yrs_after_entry.median_earnings',
+    'MD_EARN_WNE_P10': 'latest.earnings.10_yrs_after_entry.median',
+    'MD_EARN_WNE_1YR': 'latest.earnings.1_yr_after_completion.median',
+    'MD_EARN_WNE_5YR': 'latest.earnings.5_yrs_after_completion.median',
+    'GT_THRESHOLD_P6': 'latest.earnings.6_yrs_after_entry.gt_threshold',
+    'GT_THRESHOLD_P8': 'latest.earnings.8_yrs_after_entry.gt_threshold',
+    'GT_THRESHOLD_P10': 'latest.earnings.10_yrs_after_entry.gt_threshold',
+    'GT_THRESHOLD_1YR': 'latest.earnings.1_yr_after_completion.overall_count_gt_hs_grad',
+    'GT_THRESHOLD_5YR': 'latest.earnings.5_yrs_after_completion.overall_count_gt_hs_grad',
+    'COUNT_WNE_1YR': 'latest.earnings.1_yr_after_completion.working_not_enrolled.overall_count',
+    'COUNT_WNE_5YR': 'latest.earnings.5_yrs_after_completion.working_not_enrolled.overall_count',
+    'NPCURL': 'school.price_calculator_url',
+    'NPT41_PRIV': 'latest.cost.net_price.private.by_income_level.0-30000',
+    'NPT41_PUB': 'latest.cost.net_price.public.by_income_level.0-30000',
+    'NPT43_PRIV': 'latest.cost.net_price.private.by_income_level.48001-75000',
+    'NPT43_PUB': 'latest.cost.net_price.public.by_income_level.48001-75000',
+    'NPT45_PRIV': 'latest.cost.net_price.private.by_income_level.110001-plus',
+    'NPT45_PUB': 'latest.cost.net_price.public.by_income_level.110001-plus',
+    'STUFACR': 'latest.student.demographics.student_faculty_ratio',
+    'ROOMBOARD_ON': 'latest.cost.roomboard.oncampus',
+    'OTHEREXPENSE_ON': 'latest.cost.otherexpense.oncampus',
+    'BOOKSUPPLY': 'latest.cost.booksupply',
+    'UNITID': 'id',
+    'ROOMBOARD_OFF': 'latest.cost.roomboard.offcampus',
+    'OTHEREXPENSE_OFF': 'latest.cost.otherexpense.offcampus',
+    'OTHEREXPENSE_FAM': 'latest.cost.otherexpense.withfamily',
+}
 TEXTO = {'INSTNM', 'CITY', 'STABBR', 'NPCURL', 'CIPTITLE1', 'CIPTITLE2', 'CIPTITLE3', 'CIPTITLE4', 'CIPTITLE5', 'CIPTITLE6'}
 # Filtro del Colab: solo 4 y 2 años, y al menos 10 de estas columnas con dato.
 NO_CUENTAN_PARA_FILTRO = {'MD_EARN_WNE_4YR', 'COUNT_WNE_4YR'}
@@ -117,48 +188,52 @@ def descargar(url, nombre):
 def existe(url):
     """¿Hay un zip de verdad en esa dirección? Se miran los primeros bytes: cuando IPEDS está
     en mantenimiento responde 200 con una página HTML para cualquier archivo, exista o no."""
-    global ultimo_error
     try:
         req = urllib.request.Request(url, headers={**AGENTE, 'Range': 'bytes=0-3'})
         with urllib.request.urlopen(req, timeout=60) as r:
-            if r.status in (200, 206) and r.read(4).startswith(b'PK'):
-                return True
-            ultimo_error = f'respondió {r.status} pero no es un zip'
-    except Exception as e:
-        ultimo_error = str(e)
-    return False
+            return r.status in (200, 206) and r.read(4).startswith(b'PK')
+    except Exception:
+        return False
 
 
-# Por qué falló la última consulta de existe(): va en los mensajes de error para saber si fue
-# un 404 (no está) o un 403 (bloqueo).
-ultimo_error = None
-
-
-def ultimo_scorecard(publicado_antes):
-    """El archivo por universidad más reciente de Scorecard: lo enlaza su página de datos;
-    si la página no responde (a GitHub le da 403), se prueba fecha por fecha en el servidor
-    de descargas, de hoy hacia atrás hasta la última publicación conocida."""
+def ultimo_scorecard():
+    """El archivo por universidad más reciente que enlaza la página de datos de Scorecard."""
     try:
         with urllib.request.urlopen(urllib.request.Request(PAGINA_SCORECARD, headers=AGENTE), timeout=60) as r:
             html = r.read().decode('utf-8', 'replace')
-        # El nombre trae la fecha de publicación como MMDDAAAA.
-        fechas = {datetime.date(int(f[4:]), int(f[:2]), int(f[2:4]))
-                  for f in re.findall(r'/Most-Recent-Cohorts-Institution_(\d{8})\.zip', html)}
-        if fechas:
-            fecha = max(fechas)
-            return DESCARGAS_SCORECARD.format(fecha), fecha
-        print('  la página de Scorecard no enlaza el archivo; se busca por fecha')
     except Exception as e:
-        print(f'  la página de Scorecard no respondió ({e}); se busca por fecha')
-    hasta = publicado_antes or datetime.date.today() - datetime.timedelta(days=400)
-    fecha = datetime.date.today()
-    while fecha >= hasta:
-        url = DESCARGAS_SCORECARD.format(fecha)
-        if existe(url):
-            return url, fecha
-        fecha -= datetime.timedelta(days=1)
-    sys.exit('No encontré ningún archivo de Scorecard ni en su página ni en su servidor de descargas'
-             f' (última respuesta: {ultimo_error}). Si es 403, el servidor está bloqueando el pedido.')
+        sys.exit(f'La página de Scorecard no respondió ({e}). Si es 403, está bloqueando el pedido:'
+                 ' usa la API con la variable SCORECARD_API_KEY (ver arriba del script).')
+    # El nombre trae la fecha de publicación como MMDDAAAA.
+    enlaces = {f: u for u, f in re.findall(r'(https://[^"\'\s]+/Most-Recent-Cohorts-Institution_(\d{8})\.zip)', html)}
+    if not enlaces:
+        sys.exit('No encontré el archivo de Scorecard en su página: ¿cambió de nombre o de sitio?')
+    fecha = max(enlaces, key=lambda f: (f[4:], f[:4]))
+    return enlaces[fecha], datetime.date(int(fecha[4:]), int(fecha[:2]), int(fecha[2:4]))
+
+
+def scorecard_por_api():
+    """Todas las universidades desde la API, con los nombres de columna del CSV."""
+    filas, pagina, total = [], 0, None
+    while total is None or pagina * 100 < total:
+        consulta = urllib.parse.urlencode({'api_key': CLAVE_API, 'fields': ','.join(CAMPOS_API.values()),
+                                           'per_page': 100, 'page': pagina})
+        for intento in range(5):
+            try:
+                with urllib.request.urlopen(f'{API_SCORECARD}?{consulta}', timeout=120) as r:
+                    datos = json.load(r)
+                break
+            except urllib.error.HTTPError as e:
+                if e.code in (429, 500, 502, 503, 504) and intento < 4:
+                    time.sleep(15 * (intento + 1))  # límite de consultas o falla pasajera
+                    continue
+                sys.exit(f'La API de Scorecard respondió {e.code} en la página {pagina}. Si es 403,'
+                         ' revisa que la clave SCORECARD_API_KEY sea correcta.')
+        total = datos['metadata']['total']
+        filas += [{columna: r.get(campo) for columna, campo in CAMPOS_API.items()} for r in datos['results']]
+        pagina += 1
+    print(f'  {len(filas)} universidades desde la API ({pagina} consultas)')
+    return filas
 
 
 def ultimo_ipeds(prefijo, nombre_anio, desde):
@@ -216,7 +291,10 @@ SIN_DATO = {'', 'NA', 'NULL', 'NaN', 'N/A'}
 
 
 def texto(valor):
-    return None if valor is None or valor.strip() in SIN_DATO else valor
+    if valor is None:
+        return None
+    valor = str(valor)
+    return None if valor.strip() in SIN_DATO else valor
 
 
 def numero(valor):
@@ -267,6 +345,13 @@ def fecha_corta(iso):
     return '—' if not iso else '/'.join(reversed(iso.split('-')))
 
 
+def fecha_de(scorecard):
+    """'publicado el 15/10/2026' (CSV) o 'actualizado el …' (API, que no da la fecha de publicación)."""
+    if scorecard.get('publicado'):
+        return f"publicado el {fecha_corta(scorecard['publicado'])}"
+    return f"actualizado el {fecha_corta(scorecard.get('actualizado'))}"
+
+
 def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes, avisos=()):
     """Markdown corto para la descripción del PR: qué se publicó y cuánto cambió."""
     # Por UNITID; si los datos anteriores no lo traían (los del Colab), por nombre y lugar.
@@ -291,7 +376,7 @@ def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes, avisos=()):
         *[f'> ⚠️ {aviso}' for aviso in avisos],
         *([''] if avisos else []),
         '### Fuentes',
-        f"- **College Scorecard**: publicado el {fecha_corta(sc_antes.get('publicado'))} → **{fecha_corta(fuentes['scorecard']['publicado'])}**",
+        f"- **College Scorecard**: {fecha_de(sc_antes)} → **{fecha_de(fuentes['scorecard'])}**",
     ]
     for grupo, anio in fuentes['scorecard']['anios'].items():
         previo = sc_antes.get('anios', {}).get(grupo)
@@ -331,11 +416,18 @@ def main():
     hoy = datetime.date.today()
     anteriores = json.load(open(SALIDA, encoding='utf-8')) if os.path.exists(SALIDA) else []
     fuentes_antes = json.load(open(FUENTES, encoding='utf-8')) if os.path.exists(FUENTES) else {}
-    publicado_antes = fuentes_antes.get('scorecard', {}).get('publicado')
+    archivos_antes = fuentes_antes.get('archivos', {})
     avisos = []
 
     print('Buscando lo último publicado...')
-    url_scorecard, fecha_scorecard = ultimo_scorecard(datetime.date.fromisoformat(publicado_antes) if publicado_antes else None)
+    if CLAVE_API:
+        url_scorecard = fecha_scorecard = None
+        archivo_scorecard = 'api'
+        print('  Scorecard: desde su API')
+    else:
+        url_scorecard, fecha_scorecard = ultimo_scorecard()
+        archivo_scorecard = os.path.basename(url_scorecard)
+        print(f'  Scorecard: archivo del {fecha_scorecard}')
     adm = ultimo_ipeds('ADM', str, hoy.year)
     sfa = ultimo_ipeds('SFA', lambda a: f'{(a - 1) % 100:02d}{a % 100:02d}', hoy.year)
     # Sin acceso a IPEDS (mantenimiento o bloqueo) se conservan sus datos actuales: no tiene
@@ -346,33 +438,26 @@ def main():
             sys.exit('No pude acceder a IPEDS (¿mantenimiento?) y no hay datos anteriores para conservar. Se reintentará.')
         avisos.append('No se pudo acceder a IPEDS (mantenimiento o bloqueo): se conservaron sus datos anteriores.')
     archivos = {
-        'scorecard': os.path.basename(url_scorecard),
-        'ipeds_adm': fuentes_antes.get('archivos', {}).get('ipeds_adm') if conservar_ipeds else f'{adm[0]}.zip',
-        'ipeds_sfa': fuentes_antes.get('archivos', {}).get('ipeds_sfa') if conservar_ipeds else f'{sfa[0]}.zip',
+        'scorecard': archivo_scorecard,
+        'ipeds_adm': archivos_antes.get('ipeds_adm') if conservar_ipeds else f'{adm[0]}.zip',
+        'ipeds_sfa': archivos_antes.get('ipeds_sfa') if conservar_ipeds else f'{sfa[0]}.zip',
     }
-    print(f"  Scorecard {fecha_scorecard} · IPEDS {archivos['ipeds_adm']}, {archivos['ipeds_sfa']}"
-          + (' (los de antes: IPEDS no respondió)' if conservar_ipeds else ''))
+    print(f"  IPEDS: {archivos['ipeds_adm']}, {archivos['ipeds_sfa']}" + (' (los de antes: no respondió)' if conservar_ipeds else ''))
 
-    if not forzar and fuentes_antes.get('archivos') == archivos and anteriores:
+    # Con el CSV, el nombre del archivo ya dice si es nuevo (y se evita bajarlo). Con la API
+    # hay que bajar los datos y compararlos (más abajo).
+    if not CLAVE_API and not forzar and archivos_antes == archivos and anteriores:
         print('Sin datos nuevos: la web ya usa estos archivos. (Usa --forzar para regenerar.)')
         return
 
     print('Leyendo College Scorecard...')
-    filas = leer_csv_de_zip(descargar(url_scorecard, archivos['scorecard']))
-    faltan = [c for c in COLUMNAS + COLUMNAS_NUEVAS if c not in filas[0]]
-    if faltan:
-        sys.exit(f'Scorecard ya no trae estas columnas: {faltan}. Revisa su diccionario de datos.')
-    try:
-        anios = mapa_de_anios(descargar(DICCIONARIO_SCORECARD, f'diccionario_{fecha_scorecard:%Y%m%d}.xlsx'))
-        anios_scorecard = {grupo: en_espanol(anios[var]) for grupo, var in REPRESENTANTES.items() if anios.get(var)}
-    except Exception as e:  # el diccionario solo sirve para rotular años: si falla, se sigue
-        print(f'  aviso: no pude leer el diccionario de Scorecard ({e})')
-        mismo_archivo = fuentes_antes.get('archivos', {}).get('scorecard') == archivos['scorecard']
-        # Mismo archivo que antes: sus años siguen valiendo. Archivo nuevo: no se inventan.
-        anios_scorecard = fuentes_antes.get('scorecard', {}).get('anios', {}) if mismo_archivo else {}
-        if not mismo_archivo:
-            avisos.append('No se pudo leer el diccionario de Scorecard: la web no mostrará de qué año son'
-                          ' sus datos hasta la próxima actualización. Revisa los años a mano si hace falta.')
+    if CLAVE_API:
+        filas = scorecard_por_api()
+    else:
+        filas = leer_csv_de_zip(descargar(url_scorecard, archivo_scorecard))
+        faltan = [c for c in COLUMNAS + COLUMNAS_NUEVAS if c not in filas[0]]
+        if faltan:
+            sys.exit(f'Scorecard ya no trae estas columnas: {faltan}. Revisa su diccionario de datos.')
 
     print('Leyendo IPEDS...')
     if conservar_ipeds:
@@ -407,11 +492,36 @@ def main():
         u.update(ipeds_de(u['UNITID']))
         universidades.append(u)
 
+    solo_scorecard = lambda lista: [{c: u.get(c) for c in COLUMNAS + COLUMNAS_NUEVAS} for u in lista]
+    cambio_scorecard = solo_scorecard(universidades) != solo_scorecard(anteriores)
+    if not forzar and universidades == anteriores:
+        print('Sin datos nuevos: los datos que se bajaron son iguales a los de la web.')
+        return
+
+    # Fecha y años de Scorecard. El archivo CSV trae la fecha de publicación en el nombre; la
+    # API no la da, así que se anota cuándo se detectó el cambio. Los años salen del diccionario.
+    if CLAVE_API:
+        fecha = {'actualizado': hoy.isoformat()} if cambio_scorecard else {
+            k: v for k, v in fuentes_antes.get('scorecard', {}).items() if k in ('publicado', 'actualizado')}
+    else:
+        fecha = {'publicado': fecha_scorecard.isoformat()}
+    try:
+        anios = mapa_de_anios(descargar(DICCIONARIO_SCORECARD, f'diccionario_{fecha_scorecard or hoy:%Y%m%d}.xlsx'))
+        anios_scorecard = {grupo: en_espanol(anios[var]) for grupo, var in REPRESENTANTES.items() if anios.get(var)}
+    except Exception as e:  # el diccionario solo sirve para rotular años: si falla, se sigue
+        print(f'  aviso: no pude leer el diccionario de Scorecard ({e})')
+        # Datos de Scorecard iguales: sus años siguen valiendo. Datos nuevos: no se inventan.
+        anios_scorecard = {} if cambio_scorecard else fuentes_antes.get('scorecard', {}).get('anios', {})
+        if cambio_scorecard:
+            avisos.append('No se pudo leer el diccionario de Scorecard (bloquea a GitHub): la web no mostrará'
+                          ' de qué año son sus datos. Para ponerlos, corre el script en una computadora con'
+                          ' `--forzar` (sin la clave usa el CSV y el diccionario) y sube el resultado a esta rama.')
+
     fuentes = {
         'scorecard': {
             'nombre': 'College Scorecard',
             'organismo': 'Departamento de Educación de EE.UU.',
-            'publicado': fecha_scorecard.isoformat(),
+            **fecha,
             'url': PAGINA_SCORECARD,
             'anios': anios_scorecard,
         },

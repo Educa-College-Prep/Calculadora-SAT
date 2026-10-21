@@ -22,7 +22,11 @@ jobs:
       - uses: actions/checkout@v4
 
       # Solo usa la biblioteca estándar de Python, que ya viene en la máquina.
+      # Scorecard bloquea a GitHub en su página y descargas (403): se usa su API oficial,
+      # con la clave guardada en Settings → Secrets and variables → Actions.
       - run: python3 scripts/actualizar_datos.py
+        env:
+          SCORECARD_API_KEY: ${{ secrets.SCORECARD_API_KEY }}
 
       - uses: peter-evans/create-pull-request@v7
         with:
