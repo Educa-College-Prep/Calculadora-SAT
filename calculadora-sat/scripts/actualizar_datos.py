@@ -38,8 +38,16 @@ RESUMEN = os.path.join(CACHE, 'resumen_pr.md')
 
 PAGINA_SCORECARD = 'https://collegescorecard.ed.gov/data/'
 DICCIONARIO_SCORECARD = 'https://collegescorecard.ed.gov/files/CollegeScorecardDataDictionary.xlsx'
+# Servidor de descargas de Scorecard (Amazon S3). A diferencia de su página, no bloquea a
+# los servidores de GitHub: si la página responde 403, el archivo se busca aquí por fecha.
+DESCARGAS_SCORECARD = 'https://ed-public-download.scorecard.network/downloads/Most-Recent-Cohorts-Institution_{:%m%d%Y}.zip'
 IPEDS = 'https://nces.ed.gov/ipeds/complete-data-files/'
-AGENTE = {'User-Agent': 'Mozilla/5.0 (Educa College Finder; actualizacion de datos)'}
+# Como un navegador: algunos sitios del gobierno rechazan pedidos que no lo parecen.
+AGENTE = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+}
 
 # --- Columnas de College Scorecard (las mismas del Colab) ---------------------------------
 COLUMNAS = [
@@ -86,6 +94,10 @@ REPRESENTANTES = {
 }
 
 
+class DescargaFallida(Exception):
+    """El sitio respondió algo que no es el archivo (mantenimiento, bloqueo...)."""
+
+
 def descargar(url, nombre):
     """Descarga a la caché (una sola vez por nombre de archivo) y devuelve la ruta."""
     os.makedirs(CACHE, exist_ok=True)
@@ -97,7 +109,7 @@ def descargar(url, nombre):
                 f.write(bloque)
         if nombre.endswith(('.zip', '.xlsx')) and not zipfile.is_zipfile(ruta + '.parcial'):
             os.remove(ruta + '.parcial')
-            sys.exit(f'{url} no devolvió un archivo válido: el sitio puede estar en mantenimiento. Se reintentará.')
+            raise DescargaFallida(f'{url} no devolvió un archivo válido: el sitio puede estar en mantenimiento. Se reintentará.')
         os.replace(ruta + '.parcial', ruta)
     return ruta
 
@@ -113,27 +125,41 @@ def existe(url):
         return False
 
 
-def ultimo_scorecard():
-    """El archivo por universidad más reciente que enlaza la página de datos de Scorecard."""
-    with urllib.request.urlopen(urllib.request.Request(PAGINA_SCORECARD, headers=AGENTE), timeout=60) as r:
-        html = r.read().decode('utf-8', 'replace')
-    enlaces = set(re.findall(r'https://[^"\'\s]+/Most-Recent-Cohorts-Institution_(\d{8})\.zip', html))
-    if not enlaces:
-        sys.exit('No encontré el archivo de Scorecard en su página: ¿cambió de nombre o de sitio?')
-    # El nombre trae la fecha de publicación como MMDDAAAA.
-    fecha = max(enlaces, key=lambda f: (f[4:], f[:4]))
-    url = re.search(rf'https://[^"\'\s]+/Most-Recent-Cohorts-Institution_{fecha}\.zip', html).group(0)
-    return url, datetime.date(int(fecha[4:]), int(fecha[:2]), int(fecha[2:4]))
+def ultimo_scorecard(publicado_antes):
+    """El archivo por universidad más reciente de Scorecard: lo enlaza su página de datos;
+    si la página no responde (a GitHub le da 403), se prueba fecha por fecha en el servidor
+    de descargas, de hoy hacia atrás hasta la última publicación conocida."""
+    try:
+        with urllib.request.urlopen(urllib.request.Request(PAGINA_SCORECARD, headers=AGENTE), timeout=60) as r:
+            html = r.read().decode('utf-8', 'replace')
+        # El nombre trae la fecha de publicación como MMDDAAAA.
+        fechas = {datetime.date(int(f[4:]), int(f[:2]), int(f[2:4]))
+                  for f in re.findall(r'/Most-Recent-Cohorts-Institution_(\d{8})\.zip', html)}
+        if fechas:
+            fecha = max(fechas)
+            return DESCARGAS_SCORECARD.format(fecha), fecha
+        print('  la página de Scorecard no enlaza el archivo; se busca por fecha')
+    except Exception as e:
+        print(f'  la página de Scorecard no respondió ({e}); se busca por fecha')
+    hasta = publicado_antes or datetime.date.today() - datetime.timedelta(days=400)
+    fecha = datetime.date.today()
+    while fecha >= hasta:
+        url = DESCARGAS_SCORECARD.format(fecha)
+        if existe(url):
+            return url, fecha
+        fecha -= datetime.timedelta(days=1)
+    sys.exit('No encontré ningún archivo de Scorecard ni en su página ni en su servidor de descargas:'
+             ' ¿cambió de nombre o de sitio?')
 
 
 def ultimo_ipeds(prefijo, nombre_anio, desde):
-    """Prueba del año más nuevo hacia atrás hasta encontrar un archivo publicado."""
+    """Prueba del año más nuevo hacia atrás hasta encontrar un archivo publicado. None si no
+    encuentra ninguno: IPEDS en mantenimiento (pasa seguido) o bloqueando el pedido."""
     for anio in range(desde, desde - 5, -1):
         nombre = f'{prefijo}{nombre_anio(anio)}'
         if existe(f'{IPEDS}{nombre}.zip'):
             return nombre, anio
-    sys.exit(f'No encontré ningún archivo {prefijo} de IPEDS en los últimos 5 años: el sitio de IPEDS'
-             ' puede estar en mantenimiento (pasa seguido). Se reintentará en la próxima ejecución.')
+    return None
 
 
 def leer_csv_de_zip(ruta_zip):
@@ -232,7 +258,7 @@ def fecha_corta(iso):
     return '—' if not iso else '/'.join(reversed(iso.split('-')))
 
 
-def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes):
+def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes, avisos=()):
     """Markdown corto para la descripción del PR: qué se publicó y cuánto cambió."""
     # Por UNITID; si los datos anteriores no lo traían (los del Colab), por nombre y lugar.
     por_id = bool(anteriores) and all(u.get('UNITID') for u in anteriores)
@@ -253,6 +279,8 @@ def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes):
     lineas = [
         'El robot semanal encontró datos nuevos publicados por el gobierno de EE.UU.',
         '',
+        *[f'> ⚠️ {aviso}' for aviso in avisos],
+        *([''] if avisos else []),
         '### Fuentes',
         f"- **College Scorecard**: publicado el {fecha_corta(sc_antes.get('publicado'))} → **{fecha_corta(fuentes['scorecard']['publicado'])}**",
     ]
@@ -292,19 +320,33 @@ def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes):
 def main():
     forzar = '--forzar' in sys.argv
     hoy = datetime.date.today()
+    anteriores = json.load(open(SALIDA, encoding='utf-8')) if os.path.exists(SALIDA) else []
+    fuentes_antes = json.load(open(FUENTES, encoding='utf-8')) if os.path.exists(FUENTES) else {}
+    publicado_antes = fuentes_antes.get('scorecard', {}).get('publicado')
+    avisos = []
 
     print('Buscando lo último publicado...')
-    url_scorecard, fecha_scorecard = ultimo_scorecard()
-    adm, anio_adm = ultimo_ipeds('ADM', str, hoy.year)
-    sfa, anio_sfa = ultimo_ipeds('SFA', lambda a: f'{(a - 1) % 100:02d}{a % 100:02d}', hoy.year)
-    archivos = {'scorecard': os.path.basename(url_scorecard), 'ipeds_adm': f'{adm}.zip', 'ipeds_sfa': f'{sfa}.zip'}
-    print(f'  Scorecard {fecha_scorecard} · IPEDS {adm}, {sfa}')
+    url_scorecard, fecha_scorecard = ultimo_scorecard(datetime.date.fromisoformat(publicado_antes) if publicado_antes else None)
+    adm = ultimo_ipeds('ADM', str, hoy.year)
+    sfa = ultimo_ipeds('SFA', lambda a: f'{(a - 1) % 100:02d}{a % 100:02d}', hoy.year)
+    # Sin acceso a IPEDS (mantenimiento o bloqueo) se conservan sus datos actuales: no tiene
+    # sentido frenar una actualización de Scorecard por eso.
+    conservar_ipeds = adm is None or sfa is None
+    if conservar_ipeds:
+        if not anteriores or not all(u.get('UNITID') for u in anteriores):
+            sys.exit('No pude acceder a IPEDS (¿mantenimiento?) y no hay datos anteriores para conservar. Se reintentará.')
+        avisos.append('No se pudo acceder a IPEDS (mantenimiento o bloqueo): se conservaron sus datos anteriores.')
+    archivos = {
+        'scorecard': os.path.basename(url_scorecard),
+        'ipeds_adm': fuentes_antes.get('archivos', {}).get('ipeds_adm') if conservar_ipeds else f'{adm[0]}.zip',
+        'ipeds_sfa': fuentes_antes.get('archivos', {}).get('ipeds_sfa') if conservar_ipeds else f'{sfa[0]}.zip',
+    }
+    print(f"  Scorecard {fecha_scorecard} · IPEDS {archivos['ipeds_adm']}, {archivos['ipeds_sfa']}"
+          + (' (los de antes: IPEDS no respondió)' if conservar_ipeds else ''))
 
-    if not forzar and os.path.exists(FUENTES):
-        anteriores = json.load(open(FUENTES, encoding='utf-8')).get('archivos', {})
-        if anteriores == archivos and os.path.exists(SALIDA):
-            print('Sin datos nuevos: la web ya usa estos archivos. (Usa --forzar para regenerar.)')
-            return
+    if not forzar and fuentes_antes.get('archivos') == archivos and anteriores:
+        print('Sin datos nuevos: la web ya usa estos archivos. (Usa --forzar para regenerar.)')
+        return
 
     print('Leyendo College Scorecard...')
     filas = leer_csv_de_zip(descargar(url_scorecard, archivos['scorecard']))
@@ -313,13 +355,35 @@ def main():
         sys.exit(f'Scorecard ya no trae estas columnas: {faltan}. Revisa su diccionario de datos.')
     try:
         anios = mapa_de_anios(descargar(DICCIONARIO_SCORECARD, f'diccionario_{fecha_scorecard:%Y%m%d}.xlsx'))
+        anios_scorecard = {grupo: en_espanol(anios[var]) for grupo, var in REPRESENTANTES.items() if anios.get(var)}
     except Exception as e:  # el diccionario solo sirve para rotular años: si falla, se sigue
         print(f'  aviso: no pude leer el diccionario de Scorecard ({e})')
-        anios = {}
+        mismo_archivo = fuentes_antes.get('archivos', {}).get('scorecard') == archivos['scorecard']
+        # Mismo archivo que antes: sus años siguen valiendo. Archivo nuevo: no se inventan.
+        anios_scorecard = fuentes_antes.get('scorecard', {}).get('anios', {}) if mismo_archivo else {}
+        if not mismo_archivo:
+            avisos.append('No se pudo leer el diccionario de Scorecard: la web no mostrará de qué año son'
+                          ' sus datos hasta la próxima actualización. Revisa los años a mano si hace falta.')
 
     print('Leyendo IPEDS...')
-    por_id_adm = {r['UNITID']: r for r in leer_csv_de_zip(descargar(f'{IPEDS}{adm}.zip', f'{adm}.zip'))}
-    por_id_sfa = {r['UNITID']: r for r in leer_csv_de_zip(descargar(f'{IPEDS}{sfa}.zip', f'{sfa}.zip'))}
+    if conservar_ipeds:
+        anterior_por_id = {u['UNITID']: u for u in anteriores}
+        ipeds_de = lambda unitid: {c: anterior_por_id[unitid][c] for c in COLUMNAS_ADM + COLUMNAS_SFA
+                                   if unitid in anterior_por_id and anterior_por_id[unitid].get(c) is not None}
+        anios_ipeds = fuentes_antes.get('ipeds', {}).get('anios', {})
+    else:
+        por_id_adm = {r['UNITID']: r for r in leer_csv_de_zip(descargar(f'{IPEDS}{adm[0]}.zip', f'{adm[0]}.zip'))}
+        por_id_sfa = {r['UNITID']: r for r in leer_csv_de_zip(descargar(f'{IPEDS}{sfa[0]}.zip', f'{sfa[0]}.zip'))}
+
+        def ipeds_de(unitid):
+            datos = {}
+            for columnas, fuente in ((COLUMNAS_ADM, por_id_adm), (COLUMNAS_SFA, por_id_sfa)):
+                for c in columnas if str(unitid) in fuente else []:
+                    valor = numero(fuente[str(unitid)].get(c))
+                    if valor is not None:
+                        datos[c] = valor
+            return datos
+        anios_ipeds = {'admision_por_sexo': f'otoño {adm[1]}', 'becas_primer_anio': f'{sfa[1] - 1}-{sfa[1] % 100:02d}'}
 
     columnas_filtro = [c for c in COLUMNAS if c not in NO_CUENTAN_PARA_FILTRO]
     universidades = []
@@ -331,13 +395,7 @@ def main():
             continue
         for columna, mapeo in MAPEOS.items():
             u[columna] = mapeo.get(u[columna])
-        unitid = fila['UNITID']
-        for columnas, fuente in ((COLUMNAS_ADM, por_id_adm), (COLUMNAS_SFA, por_id_sfa)):
-            if unitid in fuente:
-                for c in columnas:
-                    valor = numero(fuente[unitid].get(c))
-                    if valor is not None:
-                        u[c] = valor
+        u.update(ipeds_de(u['UNITID']))
         universidades.append(u)
 
     fuentes = {
@@ -346,20 +404,16 @@ def main():
             'organismo': 'Departamento de Educación de EE.UU.',
             'publicado': fecha_scorecard.isoformat(),
             'url': PAGINA_SCORECARD,
-            'anios': {grupo: en_espanol(anios[var]) for grupo, var in REPRESENTANTES.items() if anios.get(var)},
+            'anios': anios_scorecard,
         },
         'ipeds': {
             'nombre': 'IPEDS',
             'organismo': 'Centro Nacional de Estadísticas de Educación (NCES)',
             'url': 'https://nces.ed.gov/ipeds/',
-            'anios': {'admision_por_sexo': f'otoño {anio_adm}', 'becas_primer_anio': f'{anio_sfa - 1}-{anio_sfa % 100:02d}'},
+            'anios': anios_ipeds,
         },
         'archivos': archivos,
     }
-
-    # Lo que había antes, para el resumen del PR.
-    anteriores = json.load(open(SALIDA, encoding='utf-8')) if os.path.exists(SALIDA) else []
-    fuentes_antes = json.load(open(FUENTES, encoding='utf-8')) if os.path.exists(FUENTES) else None
 
     os.makedirs(os.path.dirname(SALIDA), exist_ok=True)
     with open(SALIDA, 'w', encoding='utf-8') as f:
@@ -369,15 +423,20 @@ def main():
         f.write('\n')
     os.makedirs(CACHE, exist_ok=True)
     with open(RESUMEN, 'w', encoding='utf-8') as f:
-        f.write(resumen_de_cambios(anteriores, universidades, fuentes_antes, fuentes))
+        f.write(resumen_de_cambios(anteriores, universidades, fuentes_antes, fuentes, avisos))
 
     con = lambda c: sum(u.get(c) is not None for u in universidades)
     print(f'Listo: {len(universidades)} universidades → {os.path.relpath(SALIDA, RAIZ)}')
     print(f'  con admisión por sexo: {con("APPLCN")} · con becas: {con("AGRNT_P")}'
           f' · costo de vida en el campus: {con("ROOMBOARD_ON")} · fuera del campus: {con("ROOMBOARD_OFF")}')
     print(f'  años: {json.dumps(fuentes["scorecard"]["anios"], ensure_ascii=False)}')
+    for aviso in avisos:
+        print(f'  aviso: {aviso}')
     print(f'  resumen para el PR: {os.path.relpath(RESUMEN, RAIZ)}')
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except DescargaFallida as e:
+        sys.exit(str(e))
