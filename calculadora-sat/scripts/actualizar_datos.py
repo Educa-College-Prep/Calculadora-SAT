@@ -231,29 +231,37 @@ def ultimo_scorecard():
     return enlaces[fecha], fecha
 
 
-def copia_fresca_en_archive(url):
+def copia_fresca_en_archive(url, intentos=4):
     """Scorecard bloquea a GitHub, pero no a Internet Archive: se le pide a archive.org que guarde
     una copia de `url` en este momento (la descarga la hacen sus servidores) y se lee esa copia.
     Solo sirve una copia recién hecha: una vieja podría ser de antes de la última publicación.
-    Devuelve los bytes del archivo original, o None si no se pudo."""
-    try:
-        pedido = urllib.request.Request(f'https://web.archive.org/save/{url}', headers=AGENTE)
-        with urllib.request.urlopen(pedido, timeout=300) as r:
-            copia = re.search(r'/web/(\d{14})', r.geturl())
-        if not copia:
-            return None
-        hecha = datetime.datetime.strptime(copia.group(1), '%Y%m%d%H%M%S')
-        if datetime.datetime.utcnow() - hecha > datetime.timedelta(days=1):
-            return None
-        # "id_": el archivo tal cual, sin la barra que archive.org agrega a las páginas.
-        original = urllib.request.Request(f'https://web.archive.org/web/{copia.group(1)}id_/{url}', headers=AGENTE)
-        with urllib.request.urlopen(original, timeout=300) as r:
-            contenido = r.read()
-        # Las páginas las guarda comprimidas, tal como las mandó el sitio.
-        return gzip.decompress(contenido) if contenido[:2] == b'\x1f\x8b' else contenido
-    except Exception as e:
-        print(f'  archive.org no pudo copiar {url} ({e})')
-        return None
+    Si archive.org falla o devuelve una copia vieja, se le vuelve a pedir (archive.org a veces
+    está ocupado). Devuelve los bytes del archivo original, o None si ningún intento resultó."""
+    for intento in range(intentos):
+        if intento:
+            espera = 30 * 2 ** (intento - 1)  # 30 s, 1 min, 2 min
+            print(f'  archive.org: reintento en {espera} s')
+            time.sleep(espera)
+        try:
+            pedido = urllib.request.Request(f'https://web.archive.org/save/{url}', headers=AGENTE)
+            with urllib.request.urlopen(pedido, timeout=300) as r:
+                copia = re.search(r'/web/(\d{14})', r.geturl())
+            if not copia:
+                print(f'  archive.org no devolvió una copia de {url}')
+                continue
+            hecha = datetime.datetime.strptime(copia.group(1), '%Y%m%d%H%M%S')
+            if datetime.datetime.utcnow() - hecha > datetime.timedelta(days=1):
+                print(f'  archive.org devolvió una copia vieja ({hecha:%d/%m/%Y}) de {url}')
+                continue
+            # "id_": el archivo tal cual, sin la barra que archive.org agrega a las páginas.
+            original = urllib.request.Request(f'https://web.archive.org/web/{copia.group(1)}id_/{url}', headers=AGENTE)
+            with urllib.request.urlopen(original, timeout=300) as r:
+                contenido = r.read()
+            # Las páginas las guarda comprimidas, tal como las mandó el sitio.
+            return gzip.decompress(contenido) if contenido[:2] == b'\x1f\x8b' else contenido
+        except Exception as e:
+            print(f'  archive.org no pudo copiar {url} ({e})')
+    return None
 
 
 def scorecard_por_api():
