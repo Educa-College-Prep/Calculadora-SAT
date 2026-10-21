@@ -3,7 +3,7 @@ Genera public/fotos_universidades.json: una foto libre (Wikimedia Commons) por u
 con su autor y licencia para poder citarla.
 
 Cómo se elige la foto, sin adivinar por nombre:
-  1. Directorio IPEDS (HD2023) → UNITID de cada universidad, por INSTNM|CITY|STABBR.
+  1. El UNITID (ID oficial de IPEDS) que trae public/universidades.json.
   2. Wikidata → la entidad con ese ID de IPEDS (P1771) y su imagen (P18).
      Si no tiene, la imagen principal de su artículo en Wikipedia en inglés.
   3. Se descartan logos, escudos y sellos, las imágenes que no están en Commons
@@ -12,19 +12,15 @@ Cómo se elige la foto, sin adivinar por nombre:
 Uso (desde calculadora-sat/):  python3 scripts/fotos_universidades.py
 Tarda unos minutos: Wikipedia y Commons limitan la cantidad de consultas.
 """
-import csv
 import html
-import io
 import json
 import re
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
-import zipfile
 
 AGENTE = 'CalculadoraSAT/1.0 (https://educa-college-prep.github.io/Calculadora-SAT/)'
-IPEDS_HD = 'https://nces.ed.gov/ipeds/datacenter/data/HD2023.zip'
 ANCHO_MINIMO = 480
 NO_ES_FOTO = re.compile(r'seal|logo|wordmark|emblem|crest|coat.of.arms|insignia|shield|flag|map|signature|athletic', re.I)
 ES_FOTO = re.compile(r'\.(jpe?g|webp|tiff?)$', re.I)
@@ -60,20 +56,10 @@ def en_lotes(lista, n=50):
 
 
 def main():
-    universidades = json.load(open('public/universidades_seleccionadas6.json'))
+    universidades = json.load(open('public/universidades.json'))
+    clave = {str(u['UNITID']): f"{u['INSTNM']}|{u['CITY']}|{u['STABBR']}" for u in universidades if u.get('UNITID')}
 
-    print('1/4 Directorio IPEDS…')
-    zona = zipfile.ZipFile(io.BytesIO(pedir(IPEDS_HD, crudo=True)))
-    texto = zona.read(zona.namelist()[0]).decode('latin-1').lstrip('﻿').lstrip('ï»¿')
-    unitid = {(r['INSTNM'].strip(), r['CITY'].strip(), r['STABBR']): r['UNITID'] for r in csv.DictReader(io.StringIO(texto))}
-    clave = {}
-    for u in universidades:
-        uid = unitid.get((u['INSTNM'], u['CITY'], u['STABBR']))
-        if uid:
-            clave[uid] = f"{u['INSTNM']}|{u['CITY']}|{u['STABBR']}"
-    print(f'   {len(clave)} de {len(universidades)} con UNITID')
-
-    print('2/4 Wikidata…')
+    print('1/3 Wikidata…')
     fotos_wd, articulos = {}, {}
     for f in sparql('SELECT ?ipeds ?img WHERE { ?item wdt:P1771 ?ipeds . ?item wdt:P18 ?img }'):
         fotos_wd.setdefault(f['ipeds'], set()).add(archivo(f['img']))
@@ -82,7 +68,7 @@ def main():
         if f['ipeds'] in clave:
             articulos[f['ipeds']] = urllib.parse.unquote(f['art'].rsplit('/wiki/', 1)[1]).replace('_', ' ')
 
-    print('3/4 Imágenes de los artículos de Wikipedia…')
+    print('2/3 Imágenes de los artículos de Wikipedia…')
     imagen_articulo = {}
     titulos = sorted(set(articulos.values()))
     for lote in en_lotes(titulos):
@@ -105,7 +91,7 @@ def main():
         if opciones:
             candidata[uid] = opciones[0]
 
-    print(f'4/4 Autor y licencia de {len(candidata)} fotos en Commons…')
+    print(f'3/3 Autor y licencia de {len(candidata)} fotos en Commons…')
     info = {}
     for lote in en_lotes(sorted(set(candidata.values()))):
         q = pedir('https://commons.wikimedia.org/w/api.php', action='query', format='json', prop='imageinfo',

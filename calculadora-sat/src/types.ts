@@ -2,6 +2,8 @@ export interface Universidad {
   /** Identificador estable asignado al cargar la data. Se usa como key de React
    *  para que ordenar/filtrar no obligue a re-renderizar toda la lista. */
   _id?: number;
+  /** ID oficial de la universidad en IPEDS. Sirve para unir fuentes; no se muestra. */
+  UNITID?: number;
   INSTNM: string;
   CITY: string;
   STABBR: string;
@@ -18,8 +20,8 @@ export interface Universidad {
   SATVR50?: number | null;
   SATMT50?: number | null;
 
-  // Postulantes, admitidos y matriculados por sexo (IPEDS ADM 2024, otoño 2024).
-  // Vienen de public/ipeds_2024.json y se combinan al cargar. M = hombres, W = mujeres.
+  // Postulantes, admitidos y matriculados por sexo (IPEDS ADM). Vienen en el mismo
+  // universidades.json, unidos por UNITID. M = hombres, W = mujeres.
   APPLCN?: number | null;
   APPLCNM?: number | null;
   APPLCNW?: number | null;
@@ -30,7 +32,7 @@ export interface Universidad {
   ENRLM?: number | null;
   ENRLW?: number | null;
 
-  // Becas a alumnos de 1er año a tiempo completo (IPEDS SFA 2023-24, todos los alumnos juntos,
+  // Becas a alumnos de 1er año a tiempo completo (IPEDS SFA, todos los alumnos juntos,
   // sin separar in-state/out-of-state). _P = % que la recibe, _A = monto promedio.
   /** Cualquier beca: federal, estatal, local o de la universidad. */
   AGRNT_P?: number | null;
@@ -60,11 +62,17 @@ export interface Universidad {
   TUITIONFEE_IN?: number | null;
   COSTT4_A?: number | null;
 
-  // Componentes del costo de vida (College Scorecard, AcadYr 2024-25). Solo ~1,950 universidades
-  // los reportan; para el resto se estima con COSTT4_A − TUITIONFEE_IN.
+  // Componentes del costo de vida (College Scorecard; el año está en public/fuentes_datos.json).
+  // En el campus solo ~1,950 universidades los reportan; para el resto se estima con
+  // COSTT4_A − TUITIONFEE_IN.
   ROOMBOARD_ON?: number | null;
   OTHEREXPENSE_ON?: number | null;
   BOOKSUPPLY?: number | null;
+  /** Viviendo fuera del campus (~3,250 universidades): alojamiento y comida, y otros gastos. */
+  ROOMBOARD_OFF?: number | null;
+  OTHEREXPENSE_OFF?: number | null;
+  /** Viviendo con la familia: solo otros gastos (no paga alojamiento). */
+  OTHEREXPENSE_FAM?: number | null;
 
   // Precio neto promedio general
   NPT4_PRIV?: number | null;

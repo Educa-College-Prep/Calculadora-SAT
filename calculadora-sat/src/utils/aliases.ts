@@ -2,10 +2,10 @@
  * Alias y siglas populares de universidades, para que el buscador entienda
  * "MIT", "UCLA", "Caltech" o "Georgia Tech".
  *
- * Están aparte y no dentro de universidades_seleccionadas6.json porque ese archivo
- * se regenera desde el Colab: los alias se perderían en cada exportación.
+ * Están aparte y no dentro de universidades.json porque ese archivo
+ * se regenera con scripts/actualizar_datos.py: los alias se perderían en cada actualización.
  *
- * La clave es el INSTNM EXACTO tal como viene en el JSON. Si el Colab cambia un
+ * La clave es el INSTNM EXACTO tal como viene en el JSON. Si College Scorecard cambia un
  * nombre, el alias simplemente deja de aplicarse (no rompe nada).
  *
  * No hace falta repetir siglas que se forman solas con las iniciales del nombre

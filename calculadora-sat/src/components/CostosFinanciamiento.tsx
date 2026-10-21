@@ -7,6 +7,7 @@ import { InfoTooltip } from './InfoTooltip';
 import { CostoVida } from './CostoVida';
 import { MiniBarChart } from './MiniBarChart';
 import { Pestanas } from './Pestanas';
+import { useFuentesDatos } from '../utils/fuentesDatos';
 
 type PerfilId = 'in' | 'out' | 'us' | 'intl';
 
@@ -47,6 +48,10 @@ function porIngreso(uni: Universidad, suf: 'PUB' | 'PRIV') {
  */
 export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
   const cv = calcularCostoVida(uni);
+  const anios = useFuentesDatos();
+  const anioCostos = anios?.scorecard.anios.matricula_y_costo_de_vida;
+  const anioBecas = anios?.ipeds.anios.becas_primer_anio;
+  const anioNeto = anios?.scorecard.anios.precio_neto;
   const matIn = uni.TUITIONFEE_IN ?? null;
   const matOut = uni.TUITIONFEE_OUT ?? null;
   const matUS = matOut ?? matIn; // privadas/sin distinción: la matrícula que haya
@@ -105,6 +110,7 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
               <span className="numero">{cv?.estimado && '~'}{formatDinero(total)}</span>
             </div>
           )}
+          <p className="fuente">{anioCostos && `Año ${anioCostos}. `}Fuente: College Scorecard</p>
         </div>
 
         {/* Cuadrícula 2: primero la beca de la universidad y debajo lo que pagarías con ella,
@@ -119,7 +125,7 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
                 <strong className="numero">{uni.IGRNT_P}%</strong> de los alumnos de 1er año la recibe
                 {uni.IGRNT_A != null && <>, con un promedio de <strong className="numero">{formatDinero(uni.IGRNT_A)}</strong> al año</>}.
               </p>
-              <p className="fuente">Año 2023-24. Fuente: IPEDS</p>
+              <p className="fuente">{anioBecas && `Año ${anioBecas}. `}Fuente: IPEDS</p>
               {/* El gobierno no publica becas por nacionalidad: para extranjeros el % no es su probabilidad. */}
               {p.id === 'intl' && (
                 <p className="nota-alerta costos-intl">
@@ -141,7 +147,7 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
                   al año en promedio, después de becas y ayudas
                   <InfoTooltip texto={glosarioCampos.NPT4_PUB} />
                 </span>
-                <p className="fuente"><strong>Dato oficial</strong> de College Scorecard (Departamento de Educación de EE.UU.).</p>
+                <p className="fuente"><strong>Dato oficial</strong> de College Scorecard (Departamento de Educación de EE.UU.){anioNeto && `, año ${anioNeto}`}.</p>
               </div>
             ) : aprox != null && aprox > 0 ? (
               <div className="cifra-destacada">
