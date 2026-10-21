@@ -141,6 +141,7 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
                   al año en promedio, después de becas y ayudas
                   <InfoTooltip texto={glosarioCampos.NPT4_PUB} />
                 </span>
+                <p className="fuente"><strong>Dato oficial</strong> de College Scorecard (Departamento de Educación de EE.UU.).</p>
               </div>
             ) : aprox != null && aprox > 0 ? (
               <div className="cifra-destacada">
@@ -151,6 +152,8 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
                 </span>
                 {/* La beca no está garantizada: también el escenario sin ella. */}
                 <span className="costos-sin-beca">Sin beca: <strong className="numero">{cv?.estimado && '~'}{formatDinero(total)}</strong> al año</span>
+                {/* Que no se confunda con el dato oficial de la otra pestaña. */}
+                <p className="fuente"><strong>Valor calculado</strong>, no oficial: costo total menos la beca promedio de la universidad (IPEDS).</p>
               </div>
             ) : (
               <p className="ayuda">No hay un costo después de becas publicado para este perfil.</p>
