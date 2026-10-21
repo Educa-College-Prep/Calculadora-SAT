@@ -117,12 +117,21 @@ def descargar(url, nombre):
 def existe(url):
     """¿Hay un zip de verdad en esa dirección? Se miran los primeros bytes: cuando IPEDS está
     en mantenimiento responde 200 con una página HTML para cualquier archivo, exista o no."""
+    global ultimo_error
     try:
         req = urllib.request.Request(url, headers={**AGENTE, 'Range': 'bytes=0-3'})
         with urllib.request.urlopen(req, timeout=60) as r:
-            return r.status in (200, 206) and r.read(4).startswith(b'PK')
-    except Exception:
-        return False
+            if r.status in (200, 206) and r.read(4).startswith(b'PK'):
+                return True
+            ultimo_error = f'respondió {r.status} pero no es un zip'
+    except Exception as e:
+        ultimo_error = str(e)
+    return False
+
+
+# Por qué falló la última consulta de existe(): va en los mensajes de error para saber si fue
+# un 404 (no está) o un 403 (bloqueo).
+ultimo_error = None
 
 
 def ultimo_scorecard(publicado_antes):
@@ -148,8 +157,8 @@ def ultimo_scorecard(publicado_antes):
         if existe(url):
             return url, fecha
         fecha -= datetime.timedelta(days=1)
-    sys.exit('No encontré ningún archivo de Scorecard ni en su página ni en su servidor de descargas:'
-             ' ¿cambió de nombre o de sitio?')
+    sys.exit('No encontré ningún archivo de Scorecard ni en su página ni en su servidor de descargas'
+             f' (última respuesta: {ultimo_error}). Si es 403, el servidor está bloqueando el pedido.')
 
 
 def ultimo_ipeds(prefijo, nombre_anio, desde):
