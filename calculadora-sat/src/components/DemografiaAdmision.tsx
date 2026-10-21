@@ -3,6 +3,7 @@ import type { Universidad } from '../types';
 import { formatPorcentaje } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { InfoTooltip } from './InfoTooltip';
+import { conMayuscula, useFuentesDatos } from '../utils/fuentesDatos';
 
 interface FilaCDS {
   label: string;
@@ -37,6 +38,7 @@ function CeldaPorcentaje({ parte, total }: { parte: number | null | undefined; t
  * (ADM 2024). Las universidades sin ese dato (ej. admisión abierta) no muestran la tabla.
  */
 export function DemografiaAdmision({ uni }: { uni: Universidad }) {
+  const anioAdmision = useFuentesDatos()?.ipeds.anios.admision_por_sexo;
   const filas: FilaCDS[] = [
     { label: 'Postulantes', hombres: uni.APPLCNM, mujeres: uni.APPLCNW, total: uni.APPLCN },
     { label: 'Admitidos', hombres: uni.ADMSSNM, mujeres: uni.ADMSSNW, total: uni.ADMSSN },
@@ -76,7 +78,7 @@ export function DemografiaAdmision({ uni }: { uni: Universidad }) {
           <table className="tabla" style={{ width: '100%', fontSize: '15px' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--linea)' }}>
-                <th style={{ ...encabezado, textAlign: 'left' }}>Otoño 2024</th>
+                <th style={{ ...encabezado, textAlign: 'left' }}>{anioAdmision ? conMayuscula(anioAdmision) : ''}</th>
                 <th style={encabezado}>Hombres</th>
                 <th style={encabezado}>Mujeres</th>
                 <th style={encabezado}>Total</th>
