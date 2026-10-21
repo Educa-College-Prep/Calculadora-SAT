@@ -33,6 +33,8 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(RAIZ, 'scripts', '.cache')
 SALIDA = os.path.join(RAIZ, 'public', 'universidades.json')
 FUENTES = os.path.join(RAIZ, 'public', 'fuentes_datos.json')
+# Descripción del PR que abre el robot (la lee el workflow; no se sube al repo).
+RESUMEN = os.path.join(CACHE, 'resumen_pr.md')
 
 PAGINA_SCORECARD = 'https://collegescorecard.ed.gov/data/'
 DICCIONARIO_SCORECARD = 'https://collegescorecard.ed.gov/files/CollegeScorecardDataDictionary.xlsx'
@@ -93,15 +95,20 @@ def descargar(url, nombre):
         with urllib.request.urlopen(urllib.request.Request(url, headers=AGENTE), timeout=300) as r, open(ruta + '.parcial', 'wb') as f:
             while bloque := r.read(1 << 20):
                 f.write(bloque)
+        if nombre.endswith(('.zip', '.xlsx')) and not zipfile.is_zipfile(ruta + '.parcial'):
+            os.remove(ruta + '.parcial')
+            sys.exit(f'{url} no devolvió un archivo válido: el sitio puede estar en mantenimiento. Se reintentará.')
         os.replace(ruta + '.parcial', ruta)
     return ruta
 
 
 def existe(url):
+    """¿Hay un zip de verdad en esa dirección? Se miran los primeros bytes: cuando IPEDS está
+    en mantenimiento responde 200 con una página HTML para cualquier archivo, exista o no."""
     try:
-        req = urllib.request.Request(url, headers={**AGENTE, 'Range': 'bytes=0-0'})
+        req = urllib.request.Request(url, headers={**AGENTE, 'Range': 'bytes=0-3'})
         with urllib.request.urlopen(req, timeout=60) as r:
-            return r.status in (200, 206)
+            return r.status in (200, 206) and r.read(4).startswith(b'PK')
     except Exception:
         return False
 
@@ -125,7 +132,8 @@ def ultimo_ipeds(prefijo, nombre_anio, desde):
         nombre = f'{prefijo}{nombre_anio(anio)}'
         if existe(f'{IPEDS}{nombre}.zip'):
             return nombre, anio
-    sys.exit(f'No encontré ningún archivo {prefijo} de IPEDS en los últimos 5 años.')
+    sys.exit(f'No encontré ningún archivo {prefijo} de IPEDS en los últimos 5 años: el sitio de IPEDS'
+             ' puede estar en mantenimiento (pasa seguido). Se reintentará en la próxima ejecución.')
 
 
 def leer_csv_de_zip(ruta_zip):
@@ -199,6 +207,88 @@ def en_espanol(cohorte):
     return cohorte
 
 
+# Qué cambios se cuentan en el resumen del PR: columna → cómo se nombra.
+CAMBIOS_A_CONTAR = {
+    'TUITIONFEE_OUT': 'matrícula (otro estado e internacionales)',
+    'ROOMBOARD_ON': 'alojamiento y comida en el campus',
+    'ROOMBOARD_OFF': 'alojamiento y comida fuera del campus',
+    'NPT4_PUB': 'precio neto (públicas)',
+    'NPT4_PRIV': 'precio neto (privadas)',
+    'ADM_RATE': 'tasa de admisión',
+    'SAT_AVG': 'SAT promedio',
+    'MD_EARN_WNE_4YR': 'salario a 4 años',
+    'IGRNT_A': 'beca promedio de la universidad',
+}
+
+
+NOMBRES_GRUPOS = {
+    'admision_y_sat': 'admisión y SAT', 'matricula_y_costo_de_vida': 'matrícula y costo de vida',
+    'precio_neto': 'precio neto', 'salario_4_anios': 'salario a 4 años',
+    'admision_por_sexo': 'admisión por sexo', 'becas_primer_anio': 'becas de 1er año',
+}
+
+
+def fecha_corta(iso):
+    return '—' if not iso else '/'.join(reversed(iso.split('-')))
+
+
+def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes):
+    """Markdown corto para la descripción del PR: qué se publicó y cuánto cambió."""
+    # Por UNITID; si los datos anteriores no lo traían (los del Colab), por nombre y lugar.
+    por_id = bool(anteriores) and all(u.get('UNITID') for u in anteriores)
+    clave = (lambda u: u['UNITID']) if por_id else (lambda u: f"{u['INSTNM']}|{u['CITY']}|{u['STABBR']}")
+    antes = {clave(u): u for u in anteriores}
+    ahora = {clave(u): u for u in nuevas}
+    agregadas = [ahora[k]['INSTNM'] for k in ahora.keys() - antes.keys()]
+    quitadas = [antes[k]['INSTNM'] for k in antes.keys() - ahora.keys()]
+    comunes = ahora.keys() & antes.keys()
+
+    def lista(nombres, maximo=15):
+        nombres = sorted(nombres)
+        texto = ', '.join(nombres[:maximo])
+        return texto + (f' y {len(nombres) - maximo} más' if len(nombres) > maximo else '')
+
+    sc_antes = (fuentes_antes or {}).get('scorecard', {})
+    ip_antes = (fuentes_antes or {}).get('ipeds', {}).get('anios', {})
+    lineas = [
+        'El robot semanal encontró datos nuevos publicados por el gobierno de EE.UU.',
+        '',
+        '### Fuentes',
+        f"- **College Scorecard**: publicado el {fecha_corta(sc_antes.get('publicado'))} → **{fecha_corta(fuentes['scorecard']['publicado'])}**",
+    ]
+    for grupo, anio in fuentes['scorecard']['anios'].items():
+        previo = sc_antes.get('anios', {}).get(grupo)
+        if previo != anio:
+            lineas.append(f"  - {NOMBRES_GRUPOS.get(grupo, grupo)}: {previo or '—'} → **{anio}**")
+    for grupo, anio in fuentes['ipeds']['anios'].items():
+        previo = ip_antes.get(grupo)
+        lineas.append(f"- **IPEDS** {NOMBRES_GRUPOS.get(grupo, grupo)}: " + (f'{previo or "—"} → **{anio}**' if previo != anio else f'{anio} (sin cambios)'))
+    lineas += [
+        '',
+        '### Universidades',
+        f'- **{len(antes):,} → {len(ahora):,}** (+{len(agregadas)} nuevas, −{len(quitadas)} que ya no están)',
+    ]
+    if agregadas:
+        lineas.append(f'- Nuevas: {lista(agregadas)}')
+    if quitadas:
+        lineas.append(f'- Ya no están: {lista(quitadas)}')
+    lineas += ['', '### Cuántas cambiaron', '| Dato | Universidades con cambios |', '|---|---:|']
+    for columna, nombre in CAMBIOS_A_CONTAR.items():
+        if not any(antes[k].get(columna) is not None for k in comunes):
+            # Columna que antes no venía: no son "cambios", es un dato nuevo.
+            con_dato = sum(ahora[k].get(columna) is not None for k in comunes)
+            lineas.append(f'| {nombre} | dato nuevo en {con_dato:,} |')
+            continue
+        n = sum(antes[k].get(columna) != ahora[k].get(columna) for k in comunes)
+        lineas.append(f'| {nombre} | {n:,} |')
+    lineas += [
+        '',
+        'Antes de mergear, revisa la vista previa: que las fichas se vean bien y que los números',
+        'tengan sentido. Al mergear, la web se publica con estos datos.',
+    ]
+    return '\n'.join(lineas) + '\n'
+
+
 def main():
     forzar = '--forzar' in sys.argv
     hoy = datetime.date.today()
@@ -267,18 +357,26 @@ def main():
         'archivos': archivos,
     }
 
+    # Lo que había antes, para el resumen del PR.
+    anteriores = json.load(open(SALIDA, encoding='utf-8')) if os.path.exists(SALIDA) else []
+    fuentes_antes = json.load(open(FUENTES, encoding='utf-8')) if os.path.exists(FUENTES) else None
+
     os.makedirs(os.path.dirname(SALIDA), exist_ok=True)
     with open(SALIDA, 'w', encoding='utf-8') as f:
         json.dump(universidades, f, ensure_ascii=False, separators=(',', ':'))
     with open(FUENTES, 'w', encoding='utf-8') as f:
         json.dump(fuentes, f, ensure_ascii=False, indent=2)
         f.write('\n')
+    os.makedirs(CACHE, exist_ok=True)
+    with open(RESUMEN, 'w', encoding='utf-8') as f:
+        f.write(resumen_de_cambios(anteriores, universidades, fuentes_antes, fuentes))
 
     con = lambda c: sum(u.get(c) is not None for u in universidades)
     print(f'Listo: {len(universidades)} universidades → {os.path.relpath(SALIDA, RAIZ)}')
     print(f'  con admisión por sexo: {con("APPLCN")} · con becas: {con("AGRNT_P")}'
           f' · costo de vida en el campus: {con("ROOMBOARD_ON")} · fuera del campus: {con("ROOMBOARD_OFF")}')
     print(f'  años: {json.dumps(fuentes["scorecard"]["anios"], ensure_ascii=False)}')
+    print(f'  resumen para el PR: {os.path.relpath(RESUMEN, RAIZ)}')
 
 
 if __name__ == '__main__':
