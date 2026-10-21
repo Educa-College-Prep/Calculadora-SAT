@@ -164,18 +164,6 @@ REPRESENTANTES = {
     'precio_neto': 'NPT4_PUB',
     'salario_4_anios': 'MD_EARN_WNE_4YR',
 }
-# Si no se puede leer el diccionario (en GitHub está bloqueado), el año de cada grupo se deduce:
-# cuando Scorecard pasa a un año nuevo, cambian los valores de la mayoría de universidades; en
-# una corrección o si el grupo no se actualizó, casi ninguno. Columnas que se miran por grupo:
-COLUMNAS_DE_GRUPO = {
-    'admision_y_sat': ['ADM_RATE', 'SAT_AVG'],
-    'matricula_y_costo_de_vida': ['TUITIONFEE_OUT', 'TUITIONFEE_IN', 'ROOMBOARD_ON'],
-    'precio_neto': ['NPT4_PUB', 'NPT4_PRIV'],
-    'salario_4_anios': ['MD_EARN_WNE_4YR'],
-}
-# Parte de los valores que tiene que cambiar para dar el año por nuevo. En el paso de junio a
-# octubre de 2026: matrícula 64%, precio neto ~45% (años nuevos) y admisión y salario 0%.
-UMBRAL_ANIO_NUEVO = 0.3
 
 
 class DescargaFallida(Exception):
@@ -398,10 +386,7 @@ def fecha_corta(iso):
 
 
 def fecha_de(scorecard):
-    """'publicado el 15/10/2026' (CSV) o 'actualizado el …' (API, que no da la fecha de publicación)."""
-    if scorecard.get('publicado'):
-        return f"publicado el {fecha_corta(scorecard['publicado'])}"
-    return f"actualizado el {fecha_corta(scorecard.get('actualizado'))}"
+    return f"publicado el {fecha_corta(scorecard.get('publicado'))}"
 
 
 def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes, avisos=()):
@@ -463,27 +448,11 @@ def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes, avisos=()):
     return '\n'.join(lineas) + '\n'
 
 
-def un_anio_despues(texto_anio):
-    """'2025-26' → '2026-27'; 'otoño 2024' → 'otoño 2025'; 'medido en 2022 y 2023' → '… 2023 y 2024'."""
-    texto_anio = re.sub(r'(\d{4})-(\d{2})\b', lambda m: f'{int(m.group(1)) + 1}-{(int(m.group(2)) + 1) % 100:02d}', texto_anio)
-    return re.sub(r'(?<![\d-])(\d{4})(?![\d-])', lambda m: str(int(m.group(1)) + 1), texto_anio)
-
-
-def deducir_anios(anteriores, nuevas, anios_antes):
-    """Años de cada grupo sin el diccionario: avanza uno si cambió buena parte de sus valores.
-    Devuelve los años y, por grupo, qué parte cambió (para explicarlo en el PR)."""
-    por_id = bool(anteriores) and all(u.get('UNITID') for u in anteriores)
-    clave = (lambda u: u['UNITID']) if por_id else (lambda u: f"{u['INSTNM']}|{u['CITY']}|{u['STABBR']}")
-    antes = {clave(u): u for u in anteriores}
-    pares = [(antes[clave(u)], u) for u in nuevas if clave(u) in antes]
-    anios, proporciones = {}, {}
-    for grupo, previo in anios_antes.items():
-        comparables = [(a.get(c), n.get(c)) for a, n in pares for c in COLUMNAS_DE_GRUPO.get(grupo, [])
-                       if a.get(c) is not None and n.get(c) is not None]
-        proporcion = sum(x != y for x, y in comparables) / len(comparables) if comparables else 0
-        proporciones[grupo] = proporcion
-        anios[grupo] = un_anio_despues(previo) if proporcion >= UMBRAL_ANIO_NUEVO else previo
-    return anios, proporciones
+def esperar_a_la_proxima(motivo):
+    """No actualiza nada y lo deja a la vista: en GitHub, "::warning::" aparece como anotación
+    arriba en la página de la ejecución, sin tener que abrir el registro."""
+    texto = f'No se actualizó esta semana: {motivo} Se reintentará el próximo lunes.'
+    print(f'::warning title=Robot en espera::{texto}' if os.environ.get('GITHUB_ACTIONS') else f'  {texto}')
 
 
 def main():
@@ -577,50 +546,39 @@ def main():
         print('Sin datos nuevos: los datos que se bajaron son iguales a los de la web.')
         return
 
-    # Fecha y años de Scorecard. El archivo CSV trae la fecha de publicación en el nombre; la
-    # API no la da, así que se anota cuándo se detectó el cambio. Los años salen del diccionario.
-    if not CLAVE_API:
-        fecha = {'publicado': fecha_scorecard.isoformat()}
-    elif not cambio_scorecard:
-        fecha = {k: v for k, v in fuentes_antes.get('scorecard', {}).items() if k in ('publicado', 'actualizado')}
+    # Fecha de publicación y años de Scorecard: la fecha viene en el nombre del archivo CSV, y los
+    # años, en su diccionario. Con la API (en GitHub) ambos se leen a través de archive.org.
+    # Si archive.org no responde, NO se adivina: no se actualiza nada y se reintenta la semana
+    # siguiente, dejando el motivo a la vista en la ejecución del robot.
+    if CLAVE_API and not cambio_scorecard:
+        # Solo cambió IPEDS: la fecha y los años de Scorecard siguen valiendo.
+        fecha = {'publicado': fuentes_antes.get('scorecard', {}).get('publicado')}
+        anios_scorecard = fuentes_antes.get('scorecard', {}).get('anios', {})
     else:
-        # La API no da la fecha: se lee de la página de datos a través de archive.org. Si no se
-        # puede, se anota cuándo se detectó (el robot revisa cada semana: el mes es seguro).
-        pagina = copia_fresca_en_archive(PAGINA_SCORECARD)
-        enlaces = archivos_en_pagina(pagina.decode('utf-8', 'replace')) if pagina else {}
-        fecha = {'publicado': max(enlaces).isoformat()} if enlaces else {'actualizado': hoy.isoformat()}
-        if not enlaces:
-            avisos.append('No se pudo saber la fecha de publicación (ni con archive.org): la web dirá'
-                          f' "actualizado en" el mes en que el robot detectó los datos.')
-    nombre_diccionario = f'diccionario_{fecha_scorecard or hoy:%Y%m%d}.xlsx'
-    try:
-        ruta = descargar(DICCIONARIO_SCORECARD, nombre_diccionario)
-    except Exception as e:
-        print(f'  no pude bajar el diccionario de Scorecard ({e}); se pide a archive.org')
-        contenido = copia_fresca_en_archive(DICCIONARIO_SCORECARD)
-        ruta = None
-        if contenido and contenido.startswith(b'PK'):
-            ruta = os.path.join(CACHE, nombre_diccionario)
-            with open(ruta, 'wb') as f:
-                f.write(contenido)
-    try:
+        if CLAVE_API:
+            pagina = copia_fresca_en_archive(PAGINA_SCORECARD)
+            enlaces = archivos_en_pagina(pagina.decode('utf-8', 'replace')) if pagina else {}
+            if not enlaces:
+                return esperar_a_la_proxima('no se pudo leer la fecha de publicación de Scorecard: su página'
+                                            ' bloquea a GitHub y archive.org no respondió.')
+            fecha_scorecard = max(enlaces)
+        fecha = {'publicado': fecha_scorecard.isoformat()}
+        nombre_diccionario = f'diccionario_{fecha_scorecard:%Y%m%d}.xlsx'
+        try:
+            ruta = descargar(DICCIONARIO_SCORECARD, nombre_diccionario)
+        except Exception as e:
+            print(f'  no pude bajar el diccionario de Scorecard ({e}); se pide a archive.org')
+            contenido = copia_fresca_en_archive(DICCIONARIO_SCORECARD)
+            ruta = None
+            if contenido and contenido.startswith(b'PK'):
+                ruta = os.path.join(CACHE, nombre_diccionario)
+                with open(ruta, 'wb') as f:
+                    f.write(contenido)
         anios = mapa_de_anios(ruta) if ruta else {}
         anios_scorecard = {grupo: en_espanol(anios[var]) for grupo, var in REPRESENTANTES.items() if anios.get(var)}
-        if not anios_scorecard:
-            raise ValueError('el diccionario no trae los años esperados')
-    except Exception as e:  # el diccionario solo sirve para rotular años: si falla, se deducen
-        print(f'  aviso: no pude leer el diccionario de Scorecard ({e})')
-        anios_antes = fuentes_antes.get('scorecard', {}).get('anios', {})
-        if not cambio_scorecard:
-            anios_scorecard = anios_antes  # mismos datos: sus años siguen valiendo
-        else:
-            anios_scorecard, proporciones = deducir_anios(anteriores, universidades, anios_antes)
-            detalle = '; '.join(f"{NOMBRES_GRUPOS.get(g, g)}: cambió el {p:.0%} → "
-                                + (f'**{anios_scorecard[g]}**' if anios_scorecard[g] != anios_antes[g] else f'sigue {anios_antes[g]}')
-                                for g, p in proporciones.items())
-            avisos.append('Años deducidos (no se pudo leer el diccionario de Scorecard, ni con archive.org): un grupo pasa al año'
-                          f' siguiente si cambió al menos el {UMBRAL_ANIO_NUEVO:.0%} de sus valores. {detalle}.'
-                          ' Si alguno no cuadra, corrígelo en fuentes_datos.json antes de mergear.')
+        if len(anios_scorecard) < len(REPRESENTANTES):
+            return esperar_a_la_proxima('no se pudo leer de qué año es cada dato (diccionario de Scorecard):'
+                                        ' su sitio bloquea a GitHub y archive.org no respondió.')
 
     fuentes = {
         'scorecard': {
