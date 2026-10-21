@@ -492,9 +492,13 @@ def main():
         u.update(ipeds_de(u['UNITID']))
         universidades.append(u)
 
-    solo_scorecard = lambda lista: [{c: u.get(c) for c in COLUMNAS + COLUMNAS_NUEVAS} for u in lista]
-    cambio_scorecard = solo_scorecard(universidades) != solo_scorecard(anteriores)
-    if not forzar and universidades == anteriores:
+    # ¿Cambió algo de verdad? Las direcciones se comparan sin mayúsculas: el CSV y la API
+    # escriben distinto algunas (…?NULL=NULL frente a …?null=null) y son la misma.
+    def comparable(lista, columnas):
+        return [{c: u.get(c).lower() if c == 'NPCURL' and u.get(c) else u.get(c) for c in columnas} for u in lista]
+    cambio_scorecard = comparable(universidades, COLUMNAS + COLUMNAS_NUEVAS) != comparable(anteriores, COLUMNAS + COLUMNAS_NUEVAS)
+    cambio_ipeds = comparable(universidades, COLUMNAS_ADM + COLUMNAS_SFA) != comparable(anteriores, COLUMNAS_ADM + COLUMNAS_SFA)
+    if not forzar and not cambio_scorecard and not cambio_ipeds:
         print('Sin datos nuevos: los datos que se bajaron son iguales a los de la web.')
         return
 
