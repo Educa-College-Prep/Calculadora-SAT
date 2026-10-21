@@ -547,6 +547,10 @@ def main():
     os.makedirs(CACHE, exist_ok=True)
     with open(RESUMEN, 'w', encoding='utf-8') as f:
         f.write(resumen_de_cambios(anteriores, universidades, fuentes_antes, fuentes, avisos))
+    # Para el workflow: el paso que abre el PR solo corre si esto dice true.
+    if os.environ.get('GITHUB_OUTPUT'):
+        with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as f:
+            f.write('hay_datos_nuevos=true\n')
 
     con = lambda c: sum(u.get(c) is not None for u in universidades)
     print(f'Listo: {len(universidades)} universidades → {os.path.relpath(SALIDA, RAIZ)}')
