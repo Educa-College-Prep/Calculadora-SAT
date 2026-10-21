@@ -27,6 +27,7 @@ Solo usa la biblioteca estándar de Python. Las descargas quedan en scripts/.cac
 """
 import csv
 import datetime
+import gzip
 import io
 import json
 import os
@@ -208,6 +209,13 @@ def existe(url):
         return False
 
 
+def archivos_en_pagina(html):
+    """{fecha de publicación: enlace} de los archivos por universidad que enlaza la página de
+    datos de Scorecard. El nombre trae la fecha como MMDDAAAA."""
+    return {datetime.date(int(f[4:]), int(f[:2]), int(f[2:4])): u
+            for u, f in re.findall(r'(https://[^"\'\s]+/Most-Recent-Cohorts-Institution_(\d{8})\.zip)', html)}
+
+
 def ultimo_scorecard():
     """El archivo por universidad más reciente que enlaza la página de datos de Scorecard."""
     try:
@@ -216,12 +224,36 @@ def ultimo_scorecard():
     except Exception as e:
         sys.exit(f'La página de Scorecard no respondió ({e}). Si es 403, está bloqueando el pedido:'
                  ' usa la API con la variable SCORECARD_API_KEY (ver arriba del script).')
-    # El nombre trae la fecha de publicación como MMDDAAAA.
-    enlaces = {f: u for u, f in re.findall(r'(https://[^"\'\s]+/Most-Recent-Cohorts-Institution_(\d{8})\.zip)', html)}
+    enlaces = archivos_en_pagina(html)
     if not enlaces:
         sys.exit('No encontré el archivo de Scorecard en su página: ¿cambió de nombre o de sitio?')
-    fecha = max(enlaces, key=lambda f: (f[4:], f[:4]))
-    return enlaces[fecha], datetime.date(int(fecha[4:]), int(fecha[:2]), int(fecha[2:4]))
+    fecha = max(enlaces)
+    return enlaces[fecha], fecha
+
+
+def copia_fresca_en_archive(url):
+    """Scorecard bloquea a GitHub, pero no a Internet Archive: se le pide a archive.org que guarde
+    una copia de `url` en este momento (la descarga la hacen sus servidores) y se lee esa copia.
+    Solo sirve una copia recién hecha: una vieja podría ser de antes de la última publicación.
+    Devuelve los bytes del archivo original, o None si no se pudo."""
+    try:
+        pedido = urllib.request.Request(f'https://web.archive.org/save/{url}', headers=AGENTE)
+        with urllib.request.urlopen(pedido, timeout=300) as r:
+            copia = re.search(r'/web/(\d{14})', r.geturl())
+        if not copia:
+            return None
+        hecha = datetime.datetime.strptime(copia.group(1), '%Y%m%d%H%M%S')
+        if datetime.datetime.utcnow() - hecha > datetime.timedelta(days=1):
+            return None
+        # "id_": el archivo tal cual, sin la barra que archive.org agrega a las páginas.
+        original = urllib.request.Request(f'https://web.archive.org/web/{copia.group(1)}id_/{url}', headers=AGENTE)
+        with urllib.request.urlopen(original, timeout=300) as r:
+            contenido = r.read()
+        # Las páginas las guarda comprimidas, tal como las mandó el sitio.
+        return gzip.decompress(contenido) if contenido[:2] == b'\x1f\x8b' else contenido
+    except Exception as e:
+        print(f'  archive.org no pudo copiar {url} ({e})')
+        return None
 
 
 def scorecard_por_api():
@@ -539,15 +571,36 @@ def main():
 
     # Fecha y años de Scorecard. El archivo CSV trae la fecha de publicación en el nombre; la
     # API no la da, así que se anota cuándo se detectó el cambio. Los años salen del diccionario.
-    if CLAVE_API:
-        fecha = {'actualizado': hoy.isoformat()} if cambio_scorecard else {
-            k: v for k, v in fuentes_antes.get('scorecard', {}).items() if k in ('publicado', 'actualizado')}
-    else:
+    if not CLAVE_API:
         fecha = {'publicado': fecha_scorecard.isoformat()}
+    elif not cambio_scorecard:
+        fecha = {k: v for k, v in fuentes_antes.get('scorecard', {}).items() if k in ('publicado', 'actualizado')}
+    else:
+        # La API no da la fecha: se lee de la página de datos a través de archive.org. Si no se
+        # puede, se anota cuándo se detectó (el robot revisa cada semana: el mes es seguro).
+        pagina = copia_fresca_en_archive(PAGINA_SCORECARD)
+        enlaces = archivos_en_pagina(pagina.decode('utf-8', 'replace')) if pagina else {}
+        fecha = {'publicado': max(enlaces).isoformat()} if enlaces else {'actualizado': hoy.isoformat()}
+        if not enlaces:
+            avisos.append('No se pudo saber la fecha de publicación (ni con archive.org): la web dirá'
+                          f' "actualizado en" el mes en que el robot detectó los datos.')
+    nombre_diccionario = f'diccionario_{fecha_scorecard or hoy:%Y%m%d}.xlsx'
     try:
-        anios = mapa_de_anios(descargar(DICCIONARIO_SCORECARD, f'diccionario_{fecha_scorecard or hoy:%Y%m%d}.xlsx'))
+        ruta = descargar(DICCIONARIO_SCORECARD, nombre_diccionario)
+    except Exception as e:
+        print(f'  no pude bajar el diccionario de Scorecard ({e}); se pide a archive.org')
+        contenido = copia_fresca_en_archive(DICCIONARIO_SCORECARD)
+        ruta = None
+        if contenido and contenido.startswith(b'PK'):
+            ruta = os.path.join(CACHE, nombre_diccionario)
+            with open(ruta, 'wb') as f:
+                f.write(contenido)
+    try:
+        anios = mapa_de_anios(ruta) if ruta else {}
         anios_scorecard = {grupo: en_espanol(anios[var]) for grupo, var in REPRESENTANTES.items() if anios.get(var)}
-    except Exception as e:  # el diccionario solo sirve para rotular años: si falla, se sigue
+        if not anios_scorecard:
+            raise ValueError('el diccionario no trae los años esperados')
+    except Exception as e:  # el diccionario solo sirve para rotular años: si falla, se deducen
         print(f'  aviso: no pude leer el diccionario de Scorecard ({e})')
         anios_antes = fuentes_antes.get('scorecard', {}).get('anios', {})
         if not cambio_scorecard:
@@ -557,7 +610,7 @@ def main():
             detalle = '; '.join(f"{NOMBRES_GRUPOS.get(g, g)}: cambió el {p:.0%} → "
                                 + (f'**{anios_scorecard[g]}**' if anios_scorecard[g] != anios_antes[g] else f'sigue {anios_antes[g]}')
                                 for g, p in proporciones.items())
-            avisos.append('Años deducidos (el diccionario de Scorecard bloquea a GitHub): un grupo pasa al año'
+            avisos.append('Años deducidos (no se pudo leer el diccionario de Scorecard, ni con archive.org): un grupo pasa al año'
                           f' siguiente si cambió al menos el {UMBRAL_ANIO_NUEVO:.0%} de sus valores. {detalle}.'
                           ' Si alguno no cuadra, corrígelo en fuentes_datos.json antes de mergear.')
 
