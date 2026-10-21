@@ -163,6 +163,18 @@ REPRESENTANTES = {
     'precio_neto': 'NPT4_PUB',
     'salario_4_anios': 'MD_EARN_WNE_4YR',
 }
+# Si no se puede leer el diccionario (en GitHub está bloqueado), el año de cada grupo se deduce:
+# cuando Scorecard pasa a un año nuevo, cambian los valores de la mayoría de universidades; en
+# una corrección o si el grupo no se actualizó, casi ninguno. Columnas que se miran por grupo:
+COLUMNAS_DE_GRUPO = {
+    'admision_y_sat': ['ADM_RATE', 'SAT_AVG'],
+    'matricula_y_costo_de_vida': ['TUITIONFEE_OUT', 'TUITIONFEE_IN', 'ROOMBOARD_ON'],
+    'precio_neto': ['NPT4_PUB', 'NPT4_PRIV'],
+    'salario_4_anios': ['MD_EARN_WNE_4YR'],
+}
+# Parte de los valores que tiene que cambiar para dar el año por nuevo. En el paso de junio a
+# octubre de 2026: matrícula 64%, precio neto ~45% (años nuevos) y admisión y salario 0%.
+UMBRAL_ANIO_NUEVO = 0.3
 
 
 class DescargaFallida(Exception):
@@ -411,6 +423,29 @@ def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes, avisos=()):
     return '\n'.join(lineas) + '\n'
 
 
+def un_anio_despues(texto_anio):
+    """'2025-26' → '2026-27'; 'otoño 2024' → 'otoño 2025'; 'medido en 2022 y 2023' → '… 2023 y 2024'."""
+    texto_anio = re.sub(r'(\d{4})-(\d{2})\b', lambda m: f'{int(m.group(1)) + 1}-{(int(m.group(2)) + 1) % 100:02d}', texto_anio)
+    return re.sub(r'(?<![\d-])(\d{4})(?![\d-])', lambda m: str(int(m.group(1)) + 1), texto_anio)
+
+
+def deducir_anios(anteriores, nuevas, anios_antes):
+    """Años de cada grupo sin el diccionario: avanza uno si cambió buena parte de sus valores.
+    Devuelve los años y, por grupo, qué parte cambió (para explicarlo en el PR)."""
+    por_id = bool(anteriores) and all(u.get('UNITID') for u in anteriores)
+    clave = (lambda u: u['UNITID']) if por_id else (lambda u: f"{u['INSTNM']}|{u['CITY']}|{u['STABBR']}")
+    antes = {clave(u): u for u in anteriores}
+    pares = [(antes[clave(u)], u) for u in nuevas if clave(u) in antes]
+    anios, proporciones = {}, {}
+    for grupo, previo in anios_antes.items():
+        comparables = [(a.get(c), n.get(c)) for a, n in pares for c in COLUMNAS_DE_GRUPO.get(grupo, [])
+                       if a.get(c) is not None and n.get(c) is not None]
+        proporcion = sum(x != y for x, y in comparables) / len(comparables) if comparables else 0
+        proporciones[grupo] = proporcion
+        anios[grupo] = un_anio_despues(previo) if proporcion >= UMBRAL_ANIO_NUEVO else previo
+    return anios, proporciones
+
+
 def main():
     forzar = '--forzar' in sys.argv
     hoy = datetime.date.today()
@@ -514,12 +549,17 @@ def main():
         anios_scorecard = {grupo: en_espanol(anios[var]) for grupo, var in REPRESENTANTES.items() if anios.get(var)}
     except Exception as e:  # el diccionario solo sirve para rotular años: si falla, se sigue
         print(f'  aviso: no pude leer el diccionario de Scorecard ({e})')
-        # Datos de Scorecard iguales: sus años siguen valiendo. Datos nuevos: no se inventan.
-        anios_scorecard = {} if cambio_scorecard else fuentes_antes.get('scorecard', {}).get('anios', {})
-        if cambio_scorecard:
-            avisos.append('No se pudo leer el diccionario de Scorecard (bloquea a GitHub): la web no mostrará'
-                          ' de qué año son sus datos. Para ponerlos, corre el script en una computadora con'
-                          ' `--forzar` (sin la clave usa el CSV y el diccionario) y sube el resultado a esta rama.')
+        anios_antes = fuentes_antes.get('scorecard', {}).get('anios', {})
+        if not cambio_scorecard:
+            anios_scorecard = anios_antes  # mismos datos: sus años siguen valiendo
+        else:
+            anios_scorecard, proporciones = deducir_anios(anteriores, universidades, anios_antes)
+            detalle = '; '.join(f"{NOMBRES_GRUPOS.get(g, g)}: cambió el {p:.0%} → "
+                                + (f'**{anios_scorecard[g]}**' if anios_scorecard[g] != anios_antes[g] else f'sigue {anios_antes[g]}')
+                                for g, p in proporciones.items())
+            avisos.append('Años deducidos (el diccionario de Scorecard bloquea a GitHub): un grupo pasa al año'
+                          f' siguiente si cambió al menos el {UMBRAL_ANIO_NUEVO:.0%} de sus valores. {detalle}.'
+                          ' Si alguno no cuadra, corrígelo en fuentes_datos.json antes de mergear.')
 
     fuentes = {
         'scorecard': {
