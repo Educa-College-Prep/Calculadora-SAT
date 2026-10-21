@@ -80,22 +80,16 @@ export default function App() {
   const sugerencias = useMemo(() => resultadoBusqueda?.ordenadas.slice(0, 8) ?? [], [resultadoBusqueda]);
 
   useEffect(() => {
-    const base = import.meta.env.BASE_URL;
-    // Datos de IPEDS (admisión por sexo ADM 2024 y becas SFA 2023-24) vienen en un archivo
-    // aparte, con clave "INSTNM|CITY|STABBR". Si falla, la web sigue funcionando sin ellos.
-    const admisiones: Promise<Record<string, Partial<Universidad>>> =
-      fetch(`${base}ipeds_2024.json`)
-        .then(r => r.json())
-        .catch(() => ({}));
-
-    Promise.all([fetch(`${base}universidades_seleccionadas6.json`).then(r => r.json()), admisiones])
-      .then(([data, adm]: [Universidad[], Record<string, Partial<Universidad>>]) => {
+    // Un solo archivo con College Scorecard + IPEDS, unidos por UNITID. Lo genera
+    // scripts/actualizar_datos.py (y cada semana el workflow actualizar-datos).
+    fetch(`${import.meta.env.BASE_URL}universidades.json`)
+      .then(r => r.json())
+      .then((data: Universidad[]) => {
         // Se asigna un id estable una sola vez, al cargar.
         setUniversidades(data.map((uni, indice) => {
           const ranking = posicionUSNews(uni);
           return {
           ...uni,
-          ...adm[`${uni.INSTNM}|${uni.CITY}|${uni.STABBR}`],
           // Protección por si el colab vuelve a exportarlos como texto o con "PS" (dato suprimido).
           MD_EARN_WNE_4YR: aNumero(uni.MD_EARN_WNE_4YR),
           COUNT_WNE_4YR: aNumero(uni.COUNT_WNE_4YR),

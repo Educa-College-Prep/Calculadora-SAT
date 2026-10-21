@@ -8,10 +8,10 @@ export interface CostoVidaCalculado {
 
 /**
  * Costo de vida anual (sin matrícula).
- * - Dato real (College Scorecard 2024-25): alojamiento y comida en campus + otros gastos + libros.
+ * - Dato real (College Scorecard): alojamiento y comida en campus + otros gastos + libros.
  * - Si la universidad no lo reporta (sin residencias, ej. community colleges): se estima como
- *   COSTT4_A − TUITIONFEE_IN. Esa resta mezcla años (COSTT4_A es de 2023-24), así que si da ≤ 0
- *   se descarta.
+ *   COSTT4_A − TUITIONFEE_IN. Esa resta puede mezclar años (COSTT4_A suele venir un año
+ *   atrasado), así que si da ≤ 0 se descarta.
  */
 export function calcularCostoVida(uni: Universidad): CostoVidaCalculado | null {
   if (uni.ROOMBOARD_ON != null) {
