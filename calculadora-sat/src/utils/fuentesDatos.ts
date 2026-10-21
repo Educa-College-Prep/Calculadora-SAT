@@ -11,7 +11,8 @@ export interface FuentesDatos {
     organismo: string;
     /** Fecha de publicación, AAAA-MM-DD (viene en el nombre del archivo CSV). */
     publicado?: string;
-    /** Si los datos vinieron de la API, que no da la fecha de publicación: cuándo se detectó el cambio. */
+    /** Si los datos vinieron de la API, que no da la fecha de publicación: cuándo se detectó el
+     *  cambio (el robot revisa cada semana, así que el mes es seguro; el día, no). */
     actualizado?: string;
     url: string;
     /** "otoño 2024", "2025-26"... Puede faltar alguno si el diccionario cambió de formato. */
@@ -51,6 +52,12 @@ const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', '
 export function fechaLarga(iso: string) {
   const [anio, mes, dia] = iso.split('-').map(Number);
   return MESES[mes - 1] ? `${dia} de ${MESES[mes - 1]} de ${anio}` : iso;
+}
+
+/** "2026-10-21" → "octubre de 2026": para fechas de las que solo se sabe el mes. */
+export function mesLargo(iso: string) {
+  const [anio, mes] = iso.split('-').map(Number);
+  return MESES[mes - 1] ? `${MESES[mes - 1]} de ${anio}` : iso;
 }
 
 /** "otoño 2024" → "Otoño 2024", para usarlo al inicio de una frase o en un encabezado. */
