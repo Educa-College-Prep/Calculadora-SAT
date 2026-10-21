@@ -33,10 +33,6 @@ jobs:
             calculadora-sat/public/fuentes_datos.json
           commit-message: 'datos: actualización automática de College Scorecard e IPEDS'
           title: 'Datos nuevos de College Scorecard / IPEDS'
-          body: |
-            El robot semanal encontró datos nuevos publicados por el gobierno de EE.UU.
-            y regeneró `universidades.json` y `fuentes_datos.json`.
-
-            Antes de mergear, revisa la vista previa: que la cantidad de universidades sea
-            parecida y que las fichas se vean bien. Las fuentes y años nuevos están en
-            `fuentes_datos.json`.
+          # Lo escribe el script: fuentes y años nuevos, universidades que entran o salen
+          # y cuántas cambiaron en cada dato.
+          body-path: calculadora-sat/scripts/.cache/resumen_pr.md
