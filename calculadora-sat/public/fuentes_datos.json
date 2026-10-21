@@ -2,14 +2,9 @@
   "scorecard": {
     "nombre": "College Scorecard",
     "organismo": "Departamento de Educación de EE.UU.",
-    "publicado": "2026-10-15",
+    "actualizado": "2026-10-21",
     "url": "https://collegescorecard.ed.gov/data/",
-    "anios": {
-      "admision_y_sat": "otoño 2024",
-      "matricula_y_costo_de_vida": "2025-26",
-      "precio_neto": "2024-25",
-      "salario_4_anios": "medido en 2022 y 2023"
-    }
+    "anios": {}
   },
   "ipeds": {
     "nombre": "IPEDS",
@@ -21,7 +16,7 @@
     }
   },
   "archivos": {
-    "scorecard": "Most-Recent-Cohorts-Institution_10152026.zip",
+    "scorecard": "api",
     "ipeds_adm": "ADM2024.zip",
     "ipeds_sfa": "SFA2324.zip"
   }
