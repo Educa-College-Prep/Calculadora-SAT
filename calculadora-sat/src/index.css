@@ -662,7 +662,16 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
    Ficha de universidad
    ========================================================= */
 .ficha { display: flex; flex-direction: column; gap: 24px; }
-.ficha-volver { align-self: flex-start; }
+/* "Volver" se queda pegado debajo de la barra de Educa al bajar por la ficha (o Mi lista):
+   así nunca hay que subir hasta arriba para regresar a los resultados. La sombra lo
+   separa del contenido que pasa por debajo. Va sobre la portada (z-index) pero bajo la barra. */
+.ficha-volver {
+  position: sticky;
+  top: calc(var(--alto-barra, 0px) + 12px);
+  z-index: 20;
+  align-self: flex-start;
+  box-shadow: 0 4px 14px rgba(17, 29, 63, 0.16);
+}
 
 .ficha-cabecera {
   display: flex;
