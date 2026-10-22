@@ -164,7 +164,7 @@ export default function App() {
 
       const falta: string[] = [];
 
-      // Quedan las seguras, buenas opciones y difíciles; solo salen las prácticamente inalcanzables.
+      // Quedan las de probabilidad alta, intermedia y baja; solo salen las prácticamente inalcanzables.
       if (filtroSATActivo) {
         const entra = alcanzable(uni, sat);
         if (entra == null) falta.push('Sin datos SAT');
@@ -193,7 +193,7 @@ export default function App() {
     if (!filtroSATActivo) {
       return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes, conteoNiveles: null };
     }
-    const conteo: Record<Nivel, number> = { 'Segura': 0, 'Buena opción': 0, 'Difícil': 0 };
+    const conteo: Record<Nivel, number> = { 'Alta probabilidad': 0, 'Intermedia': 0, 'Baja': 0 };
     for (const uni of lista) {
       const n = clasificar(uni, sat);
       if (n) conteo[n]++;
