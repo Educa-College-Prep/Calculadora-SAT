@@ -3,7 +3,7 @@ import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
 import { calcularCostoVida } from '../utils/costos';
 import { glosarioCampos } from '../utils/glosarioCampos';
-import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
+import { posicionUSNews, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
 import { InfoTooltip } from './InfoTooltip';
 
 interface Props {
@@ -50,7 +50,7 @@ const GRUPOS: Grupo[] = [
         numero: u => posicionUSNews(u)?.puesto,
         texto: u => {
           const p = posicionUSNews(u);
-          return p ? <>{textoPuesto(p)}<span className="comparar-sub">{NOMBRE_LISTA[p.lista]}</span></> : 'No está en el top 50';
+          return p ? <>#{p.puesto}<span className="comparar-sub">{NOMBRE_LISTA[p.lista]}</span></> : 'No está en el top 50';
         },
       },
       { etiqueta: 'Tipo', texto: u => u.CONTROL ?? null },

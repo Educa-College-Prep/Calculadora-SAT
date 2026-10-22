@@ -20,6 +20,15 @@ export const NOMBRE_LISTA: Record<ListaUSNews, string> = {
   'liberal-arts': 'Liberal arts colleges',
 };
 
+/**
+ * Nombre corto de cada lista para las insignias ("#12 Nacional", "#3 LAC"). Hace falta porque
+ * un #3 de liberal arts no es lo mismo que un #3 nacional: son dos rankings distintos.
+ */
+export const SIGLA_LISTA: Record<ListaUSNews, string> = {
+  'nacional': 'Nacional',
+  'liberal-arts': 'LAC',
+};
+
 // [nombre en la base, estado, puesto]
 const NACIONALES: [string, string, number][] = [
   ['Massachusetts Institute of Technology', 'MA', 1],
@@ -134,16 +143,10 @@ const LIBERAL_ARTS: [string, string, number][] = [
 export interface PosicionUSNews {
   puesto: number;
   lista: ListaUSNews;
-  /** true si comparte el puesto con otra universidad de la misma lista. */
-  empate: boolean;
 }
 
 function indexar(filas: [string, string, number][], lista: ListaUSNews, mapa: Map<string, PosicionUSNews>) {
-  const repetidos = new Map<number, number>();
-  for (const [, , puesto] of filas) repetidos.set(puesto, (repetidos.get(puesto) ?? 0) + 1);
-  for (const [nombre, estado, puesto] of filas) {
-    mapa.set(`${nombre}|${estado}`, { puesto, lista, empate: (repetidos.get(puesto) ?? 0) > 1 });
-  }
+  for (const [nombre, estado, puesto] of filas) mapa.set(`${nombre}|${estado}`, { puesto, lista });
 }
 
 const POSICIONES = new Map<string, PosicionUSNews>();
@@ -154,7 +157,10 @@ export function posicionUSNews(uni: Pick<Universidad, 'INSTNM' | 'STABBR'>): Pos
   return POSICIONES.get(`${uni.INSTNM}|${uni.STABBR}`) ?? null;
 }
 
-/** Texto corto para insignias: "#7 U.S. News" o "#5 U.S. News (empate)". */
+/**
+ * Texto corto para insignias: "#7 Nacional" o "#3 LAC". Los empates no se marcan: si dos
+ * universidades muestran el mismo número, ya se entiende que comparten el puesto.
+ */
 export function textoPuesto(p: PosicionUSNews): string {
-  return `#${p.puesto}${p.empate ? ' (empate)' : ''}`;
+  return `#${p.puesto} ${SIGLA_LISTA[p.lista]}`;
 }
