@@ -885,6 +885,28 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .cifra-destacada-texto { display: inline-flex; align-items: center; font-weight: 600; }
 .cifra-destacada .fuente { flex-basis: 100%; margin: 0; }
 
+/* Salario por carrera: el salario general arriba como referencia, un buscador y la tabla. */
+.salarios-general { max-width: 520px; margin: 12px 0 16px; }
+.salarios-buscar { max-width: 420px; margin-bottom: 16px; }
+.salarios-tabla { width: min(100%, 760px); border-collapse: collapse; margin-top: 8px; }
+.salarios-tabla th,
+.salarios-tabla td { padding: 10px 8px; text-align: left; vertical-align: baseline; border-top: 1px dashed var(--linea); }
+.salarios-tabla thead th {
+  padding-top: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--grafito-suave);
+  border-top: 0;
+}
+.salarios-tabla tbody th { font-weight: 600; }
+.salarios-carrera { display: block; }
+.salarios-graduados { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--grafito-suave); }
+.salarios-tabla .salarios-monto { text-align: right; white-space: nowrap; }
+.salarios-ver { margin-top: 12px; }
+@media (max-width: 560px) {
+  .salarios-tabla th, .salarios-tabla td { padding: 8px 4px; font-size: 14px; }
+}
+
 
 /* ---------- Minipestañas ---------- */
 .pestanas {
