@@ -663,15 +663,33 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
    Ficha de universidad
    ========================================================= */
 .ficha { display: flex; flex-direction: column; gap: 24px; }
-/* "Volver" se queda pegado debajo de la barra de Educa al bajar por la ficha (o Mi lista):
-   así nunca hay que subir hasta arriba para regresar a los resultados. La sombra lo
-   separa del contenido que pasa por debajo. Va sobre la portada (z-index) pero bajo la barra. */
-.ficha-volver {
-  position: sticky;
+.ficha-volver { align-self: flex-start; }
+
+/* Barra flotante (ficha y Mi lista): centrada debajo de la barra de Educa. Se esconde
+   deslizándose hacia arriba y aparece al subir por la página (components/BarraFlotante).
+   Va sobre la portada de la ficha, pero debajo de la barra de Educa. */
+.barra-flotante {
+  position: fixed;
   top: calc(var(--alto-barra, 0px) + 12px);
+  left: 50%;
   z-index: 20;
-  align-self: flex-start;
-  box-shadow: 0 4px 14px rgba(17, 29, 63, 0.16);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: calc(100vw - 32px);
+  padding: 8px;
+  background: var(--hoja);
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(17, 29, 63, 0.18);
+  transform: translate(-50%, calc(-100% - var(--alto-barra, 0px) - 24px));
+  opacity: 0;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+.barra-flotante-visible { transform: translate(-50%, 0); opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .barra-flotante { transition: none; }
 }
 
 .ficha-cabecera {

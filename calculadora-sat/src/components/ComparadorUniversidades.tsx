@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
@@ -5,6 +6,8 @@ import { calcularCostoVida } from '../utils/costos';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { posicionUSNews, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
 import { InfoTooltip } from './InfoTooltip';
+import { BarraFlotante } from './BarraFlotante';
+import { useALaVista, useSubiendo } from '../utils/useDesplazamiento';
 
 interface Props {
   universidades: Universidad[];
@@ -101,9 +104,17 @@ function formatear(valor: number | null | undefined, formato: Fila['formato']): 
  * nombres queda fija.
  */
 export function ComparadorUniversidades({ universidades, onSeleccionar, onQuitar, onVaciar, onVolver }: Props) {
+  const volverRef = useRef<HTMLButtonElement>(null);
+  const volverALaVista = useALaVista(volverRef);
+  const subiendo = useSubiendo();
+
   return (
     <main className="comparar">
-      <button type="button" className="boton ficha-volver" onClick={onVolver}>← Volver a resultados</button>
+      <button type="button" className="boton ficha-volver" onClick={onVolver} ref={volverRef}>← Volver a resultados</button>
+      {/* En Mi lista no hay nada más que hacer que comparar y volver: "Volver" flota al subir. */}
+      <BarraFlotante visible={subiendo && !volverALaVista}>
+        <button type="button" className="boton" onClick={onVolver}>← Volver a resultados</button>
+      </BarraFlotante>
 
       <header className="comparar-cabecera">
         <div>
