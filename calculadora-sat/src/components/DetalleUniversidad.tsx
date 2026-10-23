@@ -134,15 +134,14 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
 
       <div className="ficha-grilla">
 
-        {/* Debajo de lo esencial: el campus tour de Educa (si hay) y la información de la
-            universidad, cada uno en media fila. Sin video, la información usa la fila entera. */}
-        {video && (
-          <Seccion titulo="Campus tour">
-            <VideoUniversidad video={video} />
-          </Seccion>
-        )}
-        <Seccion titulo="Sobre la universidad" ancha={!video}>
-          <InfoUniversidad uni={uni} />
+        {/* Debajo de lo esencial, con la fila entera: la información de la universidad y, si
+            hay, el campus tour de Educa a la derecha. Sin video, la información se reparte en
+            dos columnas (resumen | contacto). */}
+        <Seccion titulo="Sobre la universidad" ancha>
+          <div className={`sobre-uni${video ? ' con-video' : ''}`}>
+            <InfoUniversidad uni={uni} />
+            {video && <VideoUniversidad video={video} />}
+          </div>
         </Seccion>
 
         {/* Admisiones y SAT */}

@@ -3,6 +3,7 @@ import { formatPorcentaje } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { useFuentesDatos } from '../utils/fuentesDatos';
 import { InfoTooltip } from './InfoTooltip';
+import { urlAyudaFinanciera, urlCalculadora, NOTA_CALCULADORA } from '../utils/enlacesUniversidad';
 
 /** "Ciudad grande" → "una ciudad grande"; "Suburbio mediano" → "un suburbio mediano". */
 function conArticulo(entorno: string): string {
@@ -64,11 +65,15 @@ export function InfoUniversidad({ uni }: { uni: Universidad }) {
   const zip = uni.ZIP?.slice(0, 5);
   const lugar = `${uni.CITY}, ${uni.STABBR}${zip ? ` ${zip}` : ''}`;
   const direccion = uni.ADDR ? `${uni.ADDR}, ${lugar}` : lugar;
-  // Admisión y postulación suelen ser la misma página: se muestra una sola vez.
+  const calculadora = urlCalculadora(uni.NPCURL);
+  // Admisión y postulación suelen ser la misma página: se muestra una sola vez. "Ayuda
+  // financiera" solo si es la página de becas y no otra calculadora: una sola calculadora, la
+  // de costo neto, para no confundir.
   const enlaces = [
     { texto: 'Admisión', url: uni.ADMINURL },
     { texto: 'Cómo postular', url: uni.APPLURL && uni.APPLURL !== uni.ADMINURL ? uni.APPLURL : null },
-    { texto: 'Ayuda financiera', url: uni.FAIDURL },
+    { texto: 'Ayuda financiera', url: urlAyudaFinanciera(uni) },
+    { texto: 'Calcula cuánto te costaría', url: calculadora },
   ].filter((e): e is { texto: string; url: string } => !!e.url);
 
   return (
@@ -128,6 +133,7 @@ export function InfoUniversidad({ uni }: { uni: Universidad }) {
             ))}
           </div>
         )}
+        {calculadora && <p className="fuente">{NOTA_CALCULADORA}</p>}
         <p className="fuente">
           Fuente: IPEDS{anioDirectorio && ` (directorio ${anioDirectorio})`} y College Scorecard.
         </p>

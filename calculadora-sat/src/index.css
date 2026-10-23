@@ -903,12 +903,13 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .cifra-destacada-texto { display: inline-flex; align-items: center; font-weight: 600; }
 .cifra-destacada .fuente { flex-basis: 100%; margin: 0; }
 
-/* Sobre la universidad: resumen y datos, y contacto. Con la fila entera (sin video), en dos
-   columnas; en media fila, uno debajo del otro. */
+/* Sobre la universidad, con la fila entera. Sin video: resumen | contacto en dos columnas. Con
+   video: la información (resumen arriba, contacto abajo) a la izquierda y el video a la derecha. */
+.sobre-uni.con-video { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start; }
 .info { display: grid; gap: 20px; }
-.ficha-ancha .info { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+.sobre-uni:not(.con-video) .info { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
 .info-contacto { padding-top: 16px; border-top: 1px solid var(--linea); }
-.ficha-ancha .info-contacto { padding: 0 0 0 32px; border-top: 0; border-left: 1px solid var(--linea); }
+.sobre-uni:not(.con-video) .info-contacto { padding: 0 0 0 32px; border-top: 0; border-left: 1px solid var(--linea); }
 .info-resumen { margin: 0 0 12px; line-height: 1.6; }
 .dato-nota { font-size: 13px; font-weight: 400; color: var(--grafito-suave); }
 .contacto { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
@@ -917,12 +918,13 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .contacto a { color: var(--tinta-fuerte); overflow-wrap: anywhere; }
 .contacto-enlaces { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
 .contacto-enlaces .boton { text-decoration: none; }
+/* En celular, todo en una columna: primero la información y después el video. */
 @media (max-width: 760px) {
-  .ficha-ancha .info { grid-template-columns: minmax(0, 1fr); gap: 20px; }
-  .ficha-ancha .info-contacto { padding: 16px 0 0; border-left: 0; border-top: 1px solid var(--linea); }
+  .sobre-uni.con-video, .sobre-uni:not(.con-video) .info { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .sobre-uni:not(.con-video) .info-contacto { padding: 16px 0 0; border-left: 0; border-top: 1px solid var(--linea); }
 }
 
-/* Campus tour: video 16:9 que ocupa todo el ancho de su media fila. */
+/* Campus tour: video 16:9 que ocupa todo el ancho de su columna. */
 .video-marco {
   position: relative;
   aspect-ratio: 16 / 9;

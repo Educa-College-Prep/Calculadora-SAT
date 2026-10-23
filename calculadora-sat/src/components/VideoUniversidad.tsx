@@ -8,7 +8,8 @@ import { CANAL_EDUCA } from '../data/videosUniversidades';
  */
 export function VideoUniversidad({ video }: { video: Video }) {
   return (
-    <>
+    <div className="video">
+      <h3 className="subtitulo">Campus tour</h3>
       <div className="video-marco">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${video.id}?rel=0`}
@@ -23,6 +24,6 @@ export function VideoUniversidad({ video }: { video: Video }) {
       <p className="fuente">
         Video de <a href={CANAL_EDUCA} target="_blank" rel="noopener noreferrer">Educa College Prep en YouTube</a>.
       </p>
-    </>
+    </div>
   );
 }
