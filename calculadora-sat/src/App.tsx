@@ -221,7 +221,7 @@ export default function App() {
     // Marcar los tres niveles equivale a no filtrar.
     [puntajeTotal > 0 && nivelesSAT.length > 0 && nivelesSAT.length < 3, 'tus posibilidades de entrar'],
     // Marcar los tres tipos equivale a no filtrar.
-    [tiposUniversidad.length > 0 && tiposUniversidad.length < 3, 'tipo de universidad'],
+    [tiposUniversidad.length === 1, 'tipo de universidad'],
     [precioMaximo < PRECIO_MAXIMO_SLIDER, 'matrícula máxima'],
     [busquedaNombre.trim() !== '', `búsqueda "${busquedaNombre.trim()}"`],
   ] as const).filter(([activo]) => activo).map(([, nombre]) => nombre);

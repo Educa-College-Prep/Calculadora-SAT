@@ -30,8 +30,7 @@ export const ResumenEstado = memo(function ResumenEstado({ universidades, estado
   const resumen = useMemo(() => {
     const total = universidades.length;
     const publicas = universidades.filter(u => u.CONTROL === 'Pública').length;
-    const sinFines = universidades.filter(u => u.CONTROL === 'Privada sin fines de lucro').length;
-    const conFines = universidades.filter(u => u.CONTROL === 'Privada con fines de lucro').length;
+    const privadas = universidades.filter(u => u.CONTROL === 'Privada sin fines de lucro').length;
     const cuatroAnios = universidades.filter(u => u.ICLEVEL === '4-Year').length;
 
     const matriculas = universidades.map(u => u.TUITIONFEE_OUT).filter((v): v is number => v != null);
@@ -44,7 +43,7 @@ export const ResumenEstado = memo(function ResumenEstado({ universidades, estado
     const topCiudades = [...porCiudad.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 
     return {
-      total, publicas, sinFines, conFines, cuatroAnios,
+      total, publicas, privadas, cuatroAnios,
       matriculaMediana: mediana(matriculas), conMatricula: matriculas.length,
       satMediano: mediana(sats), conSat: sats.length,
       topCiudades,
@@ -72,7 +71,7 @@ export const ResumenEstado = memo(function ResumenEstado({ universidades, estado
           <Cifra
             valor={resumen.total ? `${Math.round((resumen.publicas / resumen.total) * 100)}%` : '—'}
             etiqueta="Son públicas"
-            nota={`${resumen.publicas} públicas, ${resumen.sinFines + resumen.conFines} privadas`}
+            nota={`${resumen.publicas} públicas, ${resumen.privadas} privadas`}
           />
           <Cifra
             valor={formatDinero(resumen.matriculaMediana) ?? 'Sin datos'}
@@ -85,13 +84,6 @@ export const ResumenEstado = memo(function ResumenEstado({ universidades, estado
             nota={`solo ${resumen.conSat} de ${resumen.total} lo informan`}
           />
         </div>
-
-        {resumen.conFines > 0 && (
-          <p className="nota-alerta">
-            {resumen.conFines} son privadas <strong>con fines de lucro</strong>,
-            un perfil con retorno salarial habitualmente más bajo. Conviene mirarlas aparte.
-          </p>
-        )}
 
         {resumen.topCiudades.length > 0 && (
           <div className="ciudades-top">
