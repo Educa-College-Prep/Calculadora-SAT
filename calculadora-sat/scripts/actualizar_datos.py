@@ -141,6 +141,10 @@ TEXTO = {'INSTNM', 'CITY', 'STABBR', 'NPCURL', 'CIPTITLE1', 'CIPTITLE2', 'CIPTIT
 # Filtro del Colab: solo 4 y 2 años, y al menos 10 de estas columnas con dato.
 NO_CUENTAN_PARA_FILTRO = {'MD_EARN_WNE_4YR', 'COUNT_WNE_4YR'}
 MINIMO_COLUMNAS_CON_DATO = 10
+# Las privadas con fines de lucro (CONTROL = 3) no entran: Educa no las recomienda a sus
+# alumnos (suelen costar más y rendir menos al graduarse). La web solo muestra públicas y
+# privadas sin fines de lucro, y así lo explica en el filtro "Tipo de universidad".
+CONTROL_CON_FINES_DE_LUCRO = 3
 
 MAPEOS = {
     'CONTROL': {1: 'Pública', 2: 'Privada sin fines de lucro', 3: 'Privada con fines de lucro'},
@@ -527,7 +531,7 @@ def main():
     universidades = []
     for fila in filas:
         u = {c: texto(fila[c]) if c in TEXTO else numero(fila[c]) for c in COLUMNAS + COLUMNAS_NUEVAS}
-        if u['ICLEVEL'] not in (1, 2):
+        if u['ICLEVEL'] not in (1, 2) or u['CONTROL'] == CONTROL_CON_FINES_DE_LUCRO:
             continue
         if sum(u[c] is not None for c in columnas_filtro) < MINIMO_COLUMNAS_CON_DATO:
             continue
