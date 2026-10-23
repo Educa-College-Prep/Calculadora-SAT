@@ -290,9 +290,12 @@ export function buscarUniversidades(indice: IndiceBusqueda, texto: string): Resu
     encontradas = encontradas.filter(r => r.omitidas === minimoOmitidas);
   }
 
-  // A igual puntaje, primero la más grande (suele ser el campus principal).
+  // A igual puntaje (p. ej. las 15 sedes de "Arizona State University"), primero las del
+  // ranking en su orden y después la de más alumnos de pregrado, que suele ser el campus
+  // principal. Las sedes chicas sin datos de alumnos quedan al final.
   encontradas.sort((a, b) =>
     b.puntaje - a.puntaje
+    || (a.entrada.uni.USNEWS_ORDEN ?? Infinity) - (b.entrada.uni.USNEWS_ORDEN ?? Infinity)
     || (b.entrada.uni.UGDS ?? -1) - (a.entrada.uni.UGDS ?? -1)
     || a.entrada.nombre.length - b.entrada.nombre.length
   );
