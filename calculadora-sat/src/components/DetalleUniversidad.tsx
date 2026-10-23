@@ -13,6 +13,9 @@ import { posicionUSNews, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../
 import { RangosSAT } from './RangosSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
+import { InfoUniversidad } from './InfoUniversidad';
+import { VideoUniversidad } from './VideoUniversidad';
+import { VIDEOS_UNIVERSIDADES } from '../data/videosUniversidades';
 import { SalarioPorCarrera } from './SalarioPorCarrera';
 import { useSalariosCarreras } from '../utils/salariosCarreras';
 import { BarraFlotante } from './BarraFlotante';
@@ -68,6 +71,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
   const ranking = posicionUSNews(uni);
   const similares = useMemo(() => similaresParaFicha(uni, universidades), [uni, universidades]);
   const salariosCarreras = useSalariosCarreras(uni.UNITID);
+  const video = uni.UNITID != null ? VIDEOS_UNIVERSIDADES[uni.UNITID] : undefined;
 
   // "Guardar" y "Comparar" flotan al subir por la ficha, pero no mientras se ven los de la
   // cabecera (estarían repetidos). "Volver" no flota: invitaba a irse en medio de la lectura.
@@ -129,6 +133,17 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
       </dl>
 
       <div className="ficha-grilla">
+
+        {/* Debajo de lo esencial: el campus tour de Educa (si hay) y la información de la
+            universidad, cada uno en media fila. Sin video, la información usa la fila entera. */}
+        {video && (
+          <Seccion titulo="Campus tour">
+            <VideoUniversidad video={video} />
+          </Seccion>
+        )}
+        <Seccion titulo="Sobre la universidad" ancha={!video}>
+          <InfoUniversidad uni={uni} />
+        </Seccion>
 
         {/* Admisiones y SAT */}
         {(uni.ADM_RATE || uni.ADMCON7 || uni.SAT_AVG || uni.SATVR25 || uni.SATMT25) && (
