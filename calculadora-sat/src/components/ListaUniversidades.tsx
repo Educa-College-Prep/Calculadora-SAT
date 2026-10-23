@@ -30,9 +30,7 @@ const OPCIONES_POR_PAGINA = [25, 50, 100, 200];
 
 /** Color de la etiqueta según el tipo de institución (mismo código en toda la web). */
 function claseControl(control: string | null): string {
-  if (control === 'Pública') return 'marca marca-publica';
-  if (control === 'Privada con fines de lucro') return 'marca marca-lucro';
-  return 'marca marca-privada';
+  return control === 'Pública' ? 'marca marca-publica' : 'marca marca-privada';
 }
 
 /**
@@ -105,7 +103,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
         {incompleta && (
           <span className="fila-faltantes">
             {faltantes!.map(motivo => (
-              <span key={motivo} className="marca marca-lucro">{motivo}</span>
+              <span key={motivo} className="marca marca-aviso">{motivo}</span>
             ))}
           </span>
         )}

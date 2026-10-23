@@ -53,9 +53,7 @@ function Seccion({ titulo, ayuda, ancha, children }: { titulo: ReactNode; ayuda?
 }
 
 const claseControl = (control: string | null) =>
-  control === 'Pública' ? 'marca marca-publica'
-    : control === 'Privada con fines de lucro' ? 'marca marca-lucro'
-    : 'marca marca-privada';
+  control === 'Pública' ? 'marca marca-publica' : 'marca marca-privada';
 
 export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista, universidades, onSeleccionar }: Props) {
   const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;

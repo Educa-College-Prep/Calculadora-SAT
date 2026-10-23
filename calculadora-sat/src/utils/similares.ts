@@ -36,9 +36,6 @@ const PENALIZA_RASGO_FALTANTE = 0.2;
 /** "Keiser University-Tampa" → "keiser university": para no sugerir sedes de la misma universidad. */
 const familia = (u: Universidad) => u.INSTNM.split(/\s*-\s*/)[0].trim().toLowerCase();
 
-const grupo = (u: Universidad) =>
-  u.CONTROL === 'Pública' ? 'publica' : u.CONTROL === 'Privada con fines de lucro' ? 'lucro' : 'privada';
-
 export interface Similar {
   uni: Universidad;
   /** Rasgos en los que se parece mucho (diferencia menor a media escala). */
@@ -55,8 +52,6 @@ export function universidadesSimilares(uni: Universidad, todas: Universidad[], c
   const candidatos: { uni: Universidad; distancia: number; parecidaEn: string[] }[] = [];
   for (const otra of todas) {
     if (otra === uni || otra.ICLEVEL !== uni.ICLEVEL || familia(otra) === familia(uni)) continue;
-    // Las con fines de lucro solo se sugieren para otras con fines de lucro.
-    if (grupo(otra) === 'lucro' && grupo(uni) !== 'lucro') continue;
 
     let suma = 0;
     let compartidos = 0;
@@ -73,7 +68,7 @@ export function universidadesSimilares(uni: Universidad, todas: Universidad[], c
     if (compartidos < minimoCompartido) continue;
 
     const distancia = Math.sqrt(suma / compartidos)
-      + (grupo(otra) !== grupo(uni) ? PENALIZA_OTRO_TIPO : 0)
+      + (otra.CONTROL !== uni.CONTROL ? PENALIZA_OTRO_TIPO : 0)
       + (disponibles - compartidos) * PENALIZA_RASGO_FALTANTE;
     candidatos.push({ uni: otra, distancia, parecidaEn });
   }

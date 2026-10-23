@@ -1,8 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { InfoTooltip } from './InfoTooltip';
 import { glosarioCampos } from '../utils/glosarioCampos';
-import { PRIVADAS } from '../utils/tipoControl';
 import type { TipoControl } from '../utils/tipoControl';
 import { NIVELES, AYUDA_NIVELES } from '../utils/nivelSAT';
 import type { Nivel } from '../utils/nivelSAT';
@@ -121,52 +120,34 @@ function Burbujas({ nombre, valor, opciones, onCambio }: {
 }
 
 /** Casilla cuadrada (selección múltiple), con el mismo estilo de la hoja de respuestas. */
-function Casilla({ marcada, parcial = false, texto, onCambio, deshabilitada = false }: {
+function Casilla({ marcada, texto, onCambio, deshabilitada = false }: {
   marcada: boolean;
-  parcial?: boolean;
   texto: ReactNode;
   onCambio: () => void;
   deshabilitada?: boolean;
 }) {
-  const ref = useRef<HTMLInputElement>(null);
-  // "indeterminate" solo se puede poner desde JS, no como atributo.
-  useEffect(() => { if (ref.current) ref.current.indeterminate = parcial; }, [parcial]);
   return (
     <label className={`burbuja burbuja-casilla${deshabilitada ? ' burbuja-deshabilitada' : ''}`}>
-      <input ref={ref} type="checkbox" checked={marcada} onChange={onCambio} disabled={deshabilitada} />
+      <input type="checkbox" checked={marcada} onChange={onCambio} disabled={deshabilitada} />
       <span>{texto}</span>
     </label>
   );
 }
 
 /**
- * Públicas y privadas se pueden combinar. Al marcar "Privadas" aparecen sus dos
- * subtipos (sin y con fines de lucro), que se pueden desmarcar por separado.
+ * Públicas y privadas se pueden combinar. Al marcar "Privadas" se aclara que son solo las
+ * sin fines de lucro: las con fines de lucro no están en la web.
  */
 function TiposUniversidad({ tipos, setTipos }: { tipos: TipoControl[]; setTipos: (v: TipoControl[]) => void }) {
   const tiene = (t: TipoControl) => tipos.includes(t);
   const alternar = (t: TipoControl) => setTipos(tiene(t) ? tipos.filter(x => x !== t) : [...tipos, t]);
-  const privadasMarcadas = PRIVADAS.filter(tiene).length;
-  const alternarPrivadas = () => setTipos(
-    privadasMarcadas === PRIVADAS.length
-      ? tipos.filter(t => !PRIVADAS.includes(t))
-      : [...tipos.filter(t => !PRIVADAS.includes(t)), ...PRIVADAS]
-  );
 
   return (
     <div className="burbujas">
       <Casilla marcada={tiene('publica')} texto="Públicas" onCambio={() => alternar('publica')} />
-      <Casilla
-        marcada={privadasMarcadas === PRIVADAS.length}
-        parcial={privadasMarcadas === 1}
-        texto="Privadas"
-        onCambio={alternarPrivadas}
-      />
-      {privadasMarcadas > 0 && (
-        <div className="casillas-anidadas">
-          <Casilla marcada={tiene('sin-fines')} texto="Sin fines de lucro" onCambio={() => alternar('sin-fines')} />
-          <Casilla marcada={tiene('con-fines')} texto="Con fines de lucro" onCambio={() => alternar('con-fines')} />
-        </div>
+      <Casilla marcada={tiene('privada')} texto="Privadas" onCambio={() => alternar('privada')} />
+      {tiene('privada') && (
+        <p className="ayuda">Solo consideramos privadas <strong>sin fines de lucro</strong>.</p>
       )}
       {tipos.length === 0 && <p className="ayuda">Sin marcar, se muestran todas.</p>}
     </div>
