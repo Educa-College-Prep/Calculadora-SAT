@@ -4,8 +4,8 @@ Actualiza los datos de la web con lo último que publicó el gobierno de EE.UU.
   - College Scorecard (Departamento de Educación): admisión, SAT, costos, precio neto,
     salarios... Las mismas columnas y filtros que antes se procesaban en el Colab, más
     UNITID y el costo de vida fuera del campus.
-  - IPEDS (NCES): postulantes/admitidos/matriculados por sexo (ADM) y becas de 1er año (SFA).
-    Se une por UNITID.
+  - IPEDS (NCES): postulantes/admitidos/matriculados por sexo (ADM), becas de 1er año (SFA) y
+    dirección, teléfono y enlaces de admisión y ayuda financiera (HD, el directorio). Se une por UNITID.
 
 De dónde se baja Scorecard:
   - Con la variable de entorno SCORECARD_API_KEY (así corre en GitHub): de su API oficial.
@@ -74,7 +74,10 @@ COLUMNAS = [
 # Nuevas: no cuentan para el filtro de abajo, así la lista de universidades no cambia por ellas.
 #   UNITID: ID oficial de la universidad (para unir fuentes; la web no lo muestra).
 #   *_OFF: viviendo fuera del campus; OTHEREXPENSE_FAM: viviendo con la familia.
-COLUMNAS_NUEVAS = ['UNITID', 'ROOMBOARD_OFF', 'OTHEREXPENSE_OFF', 'OTHEREXPENSE_FAM']
+#   INSTURL, LOCALE, HIGHDEG, C150_4/C150_L4: para la información de la universidad en la ficha
+#   (su web, si está en una ciudad o un pueblo, el título más alto que da y cuántos se gradúan).
+COLUMNAS_NUEVAS = ['UNITID', 'ROOMBOARD_OFF', 'OTHEREXPENSE_OFF', 'OTHEREXPENSE_FAM',
+                   'INSTURL', 'LOCALE', 'HIGHDEG', 'C150_4', 'C150_L4']
 # Nombre de cada columna en la API (sale del diccionario de Scorecard, columna
 # "developer-friendly name"). Verificado: dan los mismos valores que el CSV.
 CAMPOS_API = {
@@ -136,8 +139,13 @@ CAMPOS_API = {
     'ROOMBOARD_OFF': 'latest.cost.roomboard.offcampus',
     'OTHEREXPENSE_OFF': 'latest.cost.otherexpense.offcampus',
     'OTHEREXPENSE_FAM': 'latest.cost.otherexpense.withfamily',
+    'INSTURL': 'school.school_url',
+    'LOCALE': 'school.locale',
+    'HIGHDEG': 'school.degrees_awarded.highest',
+    'C150_4': 'latest.completion.completion_rate_4yr_150nt',
+    'C150_L4': 'latest.completion.completion_rate_less_than_4yr_150nt',
 }
-TEXTO = {'INSTNM', 'CITY', 'STABBR', 'NPCURL', 'CIPTITLE1', 'CIPTITLE2', 'CIPTITLE3', 'CIPTITLE4', 'CIPTITLE5', 'CIPTITLE6'}
+TEXTO = {'INSTNM', 'CITY', 'STABBR', 'NPCURL', 'INSTURL', 'CIPTITLE1', 'CIPTITLE2', 'CIPTITLE3', 'CIPTITLE4', 'CIPTITLE5', 'CIPTITLE6'}
 # Filtro del Colab: solo 4 y 2 años, y al menos 10 de estas columnas con dato.
 NO_CUENTAN_PARA_FILTRO = {'MD_EARN_WNE_4YR', 'COUNT_WNE_4YR'}
 MINIMO_COLUMNAS_CON_DATO = 10
@@ -151,6 +159,12 @@ MAPEOS = {
     'ADMCON7': {1: 'Requerido', 2: 'Recomendado', 3: 'Ni requerido ni recomendado', 4: 'No se sabe', 5: 'Considerado pero no requerido'},
     'OPENADMP': {1: 'Sí', 2: 'No', 3: 'No admite first-time'},
     'ICLEVEL': {1: '4-Year', 2: '2-Year', 3: 'Less-than-2-Year'},
+    # Clasificación del NCES según la población del lugar y la distancia a una ciudad.
+    'LOCALE': {11: 'Ciudad grande', 12: 'Ciudad mediana', 13: 'Ciudad pequeña',
+               21: 'Suburbio grande', 22: 'Suburbio mediano', 23: 'Suburbio pequeño',
+               31: 'Pueblo cercano a una ciudad', 32: 'Pueblo alejado', 33: 'Pueblo remoto',
+               41: 'Zona rural cercana a una ciudad', 42: 'Zona rural alejada', 43: 'Zona rural remota'},
+    'HIGHDEG': {0: 'Sin título', 1: 'Certificado', 2: 'Asociado', 3: 'Bachiller', 4: 'Posgrado'},
 }
 
 # --- Columnas de IPEDS --------------------------------------------------------------------
@@ -160,6 +174,10 @@ COLUMNAS_ADM = ['APPLCN', 'APPLCNM', 'APPLCNW', 'ADMSSN', 'ADMSSNM', 'ADMSSNW', 
 # AGRNT = cualquier beca (federal, estatal, local o de la universidad); IGRNT = de la universidad.
 # _P = % de alumnos de 1er año que la reciben; _A = monto promedio entre quienes la reciben.
 COLUMNAS_SFA = ['AGRNT_P', 'AGRNT_A', 'IGRNT_P', 'IGRNT_A']
+# Directorio (HD): dirección, teléfono (solo dígitos) y enlaces de admisión, solicitud y ayuda
+# financiera. Todo texto. La web de la universidad viene de Scorecard (INSTURL).
+COLUMNAS_HD = ['ADDR', 'ZIP', 'GENTELE', 'ADMINURL', 'APPLURL', 'FAIDURL']
+COLUMNAS_IPEDS = COLUMNAS_ADM + COLUMNAS_SFA + COLUMNAS_HD
 
 # Para fuentes_datos.json: qué año trae cada grupo de datos (según el diccionario de Scorecard).
 REPRESENTANTES = {
@@ -167,6 +185,7 @@ REPRESENTANTES = {
     'matricula_y_costo_de_vida': 'TUITIONFEE_OUT',
     'precio_neto': 'NPT4_PUB',
     'salario_4_anios': 'MD_EARN_WNE_4YR',
+    'graduacion': 'C150_4',
 }
 
 
@@ -380,8 +399,9 @@ CAMBIOS_A_CONTAR = {
 
 NOMBRES_GRUPOS = {
     'admision_y_sat': 'admisión y SAT', 'matricula_y_costo_de_vida': 'matrícula y costo de vida',
-    'precio_neto': 'precio neto', 'salario_4_anios': 'salario a 4 años',
+    'precio_neto': 'precio neto', 'salario_4_anios': 'salario a 4 años', 'graduacion': 'tasa de graduación',
     'admision_por_sexo': 'admisión por sexo', 'becas_primer_anio': 'becas de 1er año',
+    'directorio': 'dirección y contacto',
 }
 
 
@@ -478,9 +498,10 @@ def main():
         print(f'  Scorecard: archivo del {fecha_scorecard}')
     adm = ultimo_ipeds('ADM', str, hoy.year)
     sfa = ultimo_ipeds('SFA', lambda a: f'{(a - 1) % 100:02d}{a % 100:02d}', hoy.year)
+    hd = ultimo_ipeds('HD', str, hoy.year)
     # Sin acceso a IPEDS (mantenimiento o bloqueo) se conservan sus datos actuales: no tiene
     # sentido frenar una actualización de Scorecard por eso.
-    conservar_ipeds = adm is None or sfa is None
+    conservar_ipeds = adm is None or sfa is None or hd is None
     if conservar_ipeds:
         if not anteriores or not all(u.get('UNITID') for u in anteriores):
             sys.exit('No pude acceder a IPEDS (¿mantenimiento?) y no hay datos anteriores para conservar. Se reintentará.')
@@ -489,8 +510,9 @@ def main():
         'scorecard': archivo_scorecard,
         'ipeds_adm': archivos_antes.get('ipeds_adm') if conservar_ipeds else f'{adm[0]}.zip',
         'ipeds_sfa': archivos_antes.get('ipeds_sfa') if conservar_ipeds else f'{sfa[0]}.zip',
+        'ipeds_hd': archivos_antes.get('ipeds_hd') if conservar_ipeds else f'{hd[0]}.zip',
     }
-    print(f"  IPEDS: {archivos['ipeds_adm']}, {archivos['ipeds_sfa']}" + (' (los de antes: no respondió)' if conservar_ipeds else ''))
+    print(f"  IPEDS: {archivos['ipeds_adm']}, {archivos['ipeds_sfa']}, {archivos['ipeds_hd']}" + (' (los de antes: no respondió)' if conservar_ipeds else ''))
 
     # Con el CSV, el nombre del archivo ya dice si es nuevo (y se evita bajarlo). Con la API
     # hay que bajar los datos y compararlos (más abajo).
@@ -510,22 +532,26 @@ def main():
     print('Leyendo IPEDS...')
     if conservar_ipeds:
         anterior_por_id = {u['UNITID']: u for u in anteriores}
-        ipeds_de = lambda unitid: {c: anterior_por_id[unitid][c] for c in COLUMNAS_ADM + COLUMNAS_SFA
+        ipeds_de = lambda unitid: {c: anterior_por_id[unitid][c] for c in COLUMNAS_IPEDS
                                    if unitid in anterior_por_id and anterior_por_id[unitid].get(c) is not None}
         anios_ipeds = fuentes_antes.get('ipeds', {}).get('anios', {})
     else:
         por_id_adm = {r['UNITID']: r for r in leer_csv_de_zip(descargar(f'{IPEDS}{adm[0]}.zip', f'{adm[0]}.zip'))}
         por_id_sfa = {r['UNITID']: r for r in leer_csv_de_zip(descargar(f'{IPEDS}{sfa[0]}.zip', f'{sfa[0]}.zip'))}
+        por_id_hd = {r['UNITID']: r for r in leer_csv_de_zip(descargar(f'{IPEDS}{hd[0]}.zip', f'{hd[0]}.zip'))}
 
         def ipeds_de(unitid):
             datos = {}
-            for columnas, fuente in ((COLUMNAS_ADM, por_id_adm), (COLUMNAS_SFA, por_id_sfa)):
+            for columnas, fuente, convertir in ((COLUMNAS_ADM, por_id_adm, numero), (COLUMNAS_SFA, por_id_sfa, numero),
+                                                (COLUMNAS_HD, por_id_hd, texto)):
                 for c in columnas if str(unitid) in fuente else []:
-                    valor = numero(fuente[str(unitid)].get(c))
-                    if valor is not None:
-                        datos[c] = valor
+                    valor = convertir(fuente[str(unitid)].get(c))
+                    # IPEDS marca "no aplica" con -1 / -2 también en las columnas de texto.
+                    if valor is not None and valor not in ('-1', '-2'):
+                        datos[c] = valor.strip() if isinstance(valor, str) else valor
             return datos
-        anios_ipeds = {'admision_por_sexo': f'otoño {adm[1]}', 'becas_primer_anio': f'{sfa[1] - 1}-{sfa[1] % 100:02d}'}
+        anios_ipeds = {'admision_por_sexo': f'otoño {adm[1]}', 'becas_primer_anio': f'{sfa[1] - 1}-{sfa[1] % 100:02d}',
+                       'directorio': f'{hd[1]}-{(hd[1] + 1) % 100:02d}'}
 
     columnas_filtro = [c for c in COLUMNAS if c not in NO_CUENTAN_PARA_FILTRO]
     universidades = []
@@ -543,9 +569,9 @@ def main():
     # ¿Cambió algo de verdad? Las direcciones se comparan sin mayúsculas: el CSV y la API
     # escriben distinto algunas (…?NULL=NULL frente a …?null=null) y son la misma.
     def comparable(lista, columnas):
-        return [{c: u.get(c).lower() if c == 'NPCURL' and u.get(c) else u.get(c) for c in columnas} for u in lista]
+        return [{c: u.get(c).lower() if c in ('NPCURL', 'INSTURL') and u.get(c) else u.get(c) for c in columnas} for u in lista]
     cambio_scorecard = comparable(universidades, COLUMNAS + COLUMNAS_NUEVAS) != comparable(anteriores, COLUMNAS + COLUMNAS_NUEVAS)
-    cambio_ipeds = comparable(universidades, COLUMNAS_ADM + COLUMNAS_SFA) != comparable(anteriores, COLUMNAS_ADM + COLUMNAS_SFA)
+    cambio_ipeds = comparable(universidades, COLUMNAS_IPEDS) != comparable(anteriores, COLUMNAS_IPEDS)
     if not forzar and not cambio_scorecard and not cambio_ipeds:
         print('Sin datos nuevos: los datos que se bajaron son iguales a los de la web.')
         return
@@ -619,6 +645,8 @@ def main():
     print(f'Listo: {len(universidades)} universidades → {os.path.relpath(SALIDA, RAIZ)}')
     print(f'  con admisión por sexo: {con("APPLCN")} · con becas: {con("AGRNT_P")}'
           f' · costo de vida en el campus: {con("ROOMBOARD_ON")} · fuera del campus: {con("ROOMBOARD_OFF")}')
+    print(f'  con dirección: {con("ADDR")} · teléfono: {con("GENTELE")} · web: {con("INSTURL")}'
+          f' · tasa de graduación: {sum(u.get("C150_4") is not None or u.get("C150_L4") is not None for u in universidades)}')
     print(f'  años: {json.dumps(fuentes["scorecard"]["anios"], ensure_ascii=False)}')
     for aviso in avisos:
         print(f'  aviso: {aviso}')
