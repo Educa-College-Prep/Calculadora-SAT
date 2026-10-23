@@ -72,7 +72,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
             {nivel && <EtiquetaNivel nivel={nivel} />}
             {ranking && (
               <span className="marca marca-ranking" title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
-                U.S. News {textoPuesto(ranking)}
+                {textoPuesto(ranking)}
               </span>
             )}
             {uni.CONTROL && <span className={claseControl(uni.CONTROL)}>{uni.CONTROL}</span>}

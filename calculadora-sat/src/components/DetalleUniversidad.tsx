@@ -9,7 +9,7 @@ import { InfoTooltip } from './InfoTooltip';
 import { BotonGuardar } from './BotonGuardar';
 import { FotoUniversidad, CreditoFoto } from './FotoUniversidad';
 import { UniversidadesSimilares } from './UniversidadesSimilares';
-import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
+import { posicionUSNews, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
@@ -84,7 +84,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
             </div>
             {ranking && (
               <p className="ficha-ranking" title={`Fuente: ${FUENTE_USNEWS}`}>
-                <strong>{textoPuesto(ranking)}</strong> en {NOMBRE_LISTA[ranking.lista]} · U.S. News {EDICION_USNEWS}
+                <strong>#{ranking.puesto}</strong> en {NOMBRE_LISTA[ranking.lista]} · U.S. News {EDICION_USNEWS}
               </p>
             )}
             <h1 className="ficha-nombre">{uni.INSTNM}</h1>

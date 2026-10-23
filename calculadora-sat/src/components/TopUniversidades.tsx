@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { Universidad } from '../types';
-import { posicionUSNews, textoPuesto, EDICION_USNEWS, FUENTE_USNEWS } from '../data/rankingUSNews';
+import { posicionUSNews, textoPuesto, NOMBRE_LISTA, EDICION_USNEWS, FUENTE_USNEWS } from '../data/rankingUSNews';
 
 /** Lista numerada de las mejores entre tus resultados (la elige utils/topUniversidades). */
 export const TopUniversidades = memo(function TopUniversidades({ universidades, lugar, onSeleccionar }: {
@@ -40,8 +40,8 @@ export const TopUniversidades = memo(function TopUniversidades({ universidades, 
                       <span className="top-lugar">{uni.CITY}, {uni.STABBR}</span>
                     </span>
                     {ranking ? (
-                      <span className="marca marca-ranking top-motivo">
-                        U.S. News {textoPuesto(ranking)}{ranking.lista === 'liberal-arts' ? ' LAC' : ''}
+                      <span className="marca marca-ranking top-motivo" title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
+                        {textoPuesto(ranking)}
                       </span>
                     ) : (
                       <span className="marca top-motivo">SAT prom. {uni.SAT_AVG}</span>
