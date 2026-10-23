@@ -1222,19 +1222,19 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   .comparar-nombre { font-size: 14px; }
 }
 
-/* ---------- Segura / Objetivo / Alcance ----------
-   Familia del resaltador ("lo que encaja contigo"): más intenso cuanto más segura.
+/* ---------- Probabilidad alta / intermedia / baja ----------
+   Familia del resaltador ("lo que encaja contigo"): más intenso cuanto más alta la probabilidad.
    Las barras (3, 2, 1) dicen lo mismo sin depender del color. */
 .barras-nivel { flex: none; }
 .barra-llena { fill: currentColor; }
 .barra-vacia { fill: currentColor; opacity: 0.22; }
 
-/* Semáforo: verde = segura, ámbar = buena opción, rojo = difícil. Texto oscuro del mismo
+/* Semáforo: verde = alta probabilidad, ámbar = intermedia, rojo = baja. Texto oscuro del mismo
    tono para que se lea bien; las barras de señal lo dicen también sin depender del color. */
 .marca-nivel { font-weight: 700; }
-.marca-nivel-segura { color: #166534; background: #dcfce7; border-color: #86efac; }
-.marca-nivel-buena { color: #9a3412; background: #ffedd5; border-color: #fdba74; }
-.marca-nivel-dificil { color: #991b1b; background: #fee2e2; border-color: #fca5a5; }
+.marca-nivel-alta { color: #166534; background: #dcfce7; border-color: #86efac; }
+.marca-nivel-intermedia { color: #9a3412; background: #ffedd5; border-color: #fdba74; }
+.marca-nivel-baja { color: #991b1b; background: #fee2e2; border-color: #fca5a5; }
 
 .nivel-opcion-cuenta { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--grafito-suave); }
 .burbuja-deshabilitada { opacity: 0.55; cursor: not-allowed; }

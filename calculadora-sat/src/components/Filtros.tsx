@@ -41,7 +41,7 @@ interface Props {
   /** Nombres de los filtros activos; el botón "Limpiar" muestra cuántos son y cuáles. */
   filtrosActivos: readonly string[];
   onLimpiar: () => void;
-  /** Cuántos resultados hay de cada nivel (segura, buena opción, difícil); null sin puntaje. */
+  /** Cuántos resultados hay de cada nivel (alta probabilidad, intermedia, baja); null sin puntaje. */
   conteoNiveles: Record<Nivel, number> | null;
   /** Niveles marcados; vacío = todos. */
   nivelesSAT: Nivel[];
@@ -329,6 +329,22 @@ export function Filtros({
 
       </Seccion>
 
+      {/* POLÍTICA SAT: junto al puntaje, porque es lo siguiente que se pregunta quien da el SAT. */}
+      <Seccion titulo="¿Piden el SAT?" ayuda={glosarioCampos.ADMCON7}>
+        <Burbujas
+          nombre="politica-sat"
+          valor={exigirSAT}
+          onCambio={setExigirSAT}
+          opciones={[
+            { valor: 'todos', texto: 'Todos' },
+            { valor: 'requerido', texto: 'Obligatorio' },
+            { valor: 'opcional', texto: 'Opcional' },
+            { valor: 'no-considera', texto: 'No lo toman en cuenta' },
+          ]}
+        />
+        <p className="ayuda politica-explicacion">{EXPLICACION_POLITICA[exigirSAT]}</p>
+      </Seccion>
+
       {/* Se marcan una o varias; sin marcar, se muestran todas. Solo con puntaje,
           porque sin él no hay con qué comparar. */}
       <Seccion titulo="Tus posibilidades de entrar" ayuda={AYUDA_NIVELES}>
@@ -353,22 +369,7 @@ export function Filtros({
         </p>
       </Seccion>
 
-      {/* POLÍTICA Y TIPO */}
-      <Seccion titulo="¿Piden el SAT?" ayuda={glosarioCampos.ADMCON7}>
-        <Burbujas
-          nombre="politica-sat"
-          valor={exigirSAT}
-          onCambio={setExigirSAT}
-          opciones={[
-            { valor: 'todos', texto: 'Todos' },
-            { valor: 'requerido', texto: 'Obligatorio' },
-            { valor: 'opcional', texto: 'Opcional' },
-            { valor: 'no-considera', texto: 'No lo toman en cuenta' },
-          ]}
-        />
-        <p className="ayuda politica-explicacion">{EXPLICACION_POLITICA[exigirSAT]}</p>
-      </Seccion>
-
+      {/* TIPO */}
       <Seccion titulo="Tipo de universidad" ayuda={glosarioCampos.CONTROL}>
         <TiposUniversidad tipos={tiposUniversidad} setTipos={setTiposUniversidad} />
       </Seccion>

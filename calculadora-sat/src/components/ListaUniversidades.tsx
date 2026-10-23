@@ -22,7 +22,7 @@ interface Props {
   /** Claves (claveUniversidad) de las universidades en "Mi lista". */
   guardadas: Set<string>;
   onAlternarGuardada: (uni: Universidad) => void;
-  /** Tu puntaje SAT total (0 = sin puntaje): para la etiqueta Segura / Buena opción / Difícil. */
+  /** Tu puntaje SAT total (0 = sin puntaje): para la etiqueta Alta probabilidad / Intermedia / Baja. */
   puntajeSAT: number;
 }
 
@@ -90,7 +90,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
             <span className="dato-etiqueta">admisión</span>
           </span>
           {/* El rango (percentiles 25 y 75) y no el promedio: es con lo que se decide
-              si es Segura, Buena opción o Difícil, así la etiqueta y el número cuadran. */}
+              si es de probabilidad alta, intermedia o baja, así la etiqueta y el número cuadran. */}
           <span className="dato" title="El 50% de los admitidos sacó un puntaje dentro de este rango">
             <span className="dato-valor numero">{rango ? `${rango[0]}–${rango[1]}` : '—'}</span>
             <span className="dato-etiqueta">rango SAT</span>
