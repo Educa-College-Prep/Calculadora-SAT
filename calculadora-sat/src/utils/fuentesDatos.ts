@@ -13,7 +13,7 @@ export interface FuentesDatos {
     publicado: string;
     url: string;
     /** "otoño 2024", "2025-26"... Puede faltar alguno si el diccionario cambió de formato. */
-    anios: Partial<Record<'admision_y_sat' | 'matricula_y_costo_de_vida' | 'precio_neto' | 'salario_4_anios' | 'graduacion', string>>;
+    anios: Partial<Record<'admision_y_sat' | 'matricula_y_costo_de_vida' | 'precio_neto' | 'salario_4_anios' | 'graduacion' | 'salario_por_carrera', string>>;
   };
   ipeds: {
     nombre: string;
