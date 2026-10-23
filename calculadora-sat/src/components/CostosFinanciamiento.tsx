@@ -8,6 +8,7 @@ import { CostoVida } from './CostoVida';
 import { MiniBarChart } from './MiniBarChart';
 import { Pestanas } from './Pestanas';
 import { useFuentesDatos } from '../utils/fuentesDatos';
+import { urlCalculadora, NOTA_CALCULADORA } from '../utils/enlacesUniversidad';
 
 type PerfilId = 'in' | 'out' | 'us' | 'intl';
 
@@ -21,14 +22,6 @@ interface Perfil {
   netoPorIngreso: { label: string; valor: number }[];
   /** Aclaración de qué recibe este perfil. */
   nota: string | null;
-}
-
-/** NPCURL a veces viene sin protocolo ("www.uni.edu/..."); se antepone https:// y se descarta lo inválido. */
-function urlCalculadora(raw: string | null | undefined): string | null {
-  const v = (raw ?? '').trim();
-  if (!v) return null;
-  const url = /^https?:\/\//i.test(v) ? v : `https://${v}`;
-  try { return new URL(url).href; } catch { return null; }
 }
 
 function porIngreso(uni: Universidad, suf: 'PUB' | 'PRIV') {
@@ -178,11 +171,16 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
             </div>
           )}
 
+          {/* La misma calculadora que en "Sobre la universidad": para internacionales no da un
+              costo exacto, así que no se promete. */}
           {calculadora && (
-            <a className="boton boton-primario costos-enlace" href={calculadora} target="_blank" rel="noopener noreferrer">
-              Calcula tu costo exacto en su web
-              <span className="visualmente-oculto"> (se abre en otra pestaña)</span>
-            </a>
+            <>
+              <a className="boton boton-primario costos-enlace" href={calculadora} target="_blank" rel="noopener noreferrer">
+                Calcula cuánto te costaría
+                <span className="visualmente-oculto"> (se abre en otra pestaña)</span>
+              </a>
+              <p className="fuente">{NOTA_CALCULADORA}</p>
+            </>
           )}
         </div>
       </div>

@@ -38,4 +38,8 @@ export const glosarioCampos: Record<string, string> = {
 
   // Resultados económicos
   MD_EARN_4YR: 'Lo que gana al año el egresado típico, 4 años después de graduarse. Solo cuenta a quienes trabajan y ya no estudian.',
+
+  // Información de la universidad
+  LOCALE: 'Dónde está el campus según el gobierno de EE.UU. (NCES): ciudad, suburbio (zona residencial junto a una ciudad), pueblo o zona rural, y qué tan grande o alejado es.',
+  GRADUACION: 'De los alumnos que entraron por primera vez y a tiempo completo, cuántos se graduaron en hasta 1.5 veces el tiempo normal: 6 años en una carrera de 4, o 3 años en una de 2. No cuenta a quienes se cambiaron de universidad.',
 };
