@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
@@ -13,6 +13,8 @@ import { posicionUSNews, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../
 import { RangosSAT } from './RangosSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
+import { BarraFlotante } from './BarraFlotante';
+import { useALaVista, useSubiendo } from '../utils/useDesplazamiento';
 
 interface Props {
   uni: Universidad;
@@ -66,11 +68,28 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
   const ranking = posicionUSNews(uni);
   const similares = useMemo(() => similaresParaFicha(uni, universidades), [uni, universidades]);
 
+  // "Guardar" y "Comparar" flotan al subir por la ficha, pero no mientras se ven los de la
+  // cabecera (estarían repetidos). "Volver" no flota: invitaba a irse en medio de la lectura.
+  const accionesRef = useRef<HTMLDivElement>(null);
+  const accionesALaVista = useALaVista(accionesRef);
+  const subiendo = useSubiendo();
+  const acciones = (
+    <>
+      <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} conTexto />
+      {cantidadMiLista > 0 && (
+        <button type="button" className="boton" onClick={onVerMiLista}>
+          Comparar Mi lista ({cantidadMiLista})
+        </button>
+      )}
+    </>
+  );
+
   return (
     <main className="ficha">
       <button type="button" className="boton ficha-volver" onClick={onVolver}>
         ← Volver a resultados
       </button>
+      <BarraFlotante visible={subiendo && !accionesALaVista}>{acciones}</BarraFlotante>
 
       {/* Banner: la foto de fondo y el nombre encima; debajo, las acciones y el crédito. */}
       <header className="ficha-cabecera">
@@ -92,14 +111,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
           </div>
         </div>
         <div className="ficha-cabecera-pie">
-          <div className="ficha-acciones">
-            <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} conTexto />
-            {cantidadMiLista > 0 && (
-              <button type="button" className="boton" onClick={onVerMiLista}>
-                Comparar Mi lista ({cantidadMiLista})
-              </button>
-            )}
-          </div>
+          <div className="ficha-acciones" ref={accionesRef}>{acciones}</div>
           <CreditoFoto uni={uni} />
         </div>
       </header>
