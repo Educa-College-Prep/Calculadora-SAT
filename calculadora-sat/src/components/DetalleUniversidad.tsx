@@ -13,6 +13,8 @@ import { posicionUSNews, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../
 import { RangosSAT } from './RangosSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
+import { SalarioPorCarrera } from './SalarioPorCarrera';
+import { useSalariosCarreras } from '../utils/salariosCarreras';
 import { BarraFlotante } from './BarraFlotante';
 import { useALaVista, useSubiendo } from '../utils/useDesplazamiento';
 
@@ -55,9 +57,7 @@ function Seccion({ titulo, ayuda, ancha, children }: { titulo: ReactNode; ayuda?
 }
 
 const claseControl = (control: string | null) =>
-  control === 'Pública' ? 'marca marca-publica'
-    : control === 'Privada con fines de lucro' ? 'marca marca-lucro'
-    : 'marca marca-privada';
+  control === 'Pública' ? 'marca marca-publica' : 'marca marca-privada';
 
 export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista, universidades, onSeleccionar }: Props) {
   const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;
@@ -67,6 +67,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
   const aprox = costoVida?.estimado ? '~' : '';
   const ranking = posicionUSNews(uni);
   const similares = useMemo(() => similaresParaFicha(uni, universidades), [uni, universidades]);
+  const salariosCarreras = useSalariosCarreras(uni.UNITID);
 
   // "Guardar" y "Comparar" flotan al subir por la ficha, pero no mientras se ven los de la
   // cabecera (estarían repetidos). "Volver" no flota: invitaba a irse en medio de la lectura.
@@ -165,6 +166,14 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
         {(uni.TUITIONFEE_OUT != null || uni.TUITIONFEE_IN != null || uni.COSTT4_A != null || uni.NPT4_PUB != null || uni.NPT4_PRIV != null) && (
           <Seccion titulo="Costos y financiamiento" ancha>
             <CostosFinanciamiento uni={uni} />
+          </Seccion>
+        )}
+
+        {/* Salario por carrera: solo si College Scorecard publica alguno (~1,800 universidades).
+            La key reinicia la búsqueda al pasar a otra universidad. */}
+        {salariosCarreras && salariosCarreras.length > 0 && (
+          <Seccion titulo="Salario por carrera" ancha>
+            <SalarioPorCarrera key={uni.UNITID} uni={uni} carreras={salariosCarreras} />
           </Seccion>
         )}
 

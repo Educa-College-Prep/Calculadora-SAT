@@ -4,7 +4,7 @@
  */
 export const glosarioCampos: Record<string, string> = {
   // Identificación
-  CONTROL: 'Tipo de propiedad: Pública (financiada por el estado), Privada sin fines de lucro, o Privada con fines de lucro.',
+  CONTROL: 'Tipo de propiedad: Pública (financiada por el estado) o Privada sin fines de lucro. Las privadas con fines de lucro no se incluyen en esta web.',
   ICLEVEL: 'Tipo de grado del programa principal: Grado Bachiller (programa de 4 años) o Grado Associate (programa de 2 años).',
 
   // Estudiantes

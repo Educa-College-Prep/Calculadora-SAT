@@ -112,4 +112,23 @@ export interface Universidad {
   GT_THRESHOLD_5YR?: number | null;
   COUNT_WNE_1YR?: number | null;
   COUNT_WNE_5YR?: number | null;
+
+  // Información y contacto (para la ficha).
+  /** Web de la universidad (Scorecard), sin "https://": "www.northwestern.edu/". */
+  INSTURL?: string | null;
+  /** Entorno según el NCES: "Ciudad grande", "Suburbio mediano", "Pueblo remoto"... */
+  LOCALE?: string | null;
+  /** Título más alto que otorga: "Certificado", "Asociado", "Bachiller" o "Posgrado". */
+  HIGHDEG?: string | null;
+  /** Tasa de graduación (fracción 0–1) en 150% del tiempo: 6 años en las de 4 años (C150_4)
+   *  y 3 en las de 2 (C150_L4). Solo alumnos de primer ingreso a tiempo completo. */
+  C150_4?: number | null;
+  C150_L4?: number | null;
+  /** Directorio de IPEDS (HD): calle, código postal, teléfono (solo dígitos) y enlaces. */
+  ADDR?: string | null;
+  ZIP?: string | null;
+  GENTELE?: string | null;
+  ADMINURL?: string | null;
+  APPLURL?: string | null;
+  FAIDURL?: string | null;
 }
