@@ -1,7 +1,7 @@
 name: Actualizar datos
 
 # Cada lunes revisa si College Scorecard o IPEDS publicaron datos nuevos. Si los hay, abre
-# un PR con universidades.json y fuentes_datos.json actualizados; al mergearlo, se publica.
+# un PR con universidades.json, salarios_carreras.json y fuentes_datos.json actualizados; al mergearlo, se publica.
 # Si no hay nada nuevo, termina sin hacer cambios.
 on:
   schedule:
@@ -37,6 +37,7 @@ jobs:
           delete-branch: true
           add-paths: |
             calculadora-sat/public/universidades.json
+            calculadora-sat/public/salarios_carreras.json
             calculadora-sat/public/fuentes_datos.json
           commit-message: 'datos: actualización automática de College Scorecard e IPEDS'
           title: 'Datos nuevos de College Scorecard / IPEDS'

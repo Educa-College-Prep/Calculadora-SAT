@@ -9,7 +9,8 @@
       "matricula_y_costo_de_vida": "2025-26",
       "precio_neto": "2024-25",
       "salario_4_anios": "medido en 2022 y 2023",
-      "graduacion": "2019-20"
+      "graduacion": "2019-20",
+      "salario_por_carrera": "medido en 2022 y 2023"
     }
   },
   "ipeds": {
@@ -24,6 +25,7 @@
   },
   "archivos": {
     "scorecard": "Most-Recent-Cohorts-Institution_10152026.zip",
+    "scorecard_carreras": "Most-Recent-Cohorts-Field-of-Study_10152026.zip",
     "ipeds_adm": "ADM2024.zip",
     "ipeds_sfa": "SFA2324.zip",
     "ipeds_hd": "HD2025.zip"

@@ -14,9 +14,13 @@ De dónde se baja Scorecard:
   - Sin clave (en una computadora normal): el archivo CSV de su página de datos, como el Colab.
   Las dos dan los mismos valores.
 
+Además, de Scorecard, el archivo por carrera ("Field of Study"): cuánto gana a 1 y 4 años quien
+se gradúa de cada carrera en cada universidad.
+
 Escribe:
-  public/universidades.json   la base de la web (Scorecard + IPEDS en un solo archivo).
-  public/fuentes_datos.json   de dónde sale cada dato y de qué año (lo muestra la web).
+  public/universidades.json      la base de la web (Scorecard + IPEDS en un solo archivo).
+  public/salarios_carreras.json  salario por carrera (bachiller) de cada universidad; lo carga la ficha.
+  public/fuentes_datos.json      de dónde sale cada dato y de qué año (lo muestra la web).
 
 Uso (desde calculadora-sat/):
   python3 scripts/actualizar_datos.py            # no hace nada si no hay datos nuevos
@@ -44,6 +48,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(RAIZ, 'scripts', '.cache')
 SALIDA = os.path.join(RAIZ, 'public', 'universidades.json')
 FUENTES = os.path.join(RAIZ, 'public', 'fuentes_datos.json')
+SALIDA_CARRERAS = os.path.join(RAIZ, 'public', 'salarios_carreras.json')
 # Descripción del PR que abre el robot (la lee el workflow; no se sube al repo).
 RESUMEN = os.path.join(CACHE, 'resumen_pr.md')
 
@@ -167,6 +172,19 @@ MAPEOS = {
     'HIGHDEG': {0: 'Sin título', 1: 'Certificado', 2: 'Asociado', 3: 'Bachiller', 4: 'Posgrado'},
 }
 
+# --- Salario por carrera (Scorecard, "Field of Study") ------------------------------------
+# Solo bachiller (CREDLEV 3): es el título que buscan quienes usan esta web.
+NIVEL_BACHILLER = 3
+PROGRAMAS_API = 'latest.programs.cip_4_digit'
+# Columna del CSV → campo dentro de cada programa en la API (diccionario, hoja FieldOfStudy).
+CAMPOS_CARRERA_API = {
+    'CIPCODE': 'code',
+    'CIPDESC': 'title',
+    'IPEDSCOUNT2': 'counts.ipeds_awards2',                                   # graduados del último año
+    'EARN_MDN_1YR': 'earnings.1_yr.overall_median_earnings',                 # salario mediano a 1 año
+    'EARN_MDN_4YR': 'earnings.4_yr.overall_median_earnings',                 # y a 4 años de graduarse
+}
+
 # --- Columnas de IPEDS --------------------------------------------------------------------
 # "Otro género / no informado" no se exporta: IPEDS lo deja vacío en muchas universidades
 # (es opcional), así que la web lo calcula como Total − Hombres − Mujeres.
@@ -187,6 +205,8 @@ REPRESENTANTES = {
     'salario_4_anios': 'MD_EARN_WNE_4YR',
     'graduacion': 'C150_4',
 }
+# Lo mismo para el archivo por carrera (hoja FieldOfStudy_Cohort_Map, columna del archivo más reciente).
+REPRESENTANTES_CARRERAS = {'salario_por_carrera': 'EARN_MDN_4YR'}
 
 
 class DescargaFallida(Exception):
@@ -275,12 +295,11 @@ def copia_fresca_en_archive(url, intentos=4):
     return None
 
 
-def scorecard_por_api():
-    """Todas las universidades desde la API, con los nombres de columna del CSV."""
-    filas, pagina, total = [], 0, None
+def paginas_api(parametros):
+    """Recorre todas las páginas de una consulta a la API (de a 100) y entrega sus resultados."""
+    pagina, total = 0, None
     while total is None or pagina * 100 < total:
-        consulta = urllib.parse.urlencode({'api_key': CLAVE_API, 'fields': ','.join(CAMPOS_API.values()),
-                                           'per_page': 100, 'page': pagina})
+        consulta = urllib.parse.urlencode({'api_key': CLAVE_API, **parametros, 'per_page': 100, 'page': pagina})
         for intento in range(5):
             try:
                 with urllib.request.urlopen(f'{API_SCORECARD}?{consulta}', timeout=120) as r:
@@ -293,10 +312,71 @@ def scorecard_por_api():
                 sys.exit(f'La API de Scorecard respondió {e.code} en la página {pagina}. Si es 403,'
                          ' revisa que la clave SCORECARD_API_KEY sea correcta.')
         total = datos['metadata']['total']
-        filas += [{columna: r.get(campo) for columna, campo in CAMPOS_API.items()} for r in datos['results']]
+        yield from datos['results']
         pagina += 1
-    print(f'  {len(filas)} universidades desde la API ({pagina} consultas)')
+
+
+def scorecard_por_api():
+    """Todas las universidades desde la API, con los nombres de columna del CSV."""
+    filas = [{columna: r.get(campo) for columna, campo in CAMPOS_API.items()}
+             for r in paginas_api({'fields': ','.join(CAMPOS_API.values())})]
+    print(f'  {len(filas)} universidades desde la API')
     return filas
+
+
+def valor_anidado(objeto, ruta):
+    """'earnings.1_yr.overall_median_earnings' dentro de un programa de la API (vienen anidados)."""
+    for clave in ruta.split('.'):
+        objeto = objeto.get(clave) if isinstance(objeto, dict) else None
+    return objeto
+
+
+def carreras_por_api():
+    """Carreras de bachiller de cada universidad desde la API, con los nombres de columna del CSV.
+    Al filtrar por el nivel, la API devuelve solo esos programas; sin el filtro trae los ~300 de
+    todos los niveles de cada universidad (cientos de MB)."""
+    campos = ['id'] + [f'{PROGRAMAS_API}.{c}' for c in CAMPOS_CARRERA_API.values()]
+    filas = []
+    for r in paginas_api({'fields': ','.join(campos), f'{PROGRAMAS_API}.credential.level': NIVEL_BACHILLER}):
+        for programa in r.get(PROGRAMAS_API) or []:
+            filas.append({'UNITID': r['id'], **{c: valor_anidado(programa, ruta) for c, ruta in CAMPOS_CARRERA_API.items()}})
+    print(f'  {len(filas)} carreras de bachiller desde la API')
+    return filas
+
+
+def carreras_por_csv(ruta_zip):
+    """Carreras de bachiller del archivo por carrera. El CSV pesa ~200 MB: se lee de a una fila
+    y solo se guardan las de bachiller, con las columnas que se usan."""
+    filas = []
+    with zipfile.ZipFile(ruta_zip) as z:
+        nombre = next(n for n in z.namelist() if n.lower().endswith('.csv') and not n.startswith('__MACOSX'))
+        with z.open(nombre) as f:
+            for fila in csv.DictReader(io.TextIOWrapper(f, 'utf-8-sig')):
+                if numero(fila['CREDLEV']) == NIVEL_BACHILLER:
+                    filas.append({c: fila[c] for c in ['UNITID', *CAMPOS_CARRERA_API]})
+    return filas
+
+
+def salarios_por_carrera(filas, unitids):
+    """Lo que se escribe en salarios_carreras.json:
+      carreras:      {código CIP: nombre (en inglés, tal como lo publica Scorecard)}
+      universidades: {UNITID: [[código CIP, salario a 1 año, a 4 años, graduados], ...]}
+    Solo las carreras con algún salario publicado (Scorecard los oculta cuando hay pocos
+    graduados) y de las universidades de la web. En cada universidad, de más a menos graduados.
+    El nombre de la carrera se guarda una sola vez: se repite en miles de universidades."""
+    carreras, por_uni = {}, {}
+    for f in filas:
+        unitid = numero(f['UNITID'])
+        a_1, a_4 = numero(f['EARN_MDN_1YR']), numero(f['EARN_MDN_4YR'])
+        if unitid not in unitids or (a_1 is None and a_4 is None):
+            continue
+        cip = str(f['CIPCODE']).zfill(4)
+        carreras.setdefault(cip, texto(f['CIPDESC']).rstrip('.'))
+        por_uni.setdefault(unitid, []).append([cip, a_1, a_4, numero(f['IPEDSCOUNT2'])])
+    for lista in por_uni.values():
+        lista.sort(key=lambda c: (-(c[3] or 0), c[0]))
+    return {'carreras': dict(sorted(carreras.items())),
+            'universidades': {str(u): por_uni[u] for u in sorted(por_uni)}}
 
 
 def ultimo_ipeds(prefijo, nombre_anio, desde):
@@ -322,8 +402,10 @@ def leer_csv_de_zip(ruta_zip):
     return list(csv.DictReader(io.StringIO(texto)))
 
 
-def mapa_de_anios(ruta_xlsx):
-    """Hoja 'Most_Recent_Inst_Cohort_Map' del diccionario: variable → de qué año es."""
+def mapa_de_anios(ruta_xlsx, nombre_hoja='Most_Recent_Inst_Cohort_Map', columna=None):
+    """Una hoja del diccionario: variable → de qué año es. Por defecto, la de las universidades
+    (el año está en la 2.ª columna); con `columna`, el de la columna con ese título (la hoja por
+    carrera tiene una columna por archivo publicado)."""
     ns = {'m': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
           'r': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'}
     with zipfile.ZipFile(ruta_xlsx) as z:
@@ -331,21 +413,26 @@ def mapa_de_anios(ruta_xlsx):
                        for si in ET.fromstring(z.read('xl/sharedStrings.xml'))]
         libro = ET.fromstring(z.read('xl/workbook.xml'))
         rels = ET.fromstring(z.read('xl/_rels/workbook.xml.rels'))
-        hoja = next((h for h in libro.iter(f'{{{ns["m"]}}}sheet') if h.get('name') == 'Most_Recent_Inst_Cohort_Map'), None)
+        hoja = next((h for h in libro.iter(f'{{{ns["m"]}}}sheet') if h.get('name') == nombre_hoja), None)
         if hoja is None:
             return {}
         rid = hoja.get(f'{{{ns["r"]}}}id')
         destino = next(r.get('Target') for r in rels if r.get('Id') == rid)
         xml = ET.fromstring(z.read('xl/' + destino.lstrip('/').removeprefix('xl/')))
     filas = {}
+    letra_valor = 'B'
     for fila in xml.iter(f'{{{ns["m"]}}}row'):
-        valores = []
+        # Por letra de columna ("K"): las celdas vacías no vienen, así que no sirve contar posiciones.
+        valores = {}
         for celda in fila.iter(f'{{{ns["m"]}}}c'):
             v = celda.find('m:v', ns)
             texto = (v.text if v is not None else '') or ''
-            valores.append(compartidos[int(texto)] if celda.get('t') == 's' and texto else texto)
-        if len(valores) >= 2 and valores[0]:
-            filas[valores[0]] = valores[1]
+            valores[re.sub(r'\d', '', celda.get('r', ''))] = compartidos[int(texto)] if celda.get('t') == 's' and texto else texto
+        if columna and not filas and columna in valores.values():
+            letra_valor = next(letra for letra, valor in valores.items() if valor == columna)
+            continue
+        if valores.get('A') and valores.get(letra_valor):
+            filas[valores['A']] = valores[letra_valor]
     return filas
 
 
@@ -401,7 +488,7 @@ NOMBRES_GRUPOS = {
     'admision_y_sat': 'admisión y SAT', 'matricula_y_costo_de_vida': 'matrícula y costo de vida',
     'precio_neto': 'precio neto', 'salario_4_anios': 'salario a 4 años', 'graduacion': 'tasa de graduación',
     'admision_por_sexo': 'admisión por sexo', 'becas_primer_anio': 'becas de 1er año',
-    'directorio': 'dirección y contacto',
+    'directorio': 'dirección y contacto', 'salario_por_carrera': 'salario por carrera',
 }
 
 
@@ -413,7 +500,7 @@ def fecha_de(scorecard):
     return f"publicado el {fecha_corta(scorecard.get('publicado'))}"
 
 
-def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes, avisos=()):
+def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes, salarios, avisos=()):
     """Markdown corto para la descripción del PR: qué se publicó y cuánto cambió."""
     # Por UNITID; si los datos anteriores no lo traían (los del Colab), por nombre y lugar.
     por_id = bool(anteriores) and all(u.get('UNITID') for u in anteriores)
@@ -455,6 +542,12 @@ def resumen_de_cambios(anteriores, nuevas, fuentes_antes, fuentes, avisos=()):
         lineas.append(f'- Nuevas: {lista(agregadas)}')
     if quitadas:
         lineas.append(f'- Ya no están: {lista(quitadas)}')
+    lineas += [
+        '',
+        '### Salario por carrera',
+        f"- **{len(salarios['universidades']):,}** universidades con salario publicado en alguna carrera de bachiller"
+        f" ({sum(map(len, salarios['universidades'].values())):,} carreras en total, {len(salarios['carreras'])} distintas)",
+    ]
     lineas += ['', '### Cuántas cambiaron', '| Dato | Universidades con cambios |', '|---|---:|']
     for columna, nombre in CAMBIOS_A_CONTAR.items():
         if not any(antes[k].get(columna) is not None for k in comunes):
@@ -483,18 +576,21 @@ def main():
     forzar = '--forzar' in sys.argv
     hoy = datetime.date.today()
     anteriores = json.load(open(SALIDA, encoding='utf-8')) if os.path.exists(SALIDA) else []
+    salarios_antes = json.load(open(SALIDA_CARRERAS, encoding='utf-8')) if os.path.exists(SALIDA_CARRERAS) else None
     fuentes_antes = json.load(open(FUENTES, encoding='utf-8')) if os.path.exists(FUENTES) else {}
     archivos_antes = fuentes_antes.get('archivos', {})
     avisos = []
 
     print('Buscando lo último publicado...')
     if CLAVE_API:
-        url_scorecard = fecha_scorecard = None
-        archivo_scorecard = 'api'
+        url_scorecard = url_carreras = fecha_scorecard = None
+        archivo_scorecard = archivo_carreras = 'api'
         print('  Scorecard: desde su API')
     else:
         url_scorecard, fecha_scorecard = ultimo_scorecard()
-        archivo_scorecard = os.path.basename(url_scorecard)
+        # El archivo por carrera se publica junto con el de universidades, con la misma fecha.
+        url_carreras = url_scorecard.replace('Most-Recent-Cohorts-Institution_', 'Most-Recent-Cohorts-Field-of-Study_')
+        archivo_scorecard, archivo_carreras = os.path.basename(url_scorecard), os.path.basename(url_carreras)
         print(f'  Scorecard: archivo del {fecha_scorecard}')
     adm = ultimo_ipeds('ADM', str, hoy.year)
     sfa = ultimo_ipeds('SFA', lambda a: f'{(a - 1) % 100:02d}{a % 100:02d}', hoy.year)
@@ -508,6 +604,7 @@ def main():
         avisos.append('No se pudo acceder a IPEDS (mantenimiento o bloqueo): se conservaron sus datos anteriores.')
     archivos = {
         'scorecard': archivo_scorecard,
+        'scorecard_carreras': archivo_carreras,
         'ipeds_adm': archivos_antes.get('ipeds_adm') if conservar_ipeds else f'{adm[0]}.zip',
         'ipeds_sfa': archivos_antes.get('ipeds_sfa') if conservar_ipeds else f'{sfa[0]}.zip',
         'ipeds_hd': archivos_antes.get('ipeds_hd') if conservar_ipeds else f'{hd[0]}.zip',
@@ -528,6 +625,9 @@ def main():
         faltan = [c for c in COLUMNAS + COLUMNAS_NUEVAS if c not in filas[0]]
         if faltan:
             sys.exit(f'Scorecard ya no trae estas columnas: {faltan}. Revisa su diccionario de datos.')
+
+    print('Leyendo salario por carrera...')
+    filas_carreras = carreras_por_api() if CLAVE_API else carreras_por_csv(descargar(url_carreras, archivo_carreras))
 
     print('Leyendo IPEDS...')
     if conservar_ipeds:
@@ -570,7 +670,9 @@ def main():
     # escriben distinto algunas (…?NULL=NULL frente a …?null=null) y son la misma.
     def comparable(lista, columnas):
         return [{c: u.get(c).lower() if c in ('NPCURL', 'INSTURL') and u.get(c) else u.get(c) for c in columnas} for u in lista]
-    cambio_scorecard = comparable(universidades, COLUMNAS + COLUMNAS_NUEVAS) != comparable(anteriores, COLUMNAS + COLUMNAS_NUEVAS)
+    salarios = salarios_por_carrera(filas_carreras, {u['UNITID'] for u in universidades})
+    cambio_scorecard = (comparable(universidades, COLUMNAS + COLUMNAS_NUEVAS) != comparable(anteriores, COLUMNAS + COLUMNAS_NUEVAS)
+                        or salarios != salarios_antes)
     cambio_ipeds = comparable(universidades, COLUMNAS_IPEDS) != comparable(anteriores, COLUMNAS_IPEDS)
     if not forzar and not cambio_scorecard and not cambio_ipeds:
         print('Sin datos nuevos: los datos que se bajaron son iguales a los de la web.')
@@ -605,8 +707,10 @@ def main():
                 with open(ruta, 'wb') as f:
                     f.write(contenido)
         anios = mapa_de_anios(ruta) if ruta else {}
+        anios_carreras = mapa_de_anios(ruta, 'FieldOfStudy_Cohort_Map', 'FieldOfStudyMostRecent datafile') if ruta else {}
         anios_scorecard = {grupo: en_espanol(anios[var]) for grupo, var in REPRESENTANTES.items() if anios.get(var)}
-        if len(anios_scorecard) < len(REPRESENTANTES):
+        anios_scorecard |= {grupo: en_espanol(anios_carreras[var]) for grupo, var in REPRESENTANTES_CARRERAS.items() if anios_carreras.get(var)}
+        if len(anios_scorecard) < len(REPRESENTANTES) + len(REPRESENTANTES_CARRERAS):
             return esperar_a_la_proxima('no se pudo leer de qué año es cada dato (diccionario de Scorecard):'
                                         ' su sitio bloquea a GitHub y archive.org no respondió.')
 
@@ -630,12 +734,14 @@ def main():
     os.makedirs(os.path.dirname(SALIDA), exist_ok=True)
     with open(SALIDA, 'w', encoding='utf-8') as f:
         json.dump(universidades, f, ensure_ascii=False, separators=(',', ':'))
+    with open(SALIDA_CARRERAS, 'w', encoding='utf-8') as f:
+        json.dump(salarios, f, ensure_ascii=False, separators=(',', ':'))
     with open(FUENTES, 'w', encoding='utf-8') as f:
         json.dump(fuentes, f, ensure_ascii=False, indent=2)
         f.write('\n')
     os.makedirs(CACHE, exist_ok=True)
     with open(RESUMEN, 'w', encoding='utf-8') as f:
-        f.write(resumen_de_cambios(anteriores, universidades, fuentes_antes, fuentes, avisos))
+        f.write(resumen_de_cambios(anteriores, universidades, fuentes_antes, fuentes, salarios, avisos))
     # Para el workflow: el paso que abre el PR solo corre si esto dice true.
     if os.environ.get('GITHUB_OUTPUT'):
         with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as f:
@@ -647,6 +753,8 @@ def main():
           f' · costo de vida en el campus: {con("ROOMBOARD_ON")} · fuera del campus: {con("ROOMBOARD_OFF")}')
     print(f'  con dirección: {con("ADDR")} · teléfono: {con("GENTELE")} · web: {con("INSTURL")}'
           f' · tasa de graduación: {sum(u.get("C150_4") is not None or u.get("C150_L4") is not None for u in universidades)}')
+    print(f'  salario por carrera: {len(salarios["universidades"])} universidades, {len(salarios["carreras"])} carreras'
+          f' → {os.path.relpath(SALIDA_CARRERAS, RAIZ)}')
     print(f'  años: {json.dumps(fuentes["scorecard"]["anios"], ensure_ascii=False)}')
     for aviso in avisos:
         print(f'  aviso: {aviso}')
