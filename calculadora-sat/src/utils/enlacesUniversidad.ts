@@ -31,8 +31,8 @@ function esCalculadora(url: string, npcurl: string | null | undefined): boolean 
 
 /**
  * Página de ayuda financiera de la universidad (becas, requisitos, cómo postular), o null si no
- * hay o si el enlace es en realidad una calculadora: en ese caso basta con "Calcula cuánto te
- * costaría".
+ * hay o si el enlace es en realidad una calculadora: para eso ya está "Calcula cuánto te costaría"
+ * en "Costos y financiamiento".
  */
 export function urlAyudaFinanciera(uni: Universidad): string | null {
   return uni.FAIDURL && !esCalculadora(uni.FAIDURL, uni.NPCURL) ? uni.FAIDURL : null;
