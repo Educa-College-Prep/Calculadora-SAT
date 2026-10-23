@@ -14,7 +14,7 @@ import { RangosSAT } from './RangosSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
 import { InfoUniversidad } from './InfoUniversidad';
-import { VideoUniversidad } from './VideoUniversidad';
+import { TestimoniosUniversidad, VideoUniversidad } from './VideoUniversidad';
 import { VIDEOS_UNIVERSIDADES } from '../data/videosUniversidades';
 import { SalarioPorCarrera } from './SalarioPorCarrera';
 import { useSalariosCarreras } from '../utils/salariosCarreras';
@@ -71,7 +71,9 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
   const ranking = posicionUSNews(uni);
   const similares = useMemo(() => similaresParaFicha(uni, universidades), [uni, universidades]);
   const salariosCarreras = useSalariosCarreras(uni.UNITID);
-  const video = uni.UNITID != null ? VIDEOS_UNIVERSIDADES[uni.UNITID] : undefined;
+  const videos = uni.UNITID != null ? VIDEOS_UNIVERSIDADES[uni.UNITID] : undefined;
+  const video = videos?.tour;
+  const testimonios = videos?.testimonios ?? [];
 
   // "Guardar" y "Comparar" flotan al subir por la ficha, pero no mientras se ven los de la
   // cabecera (estarían repetidos). "Volver" no flota: invitaba a irse en medio de la lectura.
@@ -143,6 +145,13 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
             {video && <VideoUniversidad video={video} />}
           </div>
         </Seccion>
+
+        {/* Testimonios de estudiantes de Educa en esta universidad, con la fila entera. */}
+        {testimonios.length > 0 && (
+          <Seccion titulo="Testimonios de estudiantes" ancha>
+            <TestimoniosUniversidad videos={testimonios} />
+          </Seccion>
+        )}
 
         {/* Admisiones y SAT */}
         {(uni.ADM_RATE || uni.ADMCON7 || uni.SAT_AVG || uni.SATVR25 || uni.SATMT25) && (
