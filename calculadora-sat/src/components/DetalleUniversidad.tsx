@@ -4,6 +4,8 @@ import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { calcularCostoVida } from '../utils/costos';
+import { etiquetaSAT, etiquetaSelectividad } from '../utils/etiquetasNivel';
+import type { EtiquetaNivel } from '../utils/etiquetasNivel';
 import { similaresParaFicha } from '../utils/similares';
 import { InfoTooltip } from './InfoTooltip';
 import { BotonGuardar } from './BotonGuardar';
@@ -33,8 +35,11 @@ interface Props {
   onSeleccionar: (uni: Universidad) => void;
 }
 
-/** Casilla de "Lo esencial": un dato clave con su explicación a un toque. */
-function Esencial({ etiqueta, valor, ayuda }: { etiqueta: string; valor: string | null; ayuda: string }) {
+/**
+ * Casilla de "Lo esencial": un dato clave con su explicación a un toque y, en admisión y SAT,
+ * una etiqueta de nivel debajo del número ("Élite", "Top 1%"). Sin etiqueta no se dibuja nada.
+ */
+function Esencial({ etiqueta, valor, ayuda, nivel }: { etiqueta: string; valor: string | null; ayuda: string; nivel?: EtiquetaNivel | null }) {
   return (
     <div className="esencial">
       <dt className="esencial-etiqueta">
@@ -42,6 +47,14 @@ function Esencial({ etiqueta, valor, ayuda }: { etiqueta: string; valor: string 
         <InfoTooltip texto={ayuda} />
       </dt>
       <dd className={`esencial-valor numero${valor == null ? ' esencial-vacio' : ''}`}>{valor ?? 'Sin dato'}</dd>
+      {nivel && (
+        <dd className="esencial-nivel">
+          {/* El nivel nunca se dice solo con el color: el texto siempre está. */}
+          <span className={`punto-nivel punto-nivel-${nivel.nivel}`} title={nivel.explicacion}>
+            <i aria-hidden="true" />{nivel.nombre}
+          </span>
+        </dd>
+      )}
     </div>
   );
 }
@@ -125,8 +138,10 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
 
       {/* Lo más importante, legible en pocos segundos. */}
       <dl className="esenciales" aria-label="Lo esencial">
-        <Esencial etiqueta="Tasa de admisión" valor={formatPorcentaje(uni.ADM_RATE)} ayuda={glosarioCampos.ADM_RATE} />
-        <Esencial etiqueta="Puntaje SAT promedio" valor={uni.SAT_AVG != null ? String(uni.SAT_AVG) : null} ayuda={glosarioCampos.SAT_AVG} />
+        <Esencial etiqueta="Tasa de admisión" valor={formatPorcentaje(uni.ADM_RATE)} ayuda={glosarioCampos.ADM_RATE}
+          nivel={etiquetaSelectividad(uni.ADM_RATE)} />
+        <Esencial etiqueta="Puntaje SAT promedio" valor={uni.SAT_AVG != null ? String(uni.SAT_AVG) : null} ayuda={glosarioCampos.SAT_AVG}
+          nivel={etiquetaSAT(uni.SAT_AVG, uni.ADMCON7)} />
         <Esencial etiqueta="Costo de vida al año" valor={costoVida ? aprox + formatDinero(costoVida.valor) : null}
           ayuda={costoVida?.estimado ? glosarioCampos.COSTO_VIDA_ESTIMADO : glosarioCampos.COSTO_VIDA} />
         <Esencial etiqueta="Costo anual total" valor={costoTotal != null ? aprox + formatDinero(costoTotal) : null}
