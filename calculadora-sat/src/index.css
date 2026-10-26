@@ -1131,7 +1131,6 @@ html { scroll-behavior: smooth; }
   min-width: 0;
   background: var(--surface);
 }
-.esencial:nth-child(-n + 2) { background: linear-gradient(180deg, var(--brand-soft), var(--surface) 70%); }
 .esencial:first-child { border-radius: var(--radio-casilla) 0 0 var(--radio-casilla); }
 .esencial:last-child { border-radius: 0 var(--radio-casilla) var(--radio-casilla) 0; }
 .esencial-etiqueta {
