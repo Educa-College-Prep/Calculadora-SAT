@@ -162,6 +162,12 @@ CONTROL_CON_FINES_DE_LUCRO = 3
 # vacías (sobre todo centros de educación para adultos) y no ayudan a decidir. Ninguna publica SAT.
 COLUMNAS_COSTO = ['TUITIONFEE_OUT', 'TUITIONFEE_IN', 'COSTT4_A', 'NPT4_PRIV', 'NPT4_PUB']
 COLUMNAS_SALARIO = ['MD_EARN_WNE_1YR', 'MD_EARN_WNE_4YR', 'MD_EARN_WNE_5YR', 'MD_EARN_WNE_P6', 'MD_EARN_WNE_P8', 'MD_EARN_WNE_P10']
+# Ni las que dejan vacías las 5 casillas del resumen de la ficha (tasa de admisión, SAT
+# promedio, matrícula, costo de vida y costo total): su ficha solo decía "Sin dato". Sin
+# matrícula, el costo de vida solo puede venir de ROOMBOARD_ON, y sin ambos no hay costo total.
+# Son sobre todo centros técnicos, escuelas de hospital y campus de solo posgrado. Si una
+# empieza a publicar alguno de estos datos, vuelve a entrar sola.
+COLUMNAS_RESUMEN = ['ADM_RATE', 'SAT_AVG', 'TUITIONFEE_OUT', 'TUITIONFEE_IN', 'ROOMBOARD_ON']
 
 MAPEOS = {
     'CONTROL': {1: 'Pública', 2: 'Privada sin fines de lucro', 3: 'Privada con fines de lucro'},
@@ -660,6 +666,7 @@ def main():
     columnas_filtro = [c for c in COLUMNAS if c not in NO_CUENTAN_PARA_FILTRO]
     universidades = []
     sin_costo_ni_salario = 0
+    resumen_vacio = 0
     for fila in filas:
         u = {c: texto(fila[c]) if c in TEXTO else numero(fila[c]) for c in COLUMNAS + COLUMNAS_NUEVAS}
         if u['ICLEVEL'] not in (1, 2) or u['CONTROL'] == CONTROL_CON_FINES_DE_LUCRO:
@@ -668,6 +675,9 @@ def main():
             continue
         if all(u[c] is None for c in COLUMNAS_COSTO + COLUMNAS_SALARIO):
             sin_costo_ni_salario += 1
+            continue
+        if all(u[c] is None for c in COLUMNAS_RESUMEN):
+            resumen_vacio += 1
             continue
         for columna, mapeo in MAPEOS.items():
             u[columna] = mapeo.get(u[columna])
@@ -758,6 +768,7 @@ def main():
     con = lambda c: sum(u.get(c) is not None for u in universidades)
     print(f'Listo: {len(universidades)} universidades → {os.path.relpath(SALIDA, RAIZ)}')
     print(f'  se dejaron fuera {sin_costo_ni_salario} sin ningún costo ni salario')
+    print(f'  y {resumen_vacio} con las 5 casillas del resumen vacías')
     print(f'  con admisión por sexo: {con("APPLCN")} · con becas: {con("AGRNT_P")}'
           f' · costo de vida en el campus: {con("ROOMBOARD_ON")} · fuera del campus: {con("ROOMBOARD_OFF")}')
     print(f'  con dirección: {con("ADDR")} · teléfono: {con("GENTELE")} · web: {con("INSTURL")}'
