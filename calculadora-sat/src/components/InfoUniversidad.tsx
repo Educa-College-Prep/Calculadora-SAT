@@ -4,6 +4,7 @@ import { glosarioCampos } from '../utils/glosarioCampos';
 import { useFuentesDatos } from '../utils/fuentesDatos';
 import { InfoTooltip } from './InfoTooltip';
 import { urlAyudaFinanciera } from '../utils/enlacesUniversidad';
+import { LICENCIA_WIKIPEDIA, urlArticulo, useDescripcion } from '../utils/descripciones';
 
 /** "Ciudad grande" → "una ciudad grande"; "Suburbio mediano" → "un suburbio mediano". */
 function conArticulo(entorno: string): string {
@@ -63,11 +64,21 @@ function resumen(uni: Universidad): string {
  */
 export function SobreUniversidad({ uni }: { uni: Universidad }) {
   const grad = graduacion(uni);
+  const descripcion = useDescripcion(uni.UNITID);
   return (
     <div className="sobre">
       <div>
         <h2 className="banda-titulo">Sobre la universidad</h2>
+        {/* Si la tiene, primero la descripción de Wikipedia (qué es y por qué es conocida) y
+            después el párrafo con los datos oficiales. La licencia pide citar el artículo. */}
+        {descripcion && <p className="sobre-texto">{descripcion.texto}</p>}
         <p className="sobre-texto">{resumen(uni)}</p>
+        {descripcion && (
+          <p className="fuente">
+            El primer párrafo es una traducción resumida de <a href={urlArticulo(descripcion)} target="_blank" rel="noopener noreferrer">Wikipedia
+            (en inglés)</a>, <a href={LICENCIA_WIKIPEDIA.url} target="_blank" rel="noopener noreferrer">{LICENCIA_WIKIPEDIA.nombre}</a>.
+          </p>
+        )}
       </div>
       <dl className="datos sobre-datos">
         {uni.LOCALE && (
