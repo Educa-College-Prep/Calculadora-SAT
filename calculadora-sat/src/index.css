@@ -1302,11 +1302,11 @@ html { scroll-behavior: smooth; }
 .ley-cuatro { background: var(--bar); }
 .ley-mediana { width: 2px; height: 14px; background: var(--muted); opacity: 0.7; }
 
-.sal-lista { max-width: 860px; }
+/* A todo el ancho de la tarjeta: cuanto más larga la línea, más se notan las diferencias. */
 .sal-cabecera, .sal-fila {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 104px 104px;
-  gap: 4px 12px;
+  grid-template-columns: 28px minmax(0, 1fr) 128px 128px;
+  gap: 4px 16px;
 }
 .sal-cabecera {
   padding-bottom: 6px;
@@ -1325,8 +1325,8 @@ html { scroll-behavior: smooth; }
 .sal-crece { margin-left: 6px; font-size: 12.5px; font-weight: 800; color: var(--up); white-space: nowrap; }
 .sal-crece-baja { color: var(--down); }
 .sal-uno, .sal-cuatro { text-align: right; white-space: nowrap; }
-.sal-uno { font-weight: 600; color: var(--muted); }
-.sal-cuatro { font-weight: 800; }
+.sal-uno { font-size: 18px; font-weight: 600; color: var(--muted); }
+.sal-cuatro { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; }
 
 /* La línea punto a punto, debajo del nombre y los montos. */
 .sal-linea { position: relative; grid-column: 2 / -1; height: 16px; }
@@ -1349,6 +1349,8 @@ html { scroll-behavior: smooth; }
   .sal-nombre { grid-column: 2 / -1; }
   .sal-uno { grid-column: 2; text-align: left; }
   .sal-cuatro { grid-column: 3; }
+  .sal-uno { font-size: 16px; }
+  .sal-cuatro { font-size: 18px; }
   .sal-uno::before { content: '1.er año '; font-size: 12.5px; font-weight: 500; }
   .sal-cuatro::before { content: '4 años '; font-size: 12.5px; font-weight: 500; color: var(--muted); }
 }
