@@ -28,8 +28,8 @@ function VideoYouTube({ video, tipo }: { video: Video; tipo: string }) {
 }
 
 /**
- * Videos de la banda "Experiencia Educa". Con tour y testimonios: el tour grande a la izquierda
- * y los testimonios a la derecha. Con un solo video, una columna más angosta. En celular es un
+ * Videos de la banda "Experiencia Educa". Con tour y testimonios: el tour grande a la izquierda,
+ * dos testimonios a su lado y el resto debajo. Con un solo video, una columna más angosta. En celular es un
  * carrusel que se desliza de lado, con puntos que marcan cuál se está viendo.
  */
 export function VideosEduca({ videos }: { videos: VideosDeUniversidad }) {
@@ -52,23 +52,12 @@ export function VideosEduca({ videos }: { videos: VideosDeUniversidad }) {
   };
 
   const diseno = lista.length === 1 ? 'videos-uno' : videos.tour ? 'videos-tour' : 'videos-varios';
-  const [primero, ...resto] = lista;
 
   return (
     <>
+      {/* Con tour, el CSS lo agranda (es el primero) y acomoda los testimonios a su lado y debajo. */}
       <div className={`videos ${diseno}`} ref={carrusel} onScroll={alDesplazar}>
-        {/* Con tour, los testimonios van juntos en la columna derecha (en celular, la columna
-            "desaparece" y cada video es una tarjeta del carrusel). */}
-        {diseno === 'videos-tour' ? (
-          <>
-            <VideoYouTube video={primero.video} tipo={primero.tipo} />
-            <div className="videos-columna">
-              {resto.map(v => <VideoYouTube key={v.video.id} video={v.video} tipo={v.tipo} />)}
-            </div>
-          </>
-        ) : (
-          lista.map(v => <VideoYouTube key={v.video.id} video={v.video} tipo={v.tipo} />)
-        )}
+        {lista.map(v => <VideoYouTube key={v.video.id} video={v.video} tipo={v.tipo} />)}
       </div>
       {lista.length > 1 && (
         <div className="videos-puntos" aria-hidden="true">

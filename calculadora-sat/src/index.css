@@ -1226,13 +1226,15 @@ html { scroll-behavior: smooth; }
 .contacto a { font-size: 17px; color: var(--brand); overflow-wrap: anywhere; }
 .contacto-enlaces { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0 8px; }
 
-/* Videos (Experiencia Educa): tour grande a la izquierda y testimonios a la derecha; con un
-   solo video, una columna más angosta. En celular, carrusel (ver más abajo). */
+/* Videos (Experiencia Educa): en tres columnas, el tour ocupa dos de ancho y dos filas de alto;
+   a su lado van dos testimonios (juntos miden casi lo mismo que el tour) y los demás siguen
+   debajo, de a tres. Así, con muchos testimonios no queda un hueco bajo el tour. Con un solo
+   video, una columna más angosta. En celular, carrusel (ver más abajo). */
 .videos { position: relative; display: grid; gap: 24px; align-items: start; }
-.videos-tour { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+.videos-tour { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.videos-tour > .video-item:first-child { grid-column: span 2; grid-row: span 2; }
 .videos-uno { max-width: 760px; }
 .videos-varios { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-.videos-columna { display: grid; gap: 24px; }
 .video-item { margin: 0; }
 .video-tipo {
   display: inline-block;
@@ -1402,7 +1404,10 @@ html { scroll-behavior: smooth; }
   .esencial:last-child { grid-column: 1 / -1; border-radius: 0 0 var(--radio-casilla) var(--radio-casilla); }
   .esencial:first-child { border-radius: var(--radio-casilla) 0 0 0; }
   .esencial:nth-child(2) { border-radius: 0 var(--radio-casilla) 0 0; }
-  .sobre, .videos-tour, .contacto { grid-template-columns: minmax(0, 1fr); }
+  .sobre, .contacto { grid-template-columns: minmax(0, 1fr); }
+  /* El tour a lo ancho y los testimonios debajo, de a dos. */
+  .videos-tour { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .videos-tour > .video-item:first-child { grid-column: 1 / -1; grid-row: auto; }
   .contacto { gap: 16px; }
 }
 @media (max-width: 640px) {
@@ -1453,7 +1458,6 @@ html { scroll-behavior: smooth; }
     scrollbar-width: none;
   }
   .videos::-webkit-scrollbar { display: none; }
-  .videos-columna { display: contents; }
   .videos .video-item { flex: 0 0 86%; scroll-snap-align: center; }
   .videos-puntos { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }
   .videos-puntos span { width: 8px; height: 8px; background: rgba(255, 255, 255, 0.4); border-radius: 999px; transition: width 0.2s ease; }
