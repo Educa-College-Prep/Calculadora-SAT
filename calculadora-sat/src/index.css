@@ -1886,3 +1886,58 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
 }
 .aviso-fuentes p { margin: 0; }
 .aviso-fuentes a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+/* =========================================================
+   Celular: ficha más compacta
+   ========================================================= */
+@media (max-width: 520px) {
+  /* Barra flotante ("Guardar" y "Comparar"): abajo, donde llega el pulgar, y en una sola
+     línea. Arriba se apilaba en dos filas y tapaba las cajas. Se esconde hacia abajo. */
+  .barra-flotante,
+  .ficha .barra-flotante {
+    top: auto;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 6px;
+    transform: translate(-50%, calc(100% + 24px + env(safe-area-inset-bottom, 0px)));
+  }
+  .barra-flotante.barra-flotante-visible { transform: translate(-50%, 0); }
+  .barra-flotante .boton,
+  .barra-flotante .boton-guardar {
+    min-height: 38px;
+    padding: 6px 14px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  /* Letras más chicas: en pantalla angosta los tamaños de escritorio se veían enormes. */
+  .ficha { --alto-pestanas: 48px; font-size: 15px; }
+  .banda { padding-block: 32px; }
+  .banda-cabecera { margin-bottom: 18px; }
+  .banda-titulo { font-size: 23px; }
+  .banda-subtitulo { font-size: 15px; }
+  .sobre-texto { font-size: 15px; }
+  .migas { font-size: 13px; }
+
+  .hero-nombre { font-size: 34px; }
+  .hero-lugar { margin-top: 10px; font-size: 14.5px; }
+  .hero .marca { padding: 4px 11px; font-size: 12.5px; }
+  .hero-acciones { gap: 8px; margin-top: 18px; }
+  .hero-acciones .boton,
+  .hero-acciones .boton-guardar { min-height: 40px; padding: 6px 14px; font-size: 14px; }
+  .hero .boton-sol { min-height: 44px; font-size: 15px; }
+
+  .pestanas-lista a { padding: 0 10px; font-size: 14.5px; }
+
+  .esencial { padding: 14px; }
+  .esencial-valor { font-size: 24px; }
+  .punto-nivel { font-size: 12.5px; }
+
+  .ficha-seccion, .ficha-panel { padding: 16px; }
+  .ficha-panel-titulo { font-size: 16px; }
+  .dato-fila { padding: 7px 0; font-size: 14.5px; }
+  .contacto a { font-size: 15px; }
+  .video-titulo { font-size: 15px; }
+  .bloque-sol p { font-size: 15px; }
+}
