@@ -168,6 +168,12 @@ COLUMNAS_SALARIO = ['MD_EARN_WNE_1YR', 'MD_EARN_WNE_4YR', 'MD_EARN_WNE_5YR', 'MD
 # Son sobre todo centros técnicos, escuelas de hospital y campus de solo posgrado. Si una
 # empieza a publicar alguno de estos datos, vuelve a entrar sola.
 COLUMNAS_RESUMEN = ['ADM_RATE', 'SAT_AVG', 'TUITIONFEE_OUT', 'TUITIONFEE_IN', 'ROOMBOARD_ON']
+# Tampoco las sedes vacías de una universidad que ya está en la web (ej.: las 16 sedes de Keiser
+# University). Una sede tiene el UNITID de su campus principal seguido de dos dígitos
+# (13508101 → 135081) y suele reportar sus alumnos y datos bajo el principal: queda sin
+# alumnos, sin admisión, sin SAT y sin costo de vida, con la matrícula y el salario copiados (o
+# casi). Toda la información está en la ficha del campus principal.
+COLUMNAS_SEDE_VACIA = ['ADM_RATE', 'SAT_AVG', 'ROOMBOARD_ON']
 
 MAPEOS = {
     'CONTROL': {1: 'Pública', 2: 'Privada sin fines de lucro', 3: 'Privada con fines de lucro'},
@@ -684,6 +690,13 @@ def main():
         u.update(ipeds_de(u['UNITID']))
         universidades.append(u)
 
+    principales = {u['UNITID'] for u in universidades}
+    def es_sede_vacia(u):
+        return (u['UNITID'] > 999_999 and u['UNITID'] // 100 in principales
+                and not u['UGDS'] and all(u[c] is None for c in COLUMNAS_SEDE_VACIA))
+    sedes_vacias = sum(map(es_sede_vacia, universidades))
+    universidades = [u for u in universidades if not es_sede_vacia(u)]
+
     # ¿Cambió algo de verdad? Las direcciones se comparan sin mayúsculas: el CSV y la API
     # escriben distinto algunas (…?NULL=NULL frente a …?null=null) y son la misma.
     def comparable(lista, columnas):
@@ -769,6 +782,7 @@ def main():
     print(f'Listo: {len(universidades)} universidades → {os.path.relpath(SALIDA, RAIZ)}')
     print(f'  se dejaron fuera {sin_costo_ni_salario} sin ningún costo ni salario')
     print(f'  y {resumen_vacio} con las 5 casillas del resumen vacías')
+    print(f'  y {sedes_vacias} sedes vacías de universidades que ya están (queda su campus principal)')
     print(f'  con admisión por sexo: {con("APPLCN")} · con becas: {con("AGRNT_P")}'
           f' · costo de vida en el campus: {con("ROOMBOARD_ON")} · fuera del campus: {con("ROOMBOARD_OFF")}')
     print(f'  con dirección: {con("ADDR")} · teléfono: {con("GENTELE")} · web: {con("INSTURL")}'
