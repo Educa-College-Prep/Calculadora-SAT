@@ -282,7 +282,12 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
       {/* BARRA DE PESTAÑAS: pegada debajo de la barra de Educa al bajar. */}
       <nav className={`pestanas-ficha${heroALaVista ? '' : ' pegada'}`} aria-label="Secciones de la ficha">
         <div className="in">
-          <span className="pestanas-nombre" aria-hidden={heroALaVista}>{nombreCorto}</span>
+          {/* El nombre, que aparece al bajar, lleva de vuelta al inicio de la ficha. Mientras se ve
+              el hero no hace falta: el CSS lo oculta (y así tampoco recibe el foco). */}
+          <button type="button" className="pestanas-nombre" title="Volver arriba"
+            onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}>
+            {nombreCorto}<span className="visualmente-oculto">: volver arriba</span>
+          </button>
           <div className="pestanas-lista" ref={pestanasRef}>
             {secciones.map(s => (
               <a key={s.id} href={`#${s.id}`} data-s={s.id} className={s.id === activa ? 'activa' : undefined}
