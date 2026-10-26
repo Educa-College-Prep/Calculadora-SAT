@@ -15,7 +15,7 @@ export interface EtiquetaNivel {
   explicacion: string;
 }
 
-/** Cortes de selectividad (tasa de admisión, en fracción como viene en los datos). Por confirmar con el equipo. */
+/** Cortes de selectividad (tasa de admisión, en fracción como viene en los datos). */
 const SELECTIVIDAD: (EtiquetaNivel & { max: number })[] = [
   { clave: 'elite', nombre: 'Élite', nivel: 3, max: 0.10, explicacion: 'Admite a menos del 10% de quienes postulan.' },
   { clave: 'muy_selectiva', nombre: 'Muy selectiva', nivel: 2, max: 0.25, explicacion: 'Admite entre el 10% y el 25% de quienes postulan.' },
