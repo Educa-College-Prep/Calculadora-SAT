@@ -844,7 +844,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 .esencial {
   /* Título, cifra y etiqueta de nivel en filas compartidas por las cinco casillas (subgrid):
-     si un título ocupa dos líneas ("Salario a 4 años de graduado") o solo dos casillas tienen
+     si un título ocupa dos líneas ("Costo de vida al año") o solo dos casillas tienen
      etiqueta, las cifras siguen a la misma altura. Sin ninguna etiqueta, esa fila mide 0. */
   display: grid;
   grid-row: span 3;
@@ -1046,7 +1046,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 
 @media (max-width: 860px) {
-  /* De a dos (admisión y SAT, vida y total) y el salario a lo ancho. */
+  /* De a dos (admisión y SAT, matrícula y vida) y el costo total a lo ancho. */
   .esenciales { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .esencial:last-child { grid-column: 1 / -1; border-radius: 0 0 var(--radio-casilla) var(--radio-casilla); }
   .esencial:first-child { border-radius: var(--radio-casilla) 0 0 0; }

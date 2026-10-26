@@ -142,11 +142,13 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
           nivel={etiquetaSelectividad(uni.ADM_RATE)} />
         <Esencial etiqueta="Puntaje SAT promedio" valor={uni.SAT_AVG != null ? String(uni.SAT_AVG) : null} ayuda={glosarioCampos.SAT_AVG}
           nivel={etiquetaSAT(uni.SAT_AVG, uni.ADMCON7)} />
+        <Esencial etiqueta="Matrícula anual" valor={formatDinero(matricula)}
+          ayuda={uni.TUITIONFEE_IN != null && uni.TUITIONFEE_OUT != null && uni.TUITIONFEE_IN !== uni.TUITIONFEE_OUT
+            ? glosarioCampos.TUITIONFEE_OUT : glosarioCampos.TUITIONFEE_UNICA} />
         <Esencial etiqueta="Costo de vida al año" valor={costoVida ? aprox + formatDinero(costoVida.valor) : null}
           ayuda={costoVida?.estimado ? glosarioCampos.COSTO_VIDA_ESTIMADO : glosarioCampos.COSTO_VIDA} />
         <Esencial etiqueta="Costo anual total" valor={costoTotal != null ? aprox + formatDinero(costoTotal) : null}
           ayuda={glosarioCampos.COSTO_TOTAL_ESENCIAL} />
-        <Esencial etiqueta="Salario a 4 años de graduado" valor={formatDinero(uni.MD_EARN_WNE_4YR)} ayuda={glosarioCampos.MD_EARN_4YR} />
       </dl>
 
       <div className="ficha-grilla">
@@ -207,10 +209,12 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
           </Seccion>
         )}
 
-        {/* Salario por carrera: solo si College Scorecard publica alguno (~1,800 universidades).
-            La key reinicia la búsqueda al pasar a otra universidad. */}
-        {salariosCarreras && salariosCarreras.length > 0 && (
-          <Seccion titulo="Salario por carrera" ancha>
+        {/* Salarios de egresados (antes, el de 4 años estaba en las cajas de arriba): el de toda
+            la universidad y, si College Scorecard lo publica (~1,800), el de cada carrera. Espera a
+            que cargue el archivo por carrera para no saltar de forma. La key reinicia la búsqueda
+            al pasar a otra universidad. */}
+        {salariosCarreras && (salariosCarreras.length > 0 || uni.MD_EARN_WNE_1YR != null || uni.MD_EARN_WNE_4YR != null) && (
+          <Seccion titulo="Salarios de egresados" ayuda={glosarioCampos.MD_EARN_4YR} ancha>
             <SalarioPorCarrera key={uni.UNITID} uni={uni} carreras={salariosCarreras} />
           </Seccion>
         )}
