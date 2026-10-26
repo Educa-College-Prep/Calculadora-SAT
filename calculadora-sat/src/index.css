@@ -836,11 +836,19 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   background: rgba(255, 255, 255, 0.12);
   border: 1.5px solid rgba(255, 255, 255, 0.45);
 }
+/* Al pasar el mouse, sobre el azul: el fondo translúcido se aclara un poco y el texto sigue
+   blanco (el hover general de .boton pone fondo celeste y el texto blanco no se vería). */
+.hero-acciones .boton:hover:not(:disabled), .hero-acciones .boton-guardar:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.24);
+  border-color: #fff;
+}
 /* Guardada: blanco con texto azul (no amarillo, que es el color de "Ver campus tour"). Con
    tres clases, para ganarle a la regla general del botón guardado, que viene más abajo. */
 .hero-acciones .boton-guardar-texto.boton-guardar-activo,
 .hero-acciones .boton-guardar-texto.boton-guardar-activo svg { color: var(--navy); }
 .hero-acciones .boton-guardar-texto.boton-guardar-activo { background: #fff; border-color: #fff; }
+.hero-acciones .boton-guardar-texto.boton-guardar-activo:hover:not(:disabled) { color: var(--navy); background: var(--brand-soft); border-color: #fff; }
 .ficha .barra-flotante .boton-guardar-texto.boton-guardar-activo,
 .ficha .barra-flotante .boton-guardar-texto.boton-guardar-activo svg { color: #fff; }
 .ficha .barra-flotante .boton-guardar-texto.boton-guardar-activo { background: var(--navy); border-color: var(--navy); }
