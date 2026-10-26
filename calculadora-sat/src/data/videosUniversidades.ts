@@ -33,6 +33,7 @@ export const VIDEOS_UNIVERSIDADES: Record<number, VideosDeUniversidad> = {
     tour: { id: 'mQEuxUNywYc', titulo: 'Yale University Campus Tour | Secretos de una Ivy League de 300+ años' },
     testimonios: [
       { id: 'GaZdAFTX8HA', titulo: '¿Cómo es estudiar en Yale? | Economía y Humanidades en una Ivy League' },
+      { id: 'iePLxavGWgs', titulo: 'El “right fit” y la elección entre dos Ivy Leagues: Yale y Brown' },
     ],
   },
   // Columbia University in the City of New York
@@ -49,22 +50,31 @@ export const VIDEOS_UNIVERSIDADES: Record<number, VideosDeUniversidad> = {
     testimonios: [
       { id: 'rL7p42A9eSQ', titulo: 'Estudiar 3 carreras en Brown University | De Perú a EE.UU.' },
       { id: 'lLRwnjTY8TE', titulo: '¿Cómo es estudiar Economía en Brown? | El Open Curriculum que lo cambia todo' },
+      { id: '_Tw6Qk8iRwg', titulo: '¿Cómo ingresar a la Ivy League con beca completa? | Brown University' },
+      { id: 'iePLxavGWgs', titulo: 'El “right fit” y la elección entre dos Ivy Leagues: Yale y Brown' },
     ],
   },
   // Stanford University
   243744: {
     tour: { id: 'JuZizW36lzY', titulo: 'Stanford Campus Tour | Aquí estudiaron los fundadores de Google' },
+    testimonios: [
+      { id: 'buOXZBVUqho', titulo: 'Estudiar Computer Science y Political Science en Stanford | Admission Counseling' },
+    ],
   },
   // Georgetown University
   131496: {
     tour: { id: 'ZwJTQuxOhXg', titulo: 'Georgetown: la universidad #1 en Ciencias Políticas | Campus Tour' },
     testimonios: [
       { id: 'CjLZQBiUds0', titulo: '¿Cómo estudiar Finanzas en Estados Unidos? | Georgetown University' },
+      { id: 'fVoljLaql4U', titulo: 'Admitida a las mejores universidades de EE.UU. y Canadá | Admission Counseling' },
     ],
   },
   // Babson College
   164580: {
     tour: { id: '86jbPp7xHjo', titulo: 'Babson College Campus Tour | La mejor escuela en Emprendimiento' },
+    testimonios: [
+      { id: '9AYX2lOj-mc', titulo: 'Cómo estudiar Negocios en Babson College | Admission Counseling' },
+    ],
   },
   // University of California-Berkeley
   110635: {
@@ -82,6 +92,7 @@ export const VIDEOS_UNIVERSIDADES: Record<number, VideosDeUniversidad> = {
     tour: { id: 'NpPFsbb1GSk', titulo: 'University of Pennsylvania (UPenn) Campus Tour | #1 in Business' },
     testimonios: [
       { id: 'B35h18QNsjQ', titulo: '¿Cómo es estudiar en la mejor escuela de negocios del mundo? | Wharton School' },
+      { id: '6q_ksoIr8h8', titulo: '¿Cómo ingresar a UPenn y la Ivy League desde LATAM? | Admission Counseling' },
     ],
   },
   // Vanderbilt University
@@ -99,6 +110,9 @@ export const VIDEOS_UNIVERSIDADES: Record<number, VideosDeUniversidad> = {
   // University of California-Los Angeles
   110662: {
     tour: { id: '17iWtoexVAw', titulo: 'UCLA Campus Tour | ¿Cómo es estudiar en UCLA?' },
+    testimonios: [
+      { id: 'yhN4KusAtNQ', titulo: '¡Así logré ser admitida en UCLA! | Mi primer paso para estudiar Derecho en EE.UU.' },
+    ],
   },
   // New York University (incluye Gallatin)
   193900: {
@@ -135,6 +149,113 @@ export const VIDEOS_UNIVERSIDADES: Record<number, VideosDeUniversidad> = {
   162928: {
     testimonios: [
       { id: '8FemQmSpWBw', titulo: 'De Pre-Med a Negocios en Johns Hopkins University | Cómo cambiar de carrera' },
+    ],
+  },
+  // University of Chicago
+  144050: {
+    testimonios: [
+      { id: '1G2uT8w3GPw', titulo: 'De Trujillo, Perú a UChicago | Cómo ingresar a una de las universidades más selectivas de EE.UU.' },
+      { id: 'HJrXmNFS-Z0', titulo: 'Fui admitida en una universidad top 10 de EE.UU. | Early Decision | UChicago' },
+    ],
+  },
+  // University of South Florida
+  137351: {
+    testimonios: [
+      { id: 'kJtA64EUYIc', titulo: 'De Lima a USF | Biología Celular y Molecular en EE.UU.' },
+    ],
+  },
+  // University of Connecticut
+  129020: {
+    testimonios: [
+      { id: 'j4cEGyL6Xek', titulo: 'Camino a UConn | Ingeniería Biomédica y programa de Medicina' },
+    ],
+  },
+  // University of California-Davis
+  110644: {
+    testimonios: [
+      { id: 'l2Yeq-G4qqo', titulo: 'De Lima a UC Davis | Managerial Economics en EE.UU.' },
+    ],
+  },
+  // Purdue University-Main Campus
+  243780: {
+    testimonios: [
+      { id: 'izMadAivQaA', titulo: 'Mi admisión a Purdue University | Testimonio de Valeria' },
+      { id: 'aDL5vmAp_fw', titulo: '¿Cómo estudiar Business en Estados Unidos? | Purdue University' },
+    ],
+  },
+  // The University of Texas at Austin
+  228778: {
+    testimonios: [
+      { id: 'ilDoV2sWEu4', titulo: 'Cómo ingresé a UT Austin para Public Relations | Estudiar en Texas' },
+      { id: 'bIIuLxEmm3w', titulo: 'María Fernanda fue admitida a UT Austin | Universidad top en Estados Unidos' },
+      { id: 'dwXcTDqDn-A', titulo: '¿Cómo estudiar Psicología en EE.UU.? | UT Austin | Admission Counseling' },
+    ],
+  },
+  // Indiana University-Bloomington
+  151351: {
+    testimonios: [
+      { id: 'nDThLYxnOho', titulo: '¿Cómo estudiar Periodismo en Estados Unidos? | Indiana University Bloomington' },
+      { id: 'B9vnBi1mgTU', titulo: 'Micaela estudia en un top 10 de Economía en Estados Unidos | Indiana University Bloomington' },
+    ],
+  },
+  // Pennsylvania State University-Main Campus
+  214777: {
+    testimonios: [
+      { id: 'UC62EGQBUg8', titulo: 'Cómo ingresé a Penn State | Negocios en EE.UU. | Admission Counseling' },
+    ],
+  },
+  // Northeastern University
+  167358: {
+    testimonios: [
+      { id: 'YFfAbfFwgRs', titulo: 'Cómo ingresé a Northeastern University | Mi camino a Economía' },
+    ],
+  },
+  // Drexel University
+  212054: {
+    testimonios: [
+      { id: 'tZmVvB8G_Dk', titulo: 'Cómo estudiar Negocios en Estados Unidos | Drexel University | Admission Counseling' },
+    ],
+  },
+  // Roosevelt University (su escuela de artes es el Chicago College of Performing Arts)
+  148487: {
+    testimonios: [
+      { id: '5KOLt4UwyRI', titulo: '¿Cómo aplicar a una universidad de artes en EE.UU.? | Chicago College of Performing Arts (CCPA)' },
+    ],
+  },
+  // Rochester Institute of Technology
+  195003: {
+    testimonios: [
+      { id: 'dyyDRzFluK8', titulo: 'Cómo creé mi propia licenciatura en RIT | Rochester Institute of Technology' },
+    ],
+  },
+  // University of Pittsburgh-Pittsburgh Campus
+  215293: {
+    testimonios: [
+      { id: 'HAojN9AQsEk', titulo: 'Marcela estudiará Ingeniería Biomédica en EE.UU. | Gap year | Admission Counseling' },
+    ],
+  },
+  // Boston College (video del Curso SAT Prep)
+  164924: {
+    testimonios: [
+      { id: 'dusq0Nepcl4', titulo: '¿Cómo equilibrar el colegio con el SAT? | Curso SAT Prep | SAT para Boston College' },
+    ],
+  },
+  // George Washington University
+  131469: {
+    testimonios: [
+      { id: 'xlPZuhcGyyM', titulo: 'Diseño Gráfico en George Washington University | Admission Counseling' },
+    ],
+  },
+  // Lehigh University
+  213543: {
+    testimonios: [
+      { id: 'cOywFbjYQN8', titulo: 'El camino a Lehigh University | Cómo encontrar tu universidad ideal' },
+    ],
+  },
+  // University of Notre Dame
+  152080: {
+    testimonios: [
+      { id: 'FKfh0aRiCy8', titulo: 'Cómo ingresé a University of Notre Dame | Finanzas en EE.UU.' },
     ],
   },
 };
