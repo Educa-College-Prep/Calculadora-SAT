@@ -8,7 +8,6 @@ import { CostoVida } from './CostoVida';
 import { MiniBarChart } from './MiniBarChart';
 import { Pestanas } from './Pestanas';
 import { useFuentesDatos } from '../utils/fuentesDatos';
-import { urlCalculadora, NOTA_CALCULADORA } from '../utils/enlacesUniversidad';
 
 type PerfilId = 'in' | 'out' | 'us' | 'intl';
 
@@ -70,7 +69,6 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
   const total = p.matricula != null && cv != null ? p.matricula + cv.valor : null;
   // Aproximado para perfiles sin dato real: resta la beca típica de la universidad.
   const aprox = p.netoReal == null && total != null && uni.IGRNT_A != null ? total - uni.IGRNT_A : null;
-  const calculadora = urlCalculadora(uni.NPCURL);
 
   return (
     <div>
@@ -193,17 +191,8 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
             </div>
           )}
 
-          {/* La misma calculadora que en "Sobre la universidad": para internacionales no da un
-              costo exacto, así que no se promete. */}
-          {calculadora && (
-            <>
-              <a className="boton boton-primario costos-enlace" href={calculadora} target="_blank" rel="noopener noreferrer">
-                Calcula cuánto te costaría
-                <span className="visualmente-oculto"> (se abre en otra pestaña)</span>
-              </a>
-              <p className="fuente">{NOTA_CALCULADORA}</p>
-            </>
-          )}
+          {/* La calculadora de la universidad va debajo, en el bloque amarillo de la banda
+              Costos (components/DetalleUniversidad). */}
         </div>
       </div>
     </div>

@@ -666,8 +666,82 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 /* =========================================================
    Ficha de universidad
    ========================================================= */
-.ficha { display: flex; flex-direction: column; gap: 24px; }
+/* La ficha usa todo el ancho de la pantalla: cada sección es una banda de borde a borde, con
+   el contenido centrado en .in (máx. 1280px). Solo en esta vista #root deja su ancho máximo.
+   Su paleta (azul Educa, navy, violeta, amarillo) vale solo dentro de la ficha. */
+#root:has(> .ficha) { max-width: none; padding: 0; }
+#root:has(> .ficha) > :not(.ficha) {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 48px);
+}
+.ficha {
+  --bg: #f2f3f8;
+  --surface: #ffffff;
+  --ink: #1b2a57;
+  --muted: #5b6582;
+  --line: #d9deea;
+  --brand: #2a3f8f;
+  --brand-soft: #e8ecf8;
+  --navy: #1c2c6e;
+  --violet: #4a3a86;
+  --sun: #ffd23f;
+  --green: #2e7b6b;
+  /* Alto de la barra de pestañas: la barra flotante y los saltos a cada sección la descuentan. */
+  --alto-pestanas: 56px;
+  color: var(--ink);
+  background: var(--bg);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.in {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: max(clamp(16px, 4vw, 48px), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(16px, 4vw, 48px), env(safe-area-inset-right, 0px));
+}
 .ficha-volver { align-self: flex-start; }
+/* "Volver" solo en celular (en pantalla grande la barra de Educa y el "atrás" ya llevan a los resultados). */
+.ficha-volver-movil { display: none; }
+.ficha .barra-flotante { top: calc(var(--alto-barra, 0px) + var(--alto-pestanas) + 10px); }
+
+/* Foco visible: azul sobre fondos claros, amarillo sobre los oscuros. */
+.ficha a:focus-visible, .ficha button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.ficha .hero a:focus-visible, .ficha .hero button:focus-visible,
+.ficha .banda-marca a:focus-visible, .ficha .bloque-sol a:focus-visible { outline-color: var(--sun); }
+
+/* Botones de la ficha: principal amarillo, secundario navy y enlace con borde. */
+.boton-sol, .boton-marino {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 20px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.boton-sol { color: var(--navy); background: var(--sun); }
+.boton-marino { color: #fff; background: var(--navy); }
+.boton-sol:hover, .boton-marino:hover { filter: brightness(1.06); }
+.boton-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  font-weight: 600;
+  color: var(--brand);
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.boton-enlace:hover { border-color: var(--brand); }
 
 /* Barra flotante (ficha y Mi lista): centrada debajo de la barra de Educa. Se esconde
    deslizándose hacia arriba y aparece al subir por la página (components/BarraFlotante).
@@ -696,77 +770,199 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   .barra-flotante { transition: none; }
 }
 
-.ficha-cabecera {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--grafito);
-}
-
-/* Banner: la foto a todo el ancho y el nombre encima, sobre un degradado que asegura
-   que el texto blanco se lea con cualquier foto. */
-.ficha-portada {
+/* HERO: la foto a todo el ancho, con un degradado oscuro a la izquierda para que el texto
+   blanco se lea con cualquier foto. Sin 100vh: la altura la da el contenido. */
+.hero {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  min-height: clamp(300px, 34vw, 460px);
   overflow: hidden;
-  background: var(--tinta-fuerte);
-  border: 1.5px solid var(--grafito);
-  border-radius: var(--radio);
+  color: #fff;
+  background: var(--navy);
   isolation: isolate;
 }
-.ficha-portada::after {
+.hero .foto-uni img { object-position: right center; }
+.hero::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(to top, rgba(12, 22, 38, 0.86) 0%, rgba(12, 22, 38, 0.55) 38%, rgba(12, 22, 38, 0) 72%);
+  background: linear-gradient(90deg, rgba(24, 30, 72, 0.96) 0%, rgba(36, 30, 90, 0.85) 38%, rgba(40, 32, 100, 0.25) 75%, rgba(40, 32, 100, 0.1) 100%);
   pointer-events: none;
 }
-.ficha-portada-texto {
+.hero-contenido {
   position: relative;
   z-index: 2;
-  min-width: 0;
-  padding: clamp(20px, 3vw, 36px);
-  color: #fff;
+  padding-top: clamp(40px, 6vw, 72px);
+  padding-bottom: clamp(36px, 5vw, 56px);
 }
-.ficha-portada .marcas { margin: 0 0 12px; }
-.ficha-portada .ficha-ranking { color: var(--grafito); }
-/* Etiquetas de la ficha: más grandes y con fondo sólido, para que se lean sobre la foto. */
-.ficha-portada .marcas { gap: 8px; }
-.ficha-portada .marca {
+.hero .marcas { gap: 8px; margin: 0 0 14px; }
+.hero .marca {
   padding: 5px 14px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--grafito);
+  color: var(--ink);
   background: #fff;
   border: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
-.ficha-portada .marca-publica { color: #fff; background: var(--tinta); }
-.ficha-portada .marca-privada { color: #fff; background: var(--boligrafo); }
-.ficha-portada .ficha-nombre { color: #fff; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35); }
-.ficha-portada .ficha-lugar { color: rgba(255, 255, 255, 0.88); }
-
-.ficha-nombre {
-  max-width: 22ch;
-  font-size: clamp(30px, 5vw, 56px);
+.hero .marca-privada, .hero .marca-publica { color: #fff; background: var(--green); }
+.hero .marca-publica { background: var(--brand); }
+.hero-ranking {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 5px 14px;
+  font-size: 15px;
+  color: var(--navy);
+  background: var(--sun);
+  border-radius: 999px;
+}
+.hero-nombre {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(40px, 7vw, 84px);
   font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.02;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  overflow-wrap: break-word;
 }
-.ficha-lugar { margin: 10px 0 0; font-size: 18px; color: var(--grafito-suave); }
+.hero-nombre, .banda-marca .banda-titulo { color: #fff; }
+.hero-lugar { margin: 16px 0 0; font-size: 17px; color: rgba(255, 255, 255, 0.85); }
+.hero-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 24px; }
+.hero-acciones .boton, .hero-acciones .boton-guardar { min-height: 44px; }
+/* "Guardar" y "Comparar" sobre el azul: claros, para que se lean. */
+.hero-acciones .boton, .hero-acciones .boton-guardar {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+}
+.hero-acciones .boton-guardar-activo { color: var(--navy); background: #fff; border-color: #fff; }
+.hero .foto-uni-credito {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  z-index: 2;
+  max-width: 60%;
+  color: rgba(255, 255, 255, 0.7);
+}
 
-.ficha-cabecera-pie {
+/* BARRA DE PESTAÑAS: pegada debajo de la barra de Educa al bajar. El nombre corto ("NYU")
+   aparece cuando ya no se ve el nombre grande del hero. */
+.pestanas-ficha {
+  position: sticky;
+  top: var(--alto-barra, 0px);
+  z-index: 15;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.pestanas-ficha .in { display: flex; align-items: center; gap: 20px; min-height: var(--alto-pestanas); }
+.pestanas-nombre {
+  display: none;
+  flex: none;
+  max-width: 220px;
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pestanas-ficha.pegada .pestanas-nombre { display: block; }
+.pestanas-lista { display: flex; gap: 4px; min-width: 0; align-self: stretch; }
+.pestanas-lista a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.pestanas-lista a:hover { color: var(--ink); }
+.pestanas-lista a.activa { color: var(--ink); }
+.pestanas-lista a.activa::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 4px;
+  background: var(--brand);
+  border-radius: 4px 4px 0 0;
+}
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* BANDAS: alternan gris y blanco; la de Experiencia Educa es la de marca. Al saltar desde
+   las pestañas, el título queda debajo de ellas (la barra de Educa ya la descuenta el
+   scroll-padding-top de html). */
+.banda {
+  padding-block: clamp(40px, 5vw, 64px);
+  scroll-margin-top: var(--alto-pestanas);
+}
+.banda-gris { background: var(--bg); }
+.banda-blanco { background: var(--surface); }
+.banda-cabecera { margin-bottom: 24px; }
+.banda-titulo { margin: 0; font-size: clamp(26px, 3vw, 36px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+.banda-subtitulo { margin: 6px 0 0; font-size: 17px; color: var(--muted); }
+.ficha .panel { background: var(--surface); border-color: var(--line); }
+.banda > .in > .panel + .panel, .banda > .in > .panel + .bloque-sol { margin-top: 20px; }
+
+/* Paneles lado a lado (Admisión): fondo gris claro dentro de la banda blanca. */
+.paneles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 20px; align-items: start; }
+.ficha-panel { padding: 24px; background: var(--bg); border: 1px solid var(--line); border-radius: 18px; }
+.ficha-panel-titulo { margin: 0 0 14px; font-size: 17px; font-weight: 700; }
+
+/* Experiencia Educa: banda azul con un círculo decorativo arriba a la derecha. */
+.banda-marca {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(135deg, #1c2c6e 0%, #2b2a78 60%, #4a3a86 100%);
+}
+.banda-marca::before {
+  content: '';
+  position: absolute;
+  top: -180px;
+  right: -140px;
+  width: 520px;
+  height: 520px;
+  border: 70px solid rgba(255, 210, 63, 0.08);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.banda-marca .in { position: relative; }
+.banda-marca .banda-subtitulo { color: rgba(255, 255, 255, 0.75); }
+.banda-marca .fuente, .banda-marca .fuente a { color: rgba(255, 255, 255, 0.72); }
+
+/* Fechas de postulación: bloque de fecha navy (día grande, mes en amarillo) y el plazo. */
+.fechas { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.fechas li { display: flex; align-items: center; gap: 14px; }
+.fecha-bloque {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 58px;
+  padding: 8px 0;
+  color: #fff;
+  background: var(--navy);
+  border-radius: 12px;
+}
+.fecha-dia { font-size: 24px; font-weight: 800; line-height: 1; }
+.fecha-mes { font-size: 12px; font-weight: 700; color: var(--sun); text-transform: uppercase; }
+.fecha-descripcion { display: block; font-size: 14px; color: var(--muted); }
+
+/* Bloque amarillo de la calculadora, al final de Costos. */
+.bloque-sol {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 16px;
+  gap: 12px 24px;
+  margin-top: 20px;
+  padding: 24px 28px;
+  color: var(--navy);
+  background: var(--sun);
+  border-radius: 18px;
 }
-.ficha-cabecera-pie .ficha-acciones { margin-top: 0; }
+.bloque-sol p { margin: 0; font-size: 17px; }
+.bloque-sol .bloque-sol-nota { flex-basis: 100%; font-size: 13px; opacity: 0.85; }
 
 .foto-uni {
   position: absolute;
@@ -819,8 +1015,6 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 
 @media (max-width: 600px) {
-  .ficha-portada { min-height: 340px; }
-  .ficha-lugar { font-size: 16px; }
   .foto-uni-credito { white-space: normal; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -833,14 +1027,15 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
    Sin overflow: hidden (cortaría los textos de ayuda): las casillas de las esquinas
    se redondean solas. */
 .esenciales {
-  --radio-casilla: calc(var(--radio) - 1.5px);
+  --radio-casilla: 18.5px;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1.5px;
-  margin: 0;
-  background: var(--tinta-suave);
-  border: 1.5px solid var(--tinta);
-  border-radius: var(--radio);
+  margin: 0 0 clamp(32px, 4vw, 48px);
+  background: var(--line);
+  border: 1.5px solid var(--brand);
+  border-radius: 20px;
+  box-shadow: 0 18px 40px -26px rgba(28, 44, 110, 0.6);
 }
 .esencial {
   /* Título, cifra y etiqueta de nivel en filas compartidas por las cinco casillas (subgrid):
@@ -850,26 +1045,29 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   grid-row: span 3;
   grid-template-rows: subgrid;
   row-gap: 0;
-  padding: 16px 20px;
+  padding: 20px 22px;
   min-width: 0;
-  background: var(--hoja);
+  background: var(--surface);
 }
+.esencial:nth-child(-n + 2) { background: linear-gradient(180deg, var(--brand-soft), var(--surface) 70%); }
 .esencial:first-child { border-radius: var(--radio-casilla) 0 0 var(--radio-casilla); }
 .esencial:last-child { border-radius: 0 var(--radio-casilla) var(--radio-casilla) 0; }
 .esencial-etiqueta {
   display: flex;
   align-items: center;
   font-size: 14px;
-  font-weight: 600;
-  color: var(--tinta-fuerte);
+  font-weight: 700;
+  color: var(--brand);
 }
+.solo-movil { display: none; }
 .esencial-valor {
   align-self: end;
   margin: 0;
   padding-top: 6px;
-  font-size: clamp(24px, 2.5vw, 32px);
+  font-size: clamp(30px, 3vw, 44px);
   font-weight: 800;
   line-height: 1.05;
+  letter-spacing: -0.02em;
 }
 .esencial-vacio { font-size: 18px; font-weight: 600; color: var(--grafito-suave); }
 .esencial-nivel { margin: 10px 0 0; }
@@ -904,15 +1102,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
     0 0 12px 2px color-mix(in srgb, var(--c) 45%, transparent);
 }
 
-.ficha-grilla {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  align-items: start;
-}
-.ficha-seccion { padding: 20px; }
-.ficha-ancha { grid-column: 1 / -1; }
-.ficha-titulo { display: flex; align-items: center; margin-bottom: 14px; }
+.ficha-seccion { padding: clamp(20px, 2.5vw, 28px); }
 .ficha-bloque { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--linea); }
 .ficha-intro { display: flex; align-items: center; flex-wrap: wrap; color: var(--grafito-suave); }
 
@@ -942,44 +1132,49 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .cifra-destacada-texto { display: inline-flex; align-items: center; font-weight: 600; }
 .cifra-destacada .fuente { flex-basis: 100%; margin: 0; }
 
-/* Sobre la universidad, con la fila entera. Sin video: resumen | contacto en dos columnas. Con
-   video: la información (resumen arriba, contacto abajo) a la izquierda y el video a la derecha. */
-.sobre-uni.con-video { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start; }
-.info { display: grid; gap: 20px; }
-.sobre-uni:not(.con-video) .info { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
-.info-contacto { padding-top: 16px; border-top: 1px solid var(--linea); }
-.sobre-uni:not(.con-video) .info-contacto { padding: 0 0 0 32px; border-top: 0; border-left: 1px solid var(--linea); }
-.info-resumen { margin: 0 0 12px; line-height: 1.6; }
+/* Sobre la universidad (banda Resumen): texto a la izquierda y filas de datos a la derecha. */
+.sobre { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+.sobre-texto { max-width: 62ch; margin: 12px 0 0; font-size: 17px; }
+.sobre-datos .dato-fila + .dato-fila { border-top-style: dotted; }
 .dato-nota { font-size: 13px; font-weight: 400; color: var(--grafito-suave); }
-.contacto { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.contacto li { display: grid; gap: 2px; }
-.contacto-etiqueta { font-size: 12px; font-weight: 600; color: var(--grafito-suave); }
-.contacto a { color: var(--tinta-fuerte); overflow-wrap: anywhere; }
-.contacto-enlaces { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
-.contacto-enlaces .boton { text-decoration: none; }
-/* En celular, todo en una columna: primero la información y después el video. */
-@media (max-width: 760px) {
-  .sobre-uni.con-video, .sobre-uni:not(.con-video) .info { grid-template-columns: minmax(0, 1fr); gap: 20px; }
-  .sobre-uni:not(.con-video) .info-contacto { padding: 16px 0 0; border-left: 0; border-top: 1px solid var(--linea); }
-}
 
-/* Campus tour: video 16:9 que ocupa todo el ancho de su columna. */
+/* Contacto: dirección, teléfono y web en tres columnas; los enlaces debajo. */
+.contacto { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 0; padding: 0; list-style: none; }
+.contacto li { display: grid; gap: 4px; align-content: start; }
+.contacto-etiqueta { font-size: 13px; font-weight: 700; color: var(--muted); }
+.contacto a { font-size: 17px; color: var(--brand); overflow-wrap: anywhere; }
+.contacto-enlaces { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0 8px; }
+
+/* Videos (Experiencia Educa): tour grande a la izquierda y testimonios a la derecha; con un
+   solo video, una columna más angosta. En celular, carrusel (ver más abajo). */
+.videos { position: relative; display: grid; gap: 24px; align-items: start; }
+.videos-tour { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+.videos-uno { max-width: 760px; }
+.videos-varios { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.videos-columna { display: grid; gap: 24px; }
+.video-item { margin: 0; }
+.video-tipo {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--navy);
+  background: var(--sun);
+  border-radius: 999px;
+}
 .video-marco {
   position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: var(--grafito);
-  border-radius: var(--radio-chico);
+  background: #0b1030;
+  border-radius: 16px;
 }
 .video-marco iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.video-item { margin: 0; }
-.video-titulo { margin: 12px 0 0; font-weight: 600; }
-
-/* Testimonios: hasta tres videos por fila; en celular, uno debajo del otro. */
-.testimonios { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-bottom: 4px; }
-@media (max-width: 760px) {
-  .testimonios { grid-template-columns: minmax(0, 1fr); gap: 20px; }
-}
+.video-titulo { margin: 12px 0 0; font-size: 17px; font-weight: 700; line-height: 1.35; }
+.videos-puntos { display: none; }
 
 /* Salario por carrera: el salario general arriba como referencia, un buscador y la tabla. */
 .salarios-general { max-width: 520px; margin: 12px 0 16px; }
@@ -1051,7 +1246,72 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   .esencial:last-child { grid-column: 1 / -1; border-radius: 0 0 var(--radio-casilla) var(--radio-casilla); }
   .esencial:first-child { border-radius: var(--radio-casilla) 0 0 0; }
   .esencial:nth-child(2) { border-radius: 0 var(--radio-casilla) 0 0; }
-  .ficha-grilla { grid-template-columns: minmax(0, 1fr); }
+  .sobre, .videos-tour, .contacto { grid-template-columns: minmax(0, 1fr); }
+  .contacto { gap: 16px; }
+}
+@media (max-width: 520px) {
+  /* "Volver" debajo de la cabecera. */
+  .ficha-volver-movil { display: block; padding-top: 14px; padding-bottom: 14px; }
+
+  /* Hero: la foto arriba (210px), fundida hacia el azul, y el texto debajo sobre el azul. */
+  .hero .foto-uni { position: relative; height: 210px; }
+  .hero::after { inset: 0 0 auto; height: 210px; background: linear-gradient(180deg, rgba(28, 44, 110, 0) 40%, var(--navy) 100%); }
+  .hero-contenido { padding-top: 4px; padding-bottom: 28px; }
+  .hero-nombre { max-width: none; font-size: 42px; }
+  .hero .boton-sol { width: 100%; min-height: 48px; }
+  .hero .foto-uni-credito {
+    top: 188px;
+    bottom: auto;
+    left: 12px;
+    max-width: none;
+    overflow: hidden;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Pestañas: se deslizan de lado, sin barra de desplazamiento; un degradado a la derecha
+     avisa que hay más. */
+  .pestanas-ficha .in { gap: 12px; padding-right: 0; }
+  .pestanas-ficha.pegada .pestanas-nombre { display: none; }
+  .pestanas-lista {
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
+    mask-image: linear-gradient(90deg, #000 85%, transparent);
+  }
+  .pestanas-lista::-webkit-scrollbar { display: none; }
+  .pestanas-lista a { scroll-snap-align: center; }
+
+  /* Cajas: cifras en 30px, etiquetas en 12.5px y "SAT promedio" abreviado. */
+  .esencial-valor { font-size: 30px; }
+  .esencial-etiqueta { font-size: 12.5px; }
+  .solo-ancho { display: none; }
+  .solo-movil { display: inline; }
+
+  /* Videos: carrusel; cada video ocupa el 86% del ancho para que se asome el siguiente. */
+  .videos {
+    display: flex;
+    gap: 14px;
+    max-width: none;
+    margin-inline: calc(-1 * clamp(16px, 4vw, 48px));
+    padding-inline: clamp(16px, 4vw, 48px);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .videos::-webkit-scrollbar { display: none; }
+  .videos-columna { display: contents; }
+  .videos .video-item { flex: 0 0 86%; scroll-snap-align: center; }
+  .videos-puntos { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }
+  .videos-puntos span { width: 8px; height: 8px; background: rgba(255, 255, 255, 0.4); border-radius: 999px; transition: width 0.2s ease; }
+  .videos-puntos span.activo { width: 22px; background: var(--sun); }
+
+  /* Contacto: filas tocables y enlaces como botones a todo el ancho. */
+  .contacto-enlaces .boton-enlace { justify-content: center; width: 100%; min-height: 48px; }
+  .bloque-sol { padding: 20px; }
+  .bloque-sol .boton-marino { width: 100%; }
 }
 @media (max-width: 600px) {
   .esencial { padding: 14px 16px; }

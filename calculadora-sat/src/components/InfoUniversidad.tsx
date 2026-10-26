@@ -49,25 +49,74 @@ function resumen(uni: Universidad): string {
     uni.HIGHDEG && uni.HIGHDEG !== 'Sin título'
       ? `Otorga títulos hasta ${uni.HIGHDEG === 'Posgrado' ? 'posgrado (maestría o doctorado)' : uni.HIGHDEG.toLowerCase()}.`
       : null,
-    uni.ADM_RATE != null ? `Admite al ${Math.round(uni.ADM_RATE * 100)}% de quienes postulan.` : null,
-    grad ? `El ${Math.round(grad.tasa * 100)}% de sus alumnos se gradúa en ${grad.anios} años o menos.` : null,
+    uni.ADM_RATE != null ? `Admite al ${formatPorcentaje(uni.ADM_RATE)} de quienes postulan.` : null,
+    // Con el mismo decimal que las cajas y las filas, para que los números coincidan.
+    grad ? `El ${formatPorcentaje(grad.tasa)} de sus alumnos se gradúa en ${grad.anios} años o menos.` : null,
   ];
   return frases.filter(Boolean).join(' ');
 }
 
 /**
- * Información de la universidad en la ficha: un resumen, algunos datos de un vistazo y cómo
- * contactarla (dirección, teléfono, web y enlaces de admisión y ayuda financiera).
+ * "Sobre la universidad", en la banda Resumen: a la izquierda el resumen escrito a partir de
+ * los datos; a la derecha, filas de un vistazo (entorno, alumnos, hispanos, alumnos por
+ * profesor y graduación). Cada fila aparece solo si está su dato.
  */
-export function InfoUniversidad({ uni }: { uni: Universidad }) {
-  const anioDirectorio = useFuentesDatos()?.ipeds.anios.directorio;
+export function SobreUniversidad({ uni }: { uni: Universidad }) {
   const grad = graduacion(uni);
+  return (
+    <div className="sobre">
+      <div>
+        <h2 className="banda-titulo">Sobre la universidad</h2>
+        <p className="sobre-texto">{resumen(uni)}</p>
+      </div>
+      <dl className="datos sobre-datos">
+        {uni.LOCALE && (
+          <div className="dato-fila">
+            <dt>Entorno<InfoTooltip texto={glosarioCampos.LOCALE} /></dt>
+            <dd>{uni.LOCALE}</dd>
+          </div>
+        )}
+        {uni.UGDS != null && (
+          <div className="dato-fila">
+            <dt>Alumnos de pregrado<InfoTooltip texto={glosarioCampos.UGDS} /></dt>
+            <dd className="numero">{uni.UGDS.toLocaleString('en-US')}</dd>
+          </div>
+        )}
+        {uni.UGDS_HISP != null && (
+          <div className="dato-fila">
+            <dt>Hispanos<InfoTooltip texto={glosarioCampos.UGDS_HISP} /></dt>
+            <dd className="numero">{formatPorcentaje(uni.UGDS_HISP)}</dd>
+          </div>
+        )}
+        {uni.STUFACR != null && (
+          <div className="dato-fila">
+            <dt>Alumnos por profesor<InfoTooltip texto={glosarioCampos.STUFACR} /></dt>
+            <dd className="numero">{uni.STUFACR}:1</dd>
+          </div>
+        )}
+        {grad && (
+          <div className="dato-fila">
+            <dt>Tasa de graduación<InfoTooltip texto={glosarioCampos.GRADUACION} /></dt>
+            <dd className="numero">{formatPorcentaje(grad.tasa)} <span className="dato-nota">en {grad.anios} años</span></dd>
+          </div>
+        )}
+      </dl>
+    </div>
+  );
+}
+
+/**
+ * Banda Contacto: dirección (abre Google Maps), teléfono (se puede tocar para llamar) y web, en
+ * tres columnas; debajo, los enlaces de admisión y ayuda financiera.
+ */
+export function ContactoUniversidad({ uni }: { uni: Universidad }) {
+  const anioDirectorio = useFuentesDatos()?.ipeds.anios.directorio;
   const zip = uni.ZIP?.slice(0, 5);
   const lugar = `${uni.CITY}, ${uni.STABBR}${zip ? ` ${zip}` : ''}`;
   const direccion = uni.ADDR ? `${uni.ADDR}, ${lugar}` : lugar;
   // Admisión y postulación suelen ser la misma página: se muestra una sola vez. "Ayuda
   // financiera" solo si es la página de becas y no una calculadora: la única calculadora es
-  // la de "Costos y financiamiento", para no confundir.
+  // la de la banda Costos, para no confundir.
   const enlaces = [
     { texto: 'Admisión', url: uni.ADMINURL },
     { texto: 'Cómo postular', url: uni.APPLURL && uni.APPLURL !== uni.ADMINURL ? uni.APPLURL : null },
@@ -75,66 +124,38 @@ export function InfoUniversidad({ uni }: { uni: Universidad }) {
   ].filter((e): e is { texto: string; url: string } => !!e.url);
 
   return (
-    <div className="info">
-      <div>
-        <p className="info-resumen">{resumen(uni)}</p>
-
-        <dl className="datos">
-          {uni.LOCALE && (
-            <div className="dato-fila">
-              <dt>Entorno<InfoTooltip texto={glosarioCampos.LOCALE} /></dt>
-              <dd>{uni.LOCALE}</dd>
-            </div>
-          )}
-          {uni.UGDS != null && (
-            <div className="dato-fila">
-              <dt>Alumnos de pregrado</dt>
-              <dd className="numero">{uni.UGDS.toLocaleString('en-US')}</dd>
-            </div>
-          )}
-          {grad && (
-            <div className="dato-fila">
-              <dt>Tasa de graduación<InfoTooltip texto={glosarioCampos.GRADUACION} /></dt>
-              <dd className="numero">{formatPorcentaje(grad.tasa)} <span className="dato-nota">en {grad.anios} años</span></dd>
-            </div>
-          )}
-        </dl>
-      </div>
-
-      <div className="info-contacto">
-        <h3 className="subtitulo">Contacto</h3>
-        <ul className="contacto">
+    <>
+      <ul className="contacto">
+        <li>
+          <span className="contacto-etiqueta">Dirección</span>
+          <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${uni.INSTNM}, ${direccion}`)}`}
+            target="_blank" rel="noopener noreferrer">{direccion}</a>
+        </li>
+        {uni.GENTELE && (
           <li>
-            <span className="contacto-etiqueta">Dirección</span>
-            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${uni.INSTNM}, ${direccion}`)}`}
-              target="_blank" rel="noopener noreferrer">{direccion}</a>
+            <span className="contacto-etiqueta">Teléfono</span>
+            <a href={`tel:+1${uni.GENTELE.replace(/\D/g, '')}`}>{formatTelefono(uni.GENTELE)}</a>
           </li>
-          {uni.GENTELE && (
-            <li>
-              <span className="contacto-etiqueta">Teléfono</span>
-              <a href={`tel:+1${uni.GENTELE.replace(/\D/g, '')}`}>{formatTelefono(uni.GENTELE)}</a>
-            </li>
-          )}
-          {uni.INSTURL && (
-            <li>
-              <span className="contacto-etiqueta">Web</span>
-              <a href={conProtocolo(uni.INSTURL)} target="_blank" rel="noopener noreferrer">{dominio(uni.INSTURL)}</a>
-            </li>
-          )}
-        </ul>
-        {enlaces.length > 0 && (
-          <div className="contacto-enlaces">
-            {enlaces.map(e => (
-              <a key={e.texto} className="boton" href={conProtocolo(e.url)} target="_blank" rel="noopener noreferrer">
-                {e.texto} ↗
-              </a>
-            ))}
-          </div>
         )}
-        <p className="fuente">
-          Fuente: IPEDS{anioDirectorio && ` (directorio ${anioDirectorio})`} y College Scorecard.
-        </p>
-      </div>
-    </div>
+        {uni.INSTURL && (
+          <li>
+            <span className="contacto-etiqueta">Web</span>
+            <a href={conProtocolo(uni.INSTURL)} target="_blank" rel="noopener noreferrer">{dominio(uni.INSTURL)}</a>
+          </li>
+        )}
+      </ul>
+      {enlaces.length > 0 && (
+        <div className="contacto-enlaces">
+          {enlaces.map(e => (
+            <a key={e.texto} className="boton-enlace" href={conProtocolo(e.url)} target="_blank" rel="noopener noreferrer">
+              {e.texto} ↗
+            </a>
+          ))}
+        </div>
+      )}
+      <p className="fuente">
+        Fuente: IPEDS{anioDirectorio && ` (directorio ${anioDirectorio})`} y College Scorecard.
+      </p>
+    </>
   );
 }

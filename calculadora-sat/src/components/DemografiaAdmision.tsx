@@ -36,8 +36,10 @@ function CeldaPorcentaje({ parte, total }: { parte: number | null | undefined; t
  *
  * Postulantes/admitidos/matriculados NO vienen en College Scorecard: salen de IPEDS
  * (ADM 2024). Las universidades sin ese dato (ej. admisión abierta) no muestran la tabla.
+ *
+ * Con `soloAdmision`, solo la tabla: en la ficha la población ya está en "Sobre la universidad".
  */
-export function DemografiaAdmision({ uni }: { uni: Universidad }) {
+export function DemografiaAdmision({ uni, soloAdmision = false }: { uni: Universidad; soloAdmision?: boolean }) {
   const anioAdmision = useFuentesDatos()?.ipeds.anios.admision_por_sexo;
   const filas: FilaCDS[] = [
     { label: 'Postulantes', hombres: uni.APPLCNM, mujeres: uni.APPLCNW, total: uni.APPLCN },
@@ -47,33 +49,37 @@ export function DemografiaAdmision({ uni }: { uni: Universidad }) {
 
   return (
     <div>
-      <dl className="datos">
-        {uni.UGDS != null && (
-          <div className="dato-fila">
-            <dt>Alumnos de pregrado<InfoTooltip texto={glosarioCampos.UGDS} /></dt>
-            <dd className="numero">{uni.UGDS.toLocaleString()}</dd>
-          </div>
-        )}
-        {uni.UGDS_HISP != null && (
-          <div className="dato-fila">
-            <dt>Hispanos<InfoTooltip texto={glosarioCampos.UGDS_HISP} /></dt>
-            <dd className="numero">{formatPorcentaje(uni.UGDS_HISP)}</dd>
-          </div>
-        )}
-        {uni.STUFACR != null && (
-          <div className="dato-fila">
-            <dt>Alumnos por profesor<InfoTooltip texto={glosarioCampos.STUFACR} /></dt>
-            <dd className="numero">{uni.STUFACR}:1</dd>
-          </div>
-        )}
-      </dl>
+      {!soloAdmision && (
+        <dl className="datos">
+          {uni.UGDS != null && (
+            <div className="dato-fila">
+              <dt>Alumnos de pregrado<InfoTooltip texto={glosarioCampos.UGDS} /></dt>
+              <dd className="numero">{uni.UGDS.toLocaleString()}</dd>
+            </div>
+          )}
+          {uni.UGDS_HISP != null && (
+            <div className="dato-fila">
+              <dt>Hispanos<InfoTooltip texto={glosarioCampos.UGDS_HISP} /></dt>
+              <dd className="numero">{formatPorcentaje(uni.UGDS_HISP)}</dd>
+            </div>
+          )}
+          {uni.STUFACR != null && (
+            <div className="dato-fila">
+              <dt>Alumnos por profesor<InfoTooltip texto={glosarioCampos.STUFACR} /></dt>
+              <dd className="numero">{uni.STUFACR}:1</dd>
+            </div>
+          )}
+        </dl>
+      )}
 
       {filas.length > 0 && (
-        <div className="ficha-bloque">
-          <p className="con-ayuda">
-            <strong>Postulantes, admitidos y matriculados</strong>
-            <InfoTooltip texto={glosarioCampos.POSTULANTES} />
-          </p>
+        <div className={soloAdmision ? undefined : 'ficha-bloque'}>
+          {!soloAdmision && (
+            <p className="con-ayuda">
+              <strong>Postulantes, admitidos y matriculados</strong>
+              <InfoTooltip texto={glosarioCampos.POSTULANTES} />
+            </p>
+          )}
           <div className="tabla-envoltura">
           <table className="tabla" style={{ width: '100%', fontSize: '15px' }}>
             <thead>
