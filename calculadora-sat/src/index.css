@@ -748,7 +748,9 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   align-items: center;
   min-height: 40px;
   padding: 8px 16px;
+  font: inherit; /* también en <button>, que no hereda la tipografía */
   font-weight: 600;
+  cursor: pointer;
   color: var(--brand);
   text-decoration: none;
   background: var(--surface);
@@ -1256,26 +1258,101 @@ html { scroll-behavior: smooth; }
 .video-titulo { margin: 12px 0 0; font-size: 17px; font-weight: 700; line-height: 1.35; }
 .videos-puntos { display: none; }
 
-/* Salario por carrera: el salario general arriba como referencia, un buscador y la tabla. */
-.salarios-general { max-width: 520px; margin: 12px 0 16px; }
-.salarios-buscar { max-width: 420px; margin-bottom: 16px; }
-.salarios-tabla { width: min(100%, 760px); border-collapse: collapse; margin-top: 8px; }
-.salarios-tabla th,
-.salarios-tabla td { padding: 10px 8px; text-align: left; vertical-align: baseline; border-top: 1px dashed var(--linea); }
-.salarios-tabla thead th {
-  padding-top: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--grafito-suave);
-  border-top: 0;
+/* Salarios de egresados: lista numerada "punto a punto". Cada carrera: nombre, crecimiento y
+   graduados; el salario al 1.er año (gris) y a 4 años (negrita); y una línea con dos puntos
+   (hueco = 1.er año, lleno = 4 años) sobre una marca con la mediana de la universidad. */
+.ficha {
+  --bar: #2a3f8f;        /* punto 4 años y borde del punto 1.er año */
+  --bar-soft: #c9d4f3;   /* tramo entre los dos puntos */
+  --rail: #e8ecf8;       /* línea base */
+  --up: #1e7b4a;         /* crecimiento positivo */
+  --down: #b4232f;       /* crecimiento negativo */
 }
-.salarios-tabla tbody th { font-weight: 600; }
-.salarios-carrera { display: block; }
-.salarios-graduados { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--grafito-suave); }
-.salarios-tabla .salarios-monto { text-align: right; white-space: nowrap; }
-.salarios-ver { margin-top: 12px; }
-@media (max-width: 560px) {
-  .salarios-tabla th, .salarios-tabla td { padding: 8px 4px; font-size: 14px; }
+.salarios-intro { max-width: 70ch; margin: 0 0 18px; color: var(--muted); }
+.salarios-intro b { color: var(--ink); }
+.salarios-etiqueta { display: block; margin-bottom: 6px; }
+.salarios-campo { position: relative; max-width: 460px; }
+.salarios-campo input { padding-left: 38px; padding-right: 40px; }
+.salarios-lupa { position: absolute; left: 13px; top: 50%; color: var(--muted); transform: translateY(-50%); pointer-events: none; }
+.salarios-borrar {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.salarios-borrar:hover { color: var(--ink); background: var(--brand-soft); }
+.salarios-estado { min-height: 1.4em; margin: 6px 0 10px; font-size: 13px; color: var(--muted); }
+
+.salarios-leyenda { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
+.salarios-leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+.ley-uno, .ley-cuatro { width: 11px; height: 11px; border-radius: 50%; }
+.ley-uno { border: 2.5px solid var(--bar); }
+.ley-cuatro { background: var(--bar); }
+.ley-mediana { width: 2px; height: 14px; background: var(--muted); opacity: 0.7; }
+
+/* A todo el ancho de la tarjeta: cuanto más larga la línea, más se notan las diferencias. */
+.sal-cabecera, .sal-fila {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 128px 128px;
+  gap: 4px 16px;
+}
+.sal-cabecera {
+  padding-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+.sal-cabecera span:nth-child(n + 3) { text-align: right; }
+.sal-fila { align-items: baseline; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+.sal-puesto { font-weight: 800; color: var(--muted); }
+.sal-fila-primera .sal-puesto { color: #c98f00; }
+.sal-nombre { font-weight: 700; }
+.sal-nombre mark { color: inherit; background: #fff4c7; border-radius: 3px; }
+.sal-nombre small { margin-left: 6px; font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.sal-crece { margin-left: 6px; font-size: 12.5px; font-weight: 800; color: var(--up); white-space: nowrap; }
+.sal-crece-baja { color: var(--down); }
+.sal-uno, .sal-cuatro { text-align: right; white-space: nowrap; }
+.sal-uno { font-size: 18px; font-weight: 600; color: var(--muted); }
+.sal-cuatro { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; }
+
+/* La línea punto a punto, debajo del nombre y los montos. */
+.sal-linea { position: relative; grid-column: 2 / -1; height: 16px; }
+.sal-riel { position: absolute; left: 0; right: 0; top: 7px; height: 2px; background: var(--rail); border-radius: 2px; }
+.sal-tramo { position: absolute; top: 6px; height: 4px; background: var(--bar-soft); border-radius: 2px; }
+.sal-mediana { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--muted); opacity: 0.6; }
+.sal-punto { position: absolute; top: 2px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; }
+.sal-punto-uno { background: var(--surface); border: 2.5px solid var(--bar); }
+.sal-punto-cuatro { background: var(--bar); }
+
+.salarios-vacio { padding: 18px 20px; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; }
+.salarios-vacio p { margin: 0 0 6px; }
+.salarios-sugerencias { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.salarios-ver { margin-top: 14px; }
+
+/* Celular: el nombre arriba y los dos montos debajo, cada uno con su etiqueta. */
+@media (max-width: 640px) {
+  .sal-cabecera { display: none; }
+  .sal-fila { grid-template-columns: 24px minmax(0, 1fr) auto; gap: 4px 10px; }
+  .sal-nombre { grid-column: 2 / -1; }
+  .sal-uno { grid-column: 2; text-align: left; }
+  .sal-cuatro { grid-column: 3; }
+  .sal-uno { font-size: 16px; }
+  .sal-cuatro { font-size: 18px; }
+  .sal-uno::before { content: '1.er año '; font-size: 12.5px; font-weight: 500; }
+  .sal-cuatro::before { content: '4 años '; font-size: 12.5px; font-weight: 500; color: var(--muted); }
 }
 
 
