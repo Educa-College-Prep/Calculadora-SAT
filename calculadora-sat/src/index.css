@@ -701,8 +701,21 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   padding-right: max(clamp(16px, 4vw, 48px), env(safe-area-inset-right, 0px));
 }
 .ficha-volver { align-self: flex-start; }
-/* "Volver" solo en celular (en pantalla grande la barra de Educa y el "atrás" ya llevan a los resultados). */
-.ficha-volver-movil { display: none; }
+
+/* Migas de pan, entre la cabecera de Educa y el hero: "← Resultados / Brown University". */
+.migas { font-size: 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.migas .in { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-block: 10px; }
+.migas a { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--brand); text-decoration: none; }
+.migas a:hover { text-decoration: underline; }
+.migas span { color: var(--muted); }
+.migas [aria-current='page'] {
+  max-width: 60vw;
+  overflow: hidden;
+  font-weight: 600;
+  color: var(--ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .ficha .barra-flotante { top: calc(var(--alto-barra, 0px) + var(--alto-pestanas) + 10px); }
 
 /* Foco visible: azul sobre fondos claros, amarillo sobre los oscuros. */
@@ -771,29 +784,39 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   .barra-flotante { transition: none; }
 }
 
-/* HERO: la foto a todo el ancho, con un degradado oscuro a la izquierda para que el texto
-   blanco se lea con cualquier foto. Sin 100vh: la altura la da el contenido. */
+/* HERO: la foto a todo el ancho es la protagonista. El texto va abajo, y solo esa franja se
+   oscurece: un degradado de abajo hacia arriba que desaparece al 75% de la altura (la mitad de
+   arriba de la foto queda sin filtro) y otro suave desde la izquierda, para que el texto se
+   lea sobre fachadas claras. La sombra es un azul casi negro: oscurece sin teñir la foto. */
 .hero {
+  --sombra: 10, 13, 28;
   position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 520px;
   overflow: hidden;
   color: #fff;
-  background: var(--navy);
+  background: var(--navy); /* se ve solo mientras carga la foto */
   isolation: isolate;
 }
-.hero .foto-uni img { object-position: right center; }
+/* Centrada: se ve la parte central de la foto, cortando lo mismo arriba y abajo. */
+.hero .foto-uni img { object-position: center; }
 .hero::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(90deg, rgba(24, 30, 72, 0.96) 0%, rgba(36, 30, 90, 0.85) 38%, rgba(40, 32, 100, 0.25) 75%, rgba(40, 32, 100, 0.1) 100%);
+  background:
+    linear-gradient(0deg, rgba(var(--sombra), 0.88) 0%, rgba(var(--sombra), 0.55) 28%, rgba(var(--sombra), 0.12) 58%, rgba(var(--sombra), 0) 75%),
+    linear-gradient(90deg, rgba(var(--sombra), 0.35) 0%, rgba(var(--sombra), 0) 55%);
   pointer-events: none;
 }
 .hero-contenido {
   position: relative;
   z-index: 2;
-  padding-top: clamp(40px, 6vw, 72px);
-  padding-bottom: clamp(36px, 5vw, 56px);
+  width: 100%;
+  padding-top: 72px;
+  padding-bottom: 40px;
 }
 .hero .marcas { gap: 8px; margin: 0 0 14px; }
 .hero .marca {
@@ -811,30 +834,34 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   margin: 0 0 14px;
   padding: 5px 14px;
   font-size: 15px;
+  font-weight: 500;
   /* Es un dato, no un botón: translúcido. El amarillo queda solo para "Ver campus tour". */
   color: #fff;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: 999px;
 }
 .hero-nombre {
-  max-width: 12ch;
+  max-width: 760px;
   margin: 0;
-  font-size: clamp(40px, 7vw, 84px);
+  font-size: clamp(40px, 6.4vw, 80px);
   font-weight: 800;
   line-height: 0.95;
   letter-spacing: -0.035em;
   overflow-wrap: break-word;
+  /* Refuerza la lectura sobre fotos claras. */
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
 }
 .hero-nombre, .banda-marca .banda-titulo { color: #fff; }
-.hero-lugar { margin: 16px 0 0; font-size: 17px; color: rgba(255, 255, 255, 0.85); }
+.hero-lugar { margin: 16px 0 0; font-size: 17px; color: rgba(255, 255, 255, 0.92); }
 .hero-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 24px; }
 .hero-acciones .boton, .hero-acciones .boton-guardar { min-height: 44px; }
 /* "Guardar" y "Comparar" sobre el azul: claros, para que se lean. */
 .hero-acciones .boton, .hero-acciones .boton-guardar {
+  font-weight: 700;
   color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
 }
 /* Al pasar el mouse, sobre el azul: el fondo translúcido se aclara un poco y el texto sigue
    blanco (el hover general de .boton pone fondo celeste y el texto blanco no se vería). */
@@ -858,7 +885,9 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   bottom: 8px;
   z-index: 2;
   max-width: 60%;
-  color: rgba(255, 255, 255, 0.7);
+  text-align: right;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* BARRA DE PESTAÑAS: pegada debajo de la barra de Educa al bajar. El nombre corto ("NYU")
@@ -1267,23 +1296,18 @@ html { scroll-behavior: smooth; }
   .sobre, .videos-tour, .contacto { grid-template-columns: minmax(0, 1fr); }
   .contacto { gap: 16px; }
 }
+@media (max-width: 640px) {
+  .hero { min-height: 440px; }
+}
 @media (max-width: 520px) {
-  /* "Volver" debajo de la cabecera. */
-  .ficha-volver-movil { display: block; padding-top: 14px; padding-bottom: 14px; }
-
-  /* Hero: la foto arriba (210px), fundida hacia el azul, y el texto debajo sobre el azul. */
-  .hero .foto-uni { position: relative; height: 210px; }
-  .hero::after { inset: 0 0 auto; height: 210px; background: linear-gradient(180deg, rgba(28, 44, 110, 0) 40%, var(--navy) 100%); }
-  .hero-contenido { padding-top: 4px; padding-bottom: 28px; }
-  .hero-nombre { max-width: none; font-size: 42px; }
+  /* Hero: la misma foto con el texto abajo, un poco más bajo. "Ver campus tour" a todo el
+     ancho; el crédito de la foto en una línea. */
+  .hero-contenido { padding-top: 48px; padding-bottom: 32px; }
   .hero .boton-sol { width: 100%; min-height: 48px; }
   .hero .foto-uni-credito {
-    top: 188px;
-    bottom: auto;
     left: 12px;
     max-width: none;
     overflow: hidden;
-    text-align: right;
     text-overflow: ellipsis;
     white-space: nowrap;
   }

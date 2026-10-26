@@ -227,15 +227,22 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
 
   return (
     <main className="ficha">
-      {/* En pantalla grande no hay "Volver": la barra de Educa y el "atrás" del navegador
-          llevan a los resultados. En celular sí, debajo de la cabecera. */}
-      <div className="in ficha-volver-movil">
-        <button type="button" className="boton ficha-volver" onClick={onVolver}>← Volver a resultados</button>
-      </div>
+      {/* Migas de pan: "← Resultados" vuelve a la lista con los filtros y la posición de antes
+          (onVolver usa el historial, igual que el "atrás" del navegador). El href es la página
+          principal, por si se abre en otra pestaña. */}
+      <nav className="migas" aria-label="Ruta">
+        <div className="in">
+          <a href={import.meta.env.BASE_URL} onClick={e => { e.preventDefault(); onVolver(); }}>
+            <span aria-hidden="true">←</span> Resultados
+          </a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{uni.INSTNM}</span>
+        </div>
+      </nav>
       <BarraFlotante visible={subiendo && !accionesALaVista}>{acciones}</BarraFlotante>
 
-      {/* HERO: la foto a todo el ancho y, encima, el nombre sobre un degradado oscuro a la
-          izquierda (donde va el texto blanco). En celular, la foto arriba y el texto debajo. */}
+      {/* HERO: la foto a todo el ancho es la protagonista. Solo la franja de abajo, donde va el
+          texto, se oscurece con un degradado neutro que no tiñe la foto. */}
       <header className="hero" ref={heroRef}>
         <FotoUniversidad uni={uni} />
         <div className="in hero-contenido">
