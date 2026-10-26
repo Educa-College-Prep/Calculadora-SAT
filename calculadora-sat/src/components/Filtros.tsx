@@ -42,6 +42,8 @@ interface Props {
   onLimpiar: () => void;
   /** Cuántos resultados hay de cada nivel (alta probabilidad, intermedia, baja); null sin puntaje. */
   conteoNiveles: Record<Nivel, number> | null;
+  /** Cuántos resultados quedarían con cada opción de "¿Piden el SAT?", con los demás filtros aplicados. */
+  conteoPolitica: Record<string, number>;
   /** Niveles marcados; vacío = todos. */
   nivelesSAT: Nivel[];
   setNivelesSAT: (v: Nivel[]) => void;
@@ -94,11 +96,14 @@ function Seccion({ titulo, ayuda, children }: { titulo: string; ayuda?: string; 
   );
 }
 
-/** Opciones como burbujas de hoja de respuestas: se "rellena" la elegida. */
+/**
+ * Opciones como burbujas de hoja de respuestas: se "rellena" la elegida. `cuenta`: cuántos
+ * resultados quedarían al elegirla.
+ */
 function Burbujas({ nombre, valor, opciones, onCambio }: {
   nombre: string;
   valor: string;
-  opciones: { valor: string; texto: string }[];
+  opciones: { valor: string; texto: string; cuenta?: number }[];
   onCambio: (v: string) => void;
 }) {
   return (
@@ -112,7 +117,10 @@ function Burbujas({ nombre, valor, opciones, onCambio }: {
             checked={valor === o.valor}
             onChange={() => onCambio(o.valor)}
           />
-          <span>{o.texto}</span>
+          <span>
+            {o.texto}
+            {o.cuenta != null && <span className="nivel-opcion-cuenta numero">{o.cuenta.toLocaleString('en-US')}</span>}
+          </span>
         </label>
       ))}
     </div>
@@ -221,6 +229,7 @@ export function Filtros({
   precioMaximo, setPrecioMaximo,
   filtrosActivos, onLimpiar,
   conteoNiveles,
+  conteoPolitica,
   nivelesSAT, setNivelesSAT,
 }: Props) {
   const satIncompleto = (puntajeMath > 0) !== (puntajeLectura > 0);
@@ -317,10 +326,10 @@ export function Filtros({
           valor={exigirSAT}
           onCambio={setExigirSAT}
           opciones={[
-            { valor: 'todos', texto: 'Todos' },
-            { valor: 'requerido', texto: 'Obligatorio' },
-            { valor: 'opcional', texto: 'Opcional' },
-            { valor: 'no-considera', texto: 'No lo toman en cuenta' },
+            { valor: 'todos', texto: 'Todos', cuenta: conteoPolitica.todos },
+            { valor: 'requerido', texto: 'Obligatorio', cuenta: conteoPolitica.requerido },
+            { valor: 'opcional', texto: 'Opcional', cuenta: conteoPolitica.opcional },
+            { valor: 'no-considera', texto: 'No lo toman en cuenta', cuenta: conteoPolitica['no-considera'] },
           ]}
         />
         <p className="ayuda politica-explicacion">{EXPLICACION_POLITICA[exigirSAT]}</p>

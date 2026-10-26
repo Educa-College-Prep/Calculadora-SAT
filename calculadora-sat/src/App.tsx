@@ -141,7 +141,7 @@ export default function App() {
    * filtro activo distingue tres casos: cumple (se queda), no cumple (se descarta)
    * y no se puede saber (se queda, pero marcada y ordenada al final).
    */
-  const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId, conteoNiveles } = useMemo(() => {
+  const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId, conteoNiveles, conteoPolitica } = useMemo(() => {
     const { estado, ciudad, tipos, precio, politica, sat } = filtros;
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
     const filtroSATActivo = sat > 0;
@@ -153,6 +153,9 @@ export default function App() {
     // El mapa nacional usa todas las que pasan los filtros MENOS estado/ciudad;
     // si no, al elegir un estado los demás quedan sin datos y no se pueden clickear.
     const sinUbicacion: Universidad[] = [];
+    // Las que pasan todos los filtros menos "¿Piden el SAT?": con ellas se cuenta cuántas
+    // quedarían con cada opción de ese filtro, antes de elegirla.
+    const sinFiltroPolitica: Universidad[] = [];
 
     const lista = universidades.filter((uni) => {
       // Filtros duros: aquí no hay ambigüedad, el dato siempre existe.
@@ -178,20 +181,34 @@ export default function App() {
 
       // Las que no informan su política solo aparecen en "Todos": mostrarlas bajo
       // "Obligatorio" u "Opcional" haría creer que lo son.
-      if (filtroPoliticaActivo && uni.ADMCON7 !== POLITICA_SAT[politica]) return false;
+      const cumplePolitica = !filtroPoliticaActivo || uni.ADMCON7 === POLITICA_SAT[politica];
 
-      sinUbicacion.push(uni);
+      if (cumplePolitica) sinUbicacion.push(uni);
       if (estado !== 'todos' && uni.STABBR !== estado) return false;
       if (ciudad !== 'todas' && uni.CITY !== ciudad) return false;
+      sinFiltroPolitica.push(uni);
+      if (!cumplePolitica) return false;
 
       if (falta.length > 0 && uni._id != null) faltantes.set(uni._id, falta);
       return true;
     });
 
+    // Cuántas quedarían con cada opción de "¿Piden el SAT?" (con los niveles marcados, si hay).
+    const contarPolitica = (lista: Universidad[]): Record<string, number> => {
+      const conteo: Record<string, number> = { todos: lista.length };
+      for (const [opcion, valor] of Object.entries(POLITICA_SAT)) {
+        conteo[opcion] = lista.filter(u => u.ADMCON7 === valor).length;
+      }
+      return conteo;
+    };
+
     // Cuántas hay de cada nivel, contadas ANTES de elegir uno: así el menú
     // "Tus posibilidades de entrar" muestra cuántas hay de cada una.
     if (!filtroSATActivo) {
-      return { universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes, conteoNiveles: null };
+      return {
+        universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes,
+        conteoNiveles: null, conteoPolitica: contarPolitica(sinFiltroPolitica),
+      };
     }
     const conteo: Record<Nivel, number> = { 'Alta probabilidad': 0, 'Intermedia': 0, 'Baja': 0 };
     for (const uni of lista) {
@@ -209,6 +226,7 @@ export default function App() {
       universidadesSinUbicacion: sinUbicacion.filter(delNivel),
       faltantesPorId: faltantes,
       conteoNiveles: conteo,
+      conteoPolitica: contarPolitica(sinFiltroPolitica.filter(delNivel)),
     };
   }, [universidades, resultadoBusqueda, filtros]);
 
@@ -475,6 +493,7 @@ export default function App() {
             nombresEstados={NOMBRES_ESTADOS}
             filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
             conteoNiveles={conteoNiveles}
+            conteoPolitica={conteoPolitica}
             nivelesSAT={nivelesSAT} setNivelesSAT={setNivelesSAT}
           />
 
