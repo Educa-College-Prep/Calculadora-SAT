@@ -810,8 +810,10 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   margin: 0 0 14px;
   padding: 5px 14px;
   font-size: 15px;
-  color: var(--navy);
-  background: var(--sun);
+  /* Es un dato, no un botón: translúcido. El amarillo queda solo para "Ver campus tour". */
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 999px;
 }
 .hero-nombre {
@@ -833,7 +835,14 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   background: rgba(255, 255, 255, 0.12);
   border: 1.5px solid rgba(255, 255, 255, 0.45);
 }
-.hero-acciones .boton-guardar-activo { color: var(--navy); background: #fff; border-color: #fff; }
+/* Guardada: blanco con texto azul (no amarillo, que es el color de "Ver campus tour"). Con
+   tres clases, para ganarle a la regla general del botón guardado, que viene más abajo. */
+.hero-acciones .boton-guardar-texto.boton-guardar-activo,
+.hero-acciones .boton-guardar-texto.boton-guardar-activo svg { color: var(--navy); }
+.hero-acciones .boton-guardar-texto.boton-guardar-activo { background: #fff; border-color: #fff; }
+.ficha .barra-flotante .boton-guardar-texto.boton-guardar-activo,
+.ficha .barra-flotante .boton-guardar-texto.boton-guardar-activo svg { color: #fff; }
+.ficha .barra-flotante .boton-guardar-texto.boton-guardar-activo { background: var(--navy); border-color: var(--navy); }
 .hero .foto-uni-credito {
   position: absolute;
   right: 12px;
