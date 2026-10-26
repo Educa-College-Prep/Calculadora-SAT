@@ -829,17 +829,50 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 .hero .marca-privada, .hero .marca-publica { color: #fff; background: var(--green); }
 .hero .marca-publica { background: var(--brand); }
-.hero-ranking {
-  display: inline-block;
+/* Ranking: chip relleno con el color de su nivel (oro 1–10, plata 11–25, bronce 26–50), con
+   trofeo, el número más grande y la fuente al final, más chica. Neutro (más de 50): discreto. */
+.chip-ranking {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
   margin: 0 0 14px;
-  padding: 5px 14px;
+  padding: 6px 16px 6px 8px;
   font-size: 15px;
-  font-weight: 500;
-  /* Es un dato, no un botón: translúcido. El amarillo queda solo para "Ver campus tour". */
-  color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--rank-ink);
+  background: var(--rank-bg);
   border-radius: 999px;
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.5);
+}
+.chip-ranking b { font-size: 17px; font-weight: 800; }
+.chip-ranking small { font-size: 12.5px; font-weight: 600; opacity: 0.75; }
+.chip-ranking-icono {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+}
+.chip-ranking-oro { --rank-bg: #ffd23f; --rank-ink: #2a2100; }
+.chip-ranking-plata { --rank-bg: #e3e8f2; --rank-ink: #1b2a57; }
+.chip-ranking-bronce { --rank-bg: #f0b47e; --rank-ink: #3a1d05; }
+.chip-ranking-neutro {
+  --rank-bg: rgba(255, 255, 255, 0.12);
+  --rank-ink: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: none;
+}
+.chip-ranking-neutro .chip-ranking-icono { background: rgba(255, 255, 255, 0.15); }
+@media (max-width: 640px) {
+  /* La fuente pasa debajo si no entra en una línea. */
+  .chip-ranking { flex-wrap: wrap; row-gap: 2px; font-size: 14px; border-radius: 18px; }
+  .chip-ranking b { font-size: 16px; }
+  .chip-ranking small { flex-basis: 100%; padding-left: 34px; }
 }
 .hero-nombre {
   max-width: 760px;
