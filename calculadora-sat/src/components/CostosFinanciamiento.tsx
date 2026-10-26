@@ -142,6 +142,28 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
                 </span>
                 <p className="fuente"><strong>Dato oficial</strong> de College Scorecard (Departamento de Educación de EE.UU.){anioNeto && `, año ${anioNeto}`}.</p>
               </div>
+            ) : p.id === 'intl' && total != null ? (
+              // Internacional: no se sabe si le darán beca, así que lo grande es el costo total sin
+              // beca (el mismo de la izquierda, a propósito) y la beca promedio va como posibilidad.
+              <div className="cifra-destacada">
+                <span className="cifra-destacada-valor numero">{cv?.estimado && '~'}{formatDinero(total)}</span>
+                <span className="cifra-destacada-texto">
+                  al año, sin beca
+                  <InfoTooltip texto={glosarioCampos.COSTO_TOTAL_ANUAL} />
+                </span>
+                {aprox != null && aprox > 0 ? (
+                  <>
+                    <span className="costos-sin-beca">
+                      Si recibes la beca promedio de {formatDinero(uni.IGRNT_A)}, bajaría hasta{' '}
+                      <strong className="numero">~{formatDinero(aprox)}</strong> al año.
+                      <InfoTooltip texto={glosarioCampos.COSTO_APROX_BECA} />
+                    </span>
+                    <p className="fuente"><strong>Valor calculado</strong>, no oficial: costo total menos la beca promedio de la universidad (IPEDS).</p>
+                  </>
+                ) : (
+                  <p className="fuente">Precio de lista: matrícula y costo de vida, antes de cualquier beca.</p>
+                )}
+              </div>
             ) : aprox != null && aprox > 0 ? (
               <div className="cifra-destacada">
                 <span className="cifra-destacada-valor numero">~{formatDinero(aprox)}</span>
