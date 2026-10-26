@@ -23,6 +23,10 @@
   --alerta-fondo: #fff3d6;
   --alerta-borde: #f0c96a;
   --resaltador: #ffe14d;
+  /* Etiquetas de nivel en la ficha (Selectiva → Élite, Top 10% → Top 1%): solo pintan el punto. */
+  --nivel-1: #3b82f6;
+  --nivel-2: #7c4ddb;
+  --nivel-3: #e2a300;
   --error: #b42318;
 
   --radio: 14px;
@@ -839,10 +843,13 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   border-radius: var(--radio);
 }
 .esencial {
-  /* En columna con la cifra abajo: si una etiqueta ocupa dos líneas ("Salario a 4 años
-     de graduado"), las cifras de las cinco casillas siguen a la misma altura. */
-  display: flex;
-  flex-direction: column;
+  /* Título, cifra y etiqueta de nivel en filas compartidas por las cinco casillas (subgrid):
+     si un título ocupa dos líneas ("Costo de vida al año") o solo dos casillas tienen
+     etiqueta, las cifras siguen a la misma altura. Sin ninguna etiqueta, esa fila mide 0. */
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  row-gap: 0;
   padding: 16px 20px;
   min-width: 0;
   background: var(--hoja);
@@ -857,13 +864,45 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   color: var(--tinta-fuerte);
 }
 .esencial-valor {
-  margin: auto 0 0;
+  align-self: end;
+  margin: 0;
   padding-top: 6px;
   font-size: clamp(24px, 2.5vw, 32px);
   font-weight: 800;
   line-height: 1.05;
 }
 .esencial-vacio { font-size: 18px; font-weight: 600; color: var(--grafito-suave); }
+.esencial-nivel { margin: 10px 0 0; }
+
+/* Etiqueta de nivel: punto de color con halo + texto. El texto usa el color normal. */
+.punto-nivel {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: help;
+}
+.punto-nivel i {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent);
+}
+.punto-nivel-1 { --c: var(--nivel-1); }
+.punto-nivel-2 { --c: var(--nivel-2); }
+.punto-nivel-3 { --c: var(--nivel-3); }
+/* El nivel más alto: punto un poco mayor y un brillo suave. */
+.punto-nivel-3 i {
+  width: 12px;
+  height: 12px;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--c) 26%, transparent),
+    0 0 12px 2px color-mix(in srgb, var(--c) 45%, transparent);
+}
 
 .ficha-grilla {
   display: grid;
@@ -1007,7 +1046,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 
 @media (max-width: 860px) {
-  /* De a dos (admisión y SAT, vida y total) y el salario a lo ancho. */
+  /* De a dos (admisión y SAT, matrícula y vida) y el costo total a lo ancho. */
   .esenciales { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .esencial:last-child { grid-column: 1 / -1; border-radius: 0 0 var(--radio-casilla) var(--radio-casilla); }
   .esencial:first-child { border-radius: var(--radio-casilla) 0 0 0; }
@@ -1016,6 +1055,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 @media (max-width: 600px) {
   .esencial { padding: 14px 16px; }
+  .punto-nivel { font-size: 13px; }
   .ficha-seccion { padding: 16px; }
   .pestanas { display: flex; border-radius: var(--radio); }
   .pestana { flex: 1 1 auto; }
