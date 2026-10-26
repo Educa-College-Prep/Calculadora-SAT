@@ -42,6 +42,8 @@ export function FotoUniversidad({ uni }: { uni: Universidad }) {
         sizes="(max-width: 1320px) 100vw, 1280px"
         alt={`Foto de ${uni.INSTNM}`}
         decoding="async"
+        // Es lo primero que se ve en la ficha: que el navegador la pida antes que lo demás.
+        fetchPriority="high"
         onLoad={() => setCargada(foto.f)}
         onError={() => setFallida(foto.f)}
       />

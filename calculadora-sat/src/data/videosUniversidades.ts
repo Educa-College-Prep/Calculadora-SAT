@@ -19,6 +19,10 @@ export interface VideosDeUniversidad {
 
 export const CANAL_EDUCA = 'https://www.youtube.com/@EducaCollegePrep';
 
+/** ¿Tiene algún video? Sin videos no hay banda "Experiencia Educa" ni su pestaña en la ficha. */
+export const tieneVideos = (videos: VideosDeUniversidad | undefined): videos is VideosDeUniversidad =>
+  !!videos && (videos.tour != null || (videos.testimonios?.length ?? 0) > 0);
+
 export const VIDEOS_UNIVERSIDADES: Record<number, VideosDeUniversidad> = {
   // Harvard University
   166027: {
