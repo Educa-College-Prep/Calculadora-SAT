@@ -164,3 +164,17 @@ export function posicionUSNews(uni: Pick<Universidad, 'INSTNM' | 'STABBR'>): Pos
 export function textoPuesto(p: PosicionUSNews): string {
   return `#${p.puesto} ${SIGLA_LISTA[p.lista]}`;
 }
+
+export type NivelRanking = 'oro' | 'plata' | 'bronce' | 'neutro';
+
+/**
+ * Color del chip del ranking en la ficha: oro (1–10), plata (11–25), bronce (26–50) y neutro
+ * (más de 50, discreto para que un puesto bajo no se destaque). Hoy solo se cargan las ~50
+ * primeras de cada lista, así que "neutro" no aparece, pero queda listo si se agregan más.
+ */
+export function nivelRanking(puesto: number): NivelRanking {
+  if (puesto <= 10) return 'oro';
+  if (puesto <= 25) return 'plata';
+  if (puesto <= 50) return 'bronce';
+  return 'neutro';
+}

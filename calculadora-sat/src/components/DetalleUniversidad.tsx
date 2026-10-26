@@ -13,7 +13,7 @@ import { InfoTooltip } from './InfoTooltip';
 import { BotonGuardar } from './BotonGuardar';
 import { FotoUniversidad, CreditoFoto } from './FotoUniversidad';
 import { UniversidadesSimilares } from './UniversidadesSimilares';
-import { posicionUSNews, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
+import { posicionUSNews, nivelRanking, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
@@ -252,8 +252,18 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
             {uni.ADMCON7 === 'Requerido' && <span className="marca marca-sat">SAT obligatorio</span>}
           </div>
           {ranking && (
-            <p className="hero-ranking" title={`Fuente: ${FUENTE_USNEWS}`}>
-              <strong>#{ranking.puesto}</strong> en {NOMBRE_LISTA[ranking.lista]} · U.S. News {EDICION_USNEWS}
+            // Chip con trofeo, del color de su nivel (oro, plata, bronce). El número siempre está:
+            // el color nunca es la única señal.
+            <p className={`chip-ranking chip-ranking-${nivelRanking(ranking.puesto)}`} title={`Fuente: ${FUENTE_USNEWS}`}>
+              <span className="chip-ranking-icono" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z" />
+                  <path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" />
+                </svg>
+              </span>
+              <span><b>#{ranking.puesto}</b> en {NOMBRE_LISTA[ranking.lista]}</span>
+              <small>U.S. News {EDICION_USNEWS}</small>
             </p>
           )}
           <h1 className="hero-nombre">{uni.INSTNM}</h1>
