@@ -61,3 +61,41 @@ export const CARRERAS_ESPANOL: Record<string, string> = {
   '1407': 'Ingeniería química',
   '5213': 'Métodos cuantitativos de gestión',
 };
+
+/**
+ * Otras palabras con las que alguien buscaría cada carrera (en español e inglés), por código
+ * CIP, para el buscador de "Salarios de egresados". El nombre en español y el de Scorecard (en
+ * inglés) ya se buscan solos: aquí va lo que no aparece en ninguno de los dos, como "medicina"
+ * para Biología (el pre-med) o "programación" para Ciencias de la computación.
+ */
+export const SINONIMOS_CARRERAS: Record<string, string> = {
+  '1107': 'cs informatica programacion software sistemas computacion',
+  '1101': 'cs informatica programacion software sistemas',
+  '1409': 'hardware computacion sistemas',
+  '5212': 'sistemas informatica computacion',
+  '2701': 'math estadistica',
+  '2705': 'estadistica statistics',
+  '1410': 'electronica electrica',
+  '1419': 'mecatronica',
+  '1408': 'construccion',
+  '4506': 'negocios finanzas business administracion',
+  '5202': 'negocios business administracion management mba',
+  '5201': 'administracion business',
+  '5208': 'banca inversiones',
+  '4510': 'politica relaciones internacionales derecho gobierno',
+  '2601': 'medicina premed pre-med salud',
+  '2602': 'bioquimica biologia molecular medicina premed',
+  '2604': 'biologia celular medicina premed',
+  '2615': 'medicina premed neurociencia biologia',
+  '3027': 'biologia humana medicina premed pre-med salud',
+  '5111': 'medicina premed pre-med salud',
+  '5112': 'medicina',
+  '1405': 'biomedica ingenieria medicina',
+  '5100': 'medicina premed salud',
+  '5138': 'nursing enfermera',
+  '4201': 'psychology',
+  '2401': 'liberal arts humanidades letras',
+  '2301': 'literatura escritura ingles',
+  '0901': 'periodismo medios',
+  '0909': 'marketing publicidad',
+};
