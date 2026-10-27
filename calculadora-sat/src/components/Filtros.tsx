@@ -52,6 +52,8 @@ interface Props {
   setNivelesSAT: (v: Nivel[]) => void;
   /** En celular el mapa va en una capa aparte: esto la abre. undefined en pantallas anchas. */
   onAbrirMapa?: () => void;
+  /** false = el puntaje SAT no va en la hoja (la portada lo muestra en su banda de arriba). */
+  conPuntaje?: boolean;
 }
 
 const SAT_MIN = 200;
@@ -328,28 +330,22 @@ function InputTotalSAT({ total, setSoloTotal, onEscribir }: {
   );
 }
 
-export function Filtros({
-  estadoSeleccionado, setEstadoSeleccionado,
-  ciudadSeleccionada, setCiudadSeleccionada,
-  estadosUnicos, ciudadesUnicas,
-  nombresEstados,
-  puntajeMath, setPuntajeMath,
-  puntajeLectura, setPuntajeLectura,
-  puntajeSoloTotal, setPuntajeSoloTotal,
-  puntajeTotal,
-  exigirSAT, setExigirSAT,
-  tiposUniversidad, setTiposUniversidad,
-  precioMaximo, setPrecioMaximo,
-  filtrosActivos, onLimpiar,
-  conteoNiveles,
-  conteoPolitica,
-  nivelesSAT, setNivelesSAT,
-  onAbrirMapa,
-}: Props) {
-  // En celular, la hoja muestra solo el puntaje SAT; el resto se despliega con "Más filtros"
-  // (en pantallas anchas siempre se ve todo: el CSS ignora esto).
-  const [plegada, setPlegada] = useState(true);
-  const otrosActivos = filtrosActivos.filter(f => f !== 'puntaje SAT' && !f.startsWith('búsqueda')).length;
+/** Ayuda del puntaje SAT (el "?" junto a su título). */
+export const AYUDA_PUNTAJE = 'Escribe tus dos secciones o solo tu total. Se compara tu total con el de los admitidos de cada universidad. Se ocultan solo las que están muy por encima de tu puntaje (más de 100 puntos bajo el 25% de sus admitidos).';
+
+/**
+ * Tu puntaje SAT: Lectura y Escritura, Matemáticas y Total (se puede llenar con las dos
+ * secciones o solo con el total). Va en la hoja de filtros o, en la portada con bandas, arriba.
+ */
+export function PuntajeSAT({ puntajeMath, setPuntajeMath, puntajeLectura, setPuntajeLectura, puntajeSoloTotal, setPuntajeSoloTotal, puntajeTotal }: {
+  puntajeMath: number;
+  setPuntajeMath: (v: number) => void;
+  puntajeLectura: number;
+  setPuntajeLectura: (v: number) => void;
+  puntajeSoloTotal: number;
+  setPuntajeSoloTotal: (v: number) => void;
+  puntajeTotal: number;
+}) {
   // Con una sola sección y sin total escrito no se puede filtrar: se dice cuál falta.
   const satFalta = puntajeSoloTotal > 0 || (puntajeMath > 0) === (puntajeLectura > 0)
     ? null : puntajeMath > 0 ? 'Lectura y Escritura' : 'Matemáticas';
@@ -374,6 +370,46 @@ export function Filtros({
     setSeccion(v);
     if (v > 0 && puntajeSoloTotal > 0) setPuntajeSoloTotal(0);
   };
+
+  return (
+    <>
+      <div className="casillas-sat">
+        <InputSeccionSAT key={`lectura-${reinicioSecciones}`} id="sat-lectura" etiqueta="Lectura y Escritura"
+          valor={puntajeLectura} setValor={conSeccion(setPuntajeLectura)} onUsarComoTotal={usarComoTotal} />
+        <InputSeccionSAT key={`math-${reinicioSecciones}`} id="sat-math" etiqueta="Matemáticas"
+          valor={puntajeMath} setValor={conSeccion(setPuntajeMath)} onUsarComoTotal={usarComoTotal} />
+      </div>
+      <InputTotalSAT total={puntajeTotal} setSoloTotal={setPuntajeSoloTotal} onEscribir={borrarSecciones} />
+      {satFalta && (
+        <p className="ayuda ayuda-aviso">Falta tu puntaje de {satFalta}, o escribe solo tu total.</p>
+      )}
+    </>
+  );
+}
+
+export function Filtros({
+  estadoSeleccionado, setEstadoSeleccionado,
+  ciudadSeleccionada, setCiudadSeleccionada,
+  estadosUnicos, ciudadesUnicas,
+  nombresEstados,
+  puntajeMath, setPuntajeMath,
+  puntajeLectura, setPuntajeLectura,
+  puntajeSoloTotal, setPuntajeSoloTotal,
+  puntajeTotal,
+  exigirSAT, setExigirSAT,
+  tiposUniversidad, setTiposUniversidad,
+  precioMaximo, setPrecioMaximo,
+  filtrosActivos, onLimpiar,
+  conteoNiveles,
+  conteoPolitica,
+  nivelesSAT, setNivelesSAT,
+  onAbrirMapa,
+  conPuntaje = true,
+}: Props) {
+  // En celular, la hoja muestra solo el puntaje SAT; el resto se despliega con "Más filtros"
+  // (en pantallas anchas siempre se ve todo: el CSS ignora esto).
+  const [plegada, setPlegada] = useState(true);
+  const otrosActivos = filtrosActivos.filter(f => f !== 'puntaje SAT' && !f.startsWith('búsqueda')).length;
   const sinLimitePrecio = precioMaximo >= PRECIO_TOPE;
   const hojaRef = useTopeSticky();
 
@@ -444,25 +480,15 @@ export function Filtros({
         )}
       </Seccion>
 
-      {/* PUNTAJE SAT (orden: Lectura y Escritura, Matemáticas, Total). Se puede llenar con las dos
-          secciones o solo con el total. */}
-      <Seccion
-        clase="hoja-seccion-sat"
-        titulo="Tu puntaje SAT"
-        ayuda="Escribe tus dos secciones o solo tu total. Se compara tu total con el de los admitidos de cada universidad. Se ocultan solo las que están muy por encima de tu puntaje (más de 100 puntos bajo el 25% de sus admitidos)."
-      >
-        <div className="casillas-sat">
-          <InputSeccionSAT key={`lectura-${reinicioSecciones}`} id="sat-lectura" etiqueta="Lectura y Escritura"
-            valor={puntajeLectura} setValor={conSeccion(setPuntajeLectura)} onUsarComoTotal={usarComoTotal} />
-          <InputSeccionSAT key={`math-${reinicioSecciones}`} id="sat-math" etiqueta="Matemáticas"
-            valor={puntajeMath} setValor={conSeccion(setPuntajeMath)} onUsarComoTotal={usarComoTotal} />
-        </div>
-        <InputTotalSAT total={puntajeTotal} setSoloTotal={setPuntajeSoloTotal} onEscribir={borrarSecciones} />
-        {satFalta && (
-          <p className="ayuda ayuda-aviso">Falta tu puntaje de {satFalta}, o escribe solo tu total.</p>
-        )}
-
-      </Seccion>
+      {/* PUNTAJE SAT: aquí, salvo que la portada lo muestre arriba (conPuntaje = false). */}
+      {conPuntaje && (
+        <Seccion clase="hoja-seccion-sat" titulo="Tu puntaje SAT" ayuda={AYUDA_PUNTAJE}>
+          <PuntajeSAT puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
+            puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
+            puntajeSoloTotal={puntajeSoloTotal} setPuntajeSoloTotal={setPuntajeSoloTotal}
+            puntajeTotal={puntajeTotal} />
+        </Seccion>
+      )}
 
       {/* Solo en celular (ver CSS): abre o cierra los demás filtros, justo debajo del puntaje. */}
       <button type="button" className="boton boton-ancho hoja-mas-filtros" aria-expanded={!plegada}
