@@ -19,7 +19,7 @@ export const NIVELES: { nivel: Nivel; clase: string; barras: number; explicacion
 export const AYUDA_NIVELES = NIVELES.map(n => `${n.nivel}: ${n.explicacion.charAt(0).toLowerCase()}${n.explicacion.slice(1)}`).join(' ')
   + ' Se calcula comparando tu puntaje SAT con el de sus alumnos admitidos.';
 
-/** Rango SAT total (percentil 25 y 75) sumando Math + Lectura. */
+/** Rango SAT total (percentil 25 y 75) sumando Matemáticas + Lectura y Escritura. */
 export function rangoSAT(u: Universidad): [number, number] | null {
   if (u.SATVR25 == null || u.SATMT25 == null || u.SATVR75 == null || u.SATMT75 == null) return null;
   return [u.SATVR25 + u.SATMT25, u.SATVR75 + u.SATMT75];

@@ -50,6 +50,8 @@ interface Props {
   /** Niveles marcados; vacío = todos. */
   nivelesSAT: Nivel[];
   setNivelesSAT: (v: Nivel[]) => void;
+  /** En celular el mapa va en una capa aparte: esto la abre. undefined en pantallas anchas. */
+  onAbrirMapa?: () => void;
 }
 
 const SAT_MIN = 200;
@@ -114,9 +116,9 @@ function useTopeSticky() {
 }
 
 /** Bloque de la hoja: título con tooltip opcional y su contenido. */
-function Seccion({ titulo, ayuda, children }: { titulo: string; ayuda?: string; children: ReactNode }) {
+function Seccion({ titulo, ayuda, clase, children }: { titulo: string; ayuda?: string; clase?: string; children: ReactNode }) {
   return (
-    <fieldset className="hoja-seccion">
+    <fieldset className={`hoja-seccion${clase ? ` ${clase}` : ''}`}>
       <legend className="hoja-titulo">
         {titulo}
         {ayuda && <InfoTooltip texto={ayuda} />}
@@ -342,10 +344,15 @@ export function Filtros({
   conteoNiveles,
   conteoPolitica,
   nivelesSAT, setNivelesSAT,
+  onAbrirMapa,
 }: Props) {
+  // En celular, la hoja muestra solo el puntaje SAT; el resto se despliega con "Más filtros"
+  // (en pantallas anchas siempre se ve todo: el CSS ignora esto).
+  const [plegada, setPlegada] = useState(true);
+  const otrosActivos = filtrosActivos.filter(f => f !== 'puntaje SAT' && !f.startsWith('búsqueda')).length;
   // Con una sola sección y sin total escrito no se puede filtrar: se dice cuál falta.
   const satFalta = puntajeSoloTotal > 0 || (puntajeMath > 0) === (puntajeLectura > 0)
-    ? null : puntajeMath > 0 ? 'Lectura y Escritura' : 'Math';
+    ? null : puntajeMath > 0 ? 'Lectura y Escritura' : 'Matemáticas';
   // Escribir el total a mano borra las secciones; la "key" vuelve a montar sus campos vacíos
   // (si una tenía un número inválido sin guardar, su valor ya era 0 y no se borraría solo).
   const [reinicioSecciones, setReinicioSecciones] = useState(0);
@@ -371,7 +378,7 @@ export function Filtros({
   const hojaRef = useTopeSticky();
 
   return (
-    <aside ref={hojaRef} className="hoja" aria-label="Filtros">
+    <aside ref={hojaRef} className={`hoja${plegada ? ' hoja-plegada' : ''}`} aria-label="Filtros">
       <div className="hoja-cabecera">
         <div className="hoja-cabecera-fila">
           <h2 className="titulo-seccion">Marca tus datos</h2>
@@ -430,21 +437,24 @@ export function Filtros({
           >
             Ver todo el país
           </button>
+        ) : onAbrirMapa ? (
+          <button type="button" className="boton boton-ancho" onClick={onAbrirMapa}>Elegir en el mapa</button>
         ) : (
           <p className="ayuda">También puedes elegir un estado en el mapa.</p>
         )}
       </Seccion>
 
-      {/* PUNTAJE SAT (orden: Lectura y Escritura, Math, Total). Se puede llenar con las dos
+      {/* PUNTAJE SAT (orden: Lectura y Escritura, Matemáticas, Total). Se puede llenar con las dos
           secciones o solo con el total. */}
       <Seccion
+        clase="hoja-seccion-sat"
         titulo="Tu puntaje SAT"
         ayuda="Escribe tus dos secciones o solo tu total. Se compara tu total con el de los admitidos de cada universidad. Se ocultan solo las que están muy por encima de tu puntaje (más de 100 puntos bajo el 25% de sus admitidos)."
       >
         <div className="casillas-sat">
           <InputSeccionSAT key={`lectura-${reinicioSecciones}`} id="sat-lectura" etiqueta="Lectura y Escritura"
             valor={puntajeLectura} setValor={conSeccion(setPuntajeLectura)} onUsarComoTotal={usarComoTotal} />
-          <InputSeccionSAT key={`math-${reinicioSecciones}`} id="sat-math" etiqueta="Math"
+          <InputSeccionSAT key={`math-${reinicioSecciones}`} id="sat-math" etiqueta="Matemáticas"
             valor={puntajeMath} setValor={conSeccion(setPuntajeMath)} onUsarComoTotal={usarComoTotal} />
         </div>
         <InputTotalSAT total={puntajeTotal} setSoloTotal={setPuntajeSoloTotal} onEscribir={borrarSecciones} />
@@ -453,6 +463,12 @@ export function Filtros({
         )}
 
       </Seccion>
+
+      {/* Solo en celular (ver CSS): abre o cierra los demás filtros, justo debajo del puntaje. */}
+      <button type="button" className="boton boton-ancho hoja-mas-filtros" aria-expanded={!plegada}
+        onClick={() => setPlegada(!plegada)}>
+        {plegada ? `Más filtros${otrosActivos > 0 ? ` (${otrosActivos} activo${otrosActivos === 1 ? '' : 's'})` : ''}` : 'Menos filtros'}
+      </button>
 
       {/* POLÍTICA SAT: junto al puntaje, porque es lo siguiente que se pregunta quien da el SAT. */}
       <Seccion titulo="¿Piden el SAT?" ayuda={glosarioCampos.ADMCON7}>

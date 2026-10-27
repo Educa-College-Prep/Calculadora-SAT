@@ -7,6 +7,7 @@ import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
 import { tipoControl } from './utils/tipoControl';
 import { useValorEstable } from './utils/useValorEstable';
+import { useMedia } from './utils/useMedia';
 import { posicionUSNews } from './data/rankingUSNews';
 import { useMiLista, claveUniversidad } from './utils/useMiLista';
 import type { TipoControl } from './utils/tipoControl';
@@ -361,6 +362,55 @@ export default function App() {
     setCiudadSeleccionada(ciudad);
   }, []);
 
+  // CELULAR (una sola columna, hasta 960px): el mapa no va en la página, porque empujaba los
+  // resultados una pantalla más abajo y un toque equivocado abría los condados. Se abre en una
+  // capa encima de todo; al elegir un lugar se cierra y lleva a los resultados.
+  const angosto = useMedia('(max-width: 960px)');
+  const [mapaAbierto, setMapaAbierto] = useState(false);
+  const resultadoRef = useRef<HTMLDivElement>(null);
+  const irAResultados = useCallback(() => {
+    requestAnimationFrame(() => resultadoRef.current?.scrollIntoView({ block: 'start' }));
+  }, []);
+  const elegirEnCapa = useCallback((elegir: () => void) => {
+    elegir();
+    setMapaAbierto(false);
+    irAResultados();
+  }, [irAResultados]);
+  useEffect(() => {
+    if (!mapaAbierto) return;
+    // Mientras la capa está abierta, la página de atrás no se mueve y Escape la cierra.
+    const cerrarConEscape = (e: KeyboardEvent) => { if (e.key === 'Escape') setMapaAbierto(false); };
+    document.documentElement.style.overflow = 'hidden';
+    window.addEventListener('keydown', cerrarConEscape);
+    return () => {
+      document.documentElement.style.overflow = '';
+      window.removeEventListener('keydown', cerrarConEscape);
+    };
+  }, [mapaAbierto]);
+  // Al pasar a pantalla ancha, el mapa vuelve a la página.
+  if (!angosto && mapaAbierto) setMapaAbierto(false);
+
+  // Botón fijo "Ver N universidades": en celular, mientras la lista todavía está más abajo
+  // (llenando el puntaje o los filtros), lleva a ella y dice cuántas hay. Se esconde cuando ya
+  // se ve el contador de resultados, que dice lo mismo (y si no, lo taparía).
+  const listaRef = useRef<HTMLDivElement>(null);
+  const [listaAbajo, setListaAbajo] = useState(true);
+  const [contadorALaVista, setContadorALaVista] = useState(false);
+  useEffect(() => {
+    const lista = listaRef.current;
+    const contador = resultadoRef.current;
+    if (!lista || !contador) return;
+    const observador = new IntersectionObserver(entradas => {
+      for (const entrada of entradas) {
+        if (entrada.target === lista) setListaAbajo(!entrada.isIntersecting && entrada.boundingClientRect.top > 0);
+        else setContadorALaVista(entrada.isIntersecting);
+      }
+    });
+    observador.observe(lista);
+    observador.observe(contador);
+    return () => observador.disconnect();
+  });
+
   // El detalle se abre como una entrada del historial del navegador: así el botón
   // "atrás" vuelve a la lista (y "adelante" reabre la universidad) en vez de salir de la web.
   const scrollDeLista = useRef(0);
@@ -516,11 +566,12 @@ export default function App() {
             conteoNiveles={conteoNiveles}
             conteoPolitica={conteoPolitica}
             nivelesSAT={nivelesSAT} setNivelesSAT={setNivelesSAT}
+            onAbrirMapa={angosto ? () => setMapaAbierto(true) : undefined}
           />
 
           <main className="columna-principal">
             {/* Lo primero que se lee: cuántas universidades quedan con lo que marcaste. */}
-            <div className="resultado" aria-live="polite">
+            <div className="resultado" aria-live="polite" ref={resultadoRef}>
               <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
               <span className="resultado-texto">
                 {universidadesFiltradas.length === 1 ? 'universidad encaja' : 'universidades encajan'} con lo que marcaste
@@ -542,13 +593,15 @@ export default function App() {
             </div>
 
             <section className="tablero">
-              <MapaGeo
-                datosMapaGeoEstados={mapa.datos}
-                universidadesFiltradas={mapa.universidades}
-                estadoSeleccionado={mapa.estado}
-                onSeleccionarEstado={seleccionarEstadoDesdeMapa}
-                onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
-              />
+              {!angosto && (
+                <MapaGeo
+                  datosMapaGeoEstados={mapa.datos}
+                  universidadesFiltradas={mapa.universidades}
+                  estadoSeleccionado={mapa.estado}
+                  onSeleccionarEstado={seleccionarEstadoDesdeMapa}
+                  onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
+                />
+              )}
 
               {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
                   va el resumen en vez de estirar las barras. */}
@@ -569,6 +622,7 @@ export default function App() {
               </div>
             </section>
 
+            <div ref={listaRef} className="lista-ancla">
             <ListaUniversidades
               universidadesFiltradas={universidadesFiltradas} universidadesOrdenadas={universidadesOrdenadas}
               faltantesPorId={faltantesPorId}
@@ -578,8 +632,31 @@ export default function App() {
               guardadas={miLista.guardadas} onAlternarGuardada={miLista.alternar}
               puntajeSAT={filtros.sat}
             />
+            </div>
           </main>
         </div>
+
+        {angosto && mapaAbierto && (
+          <div className="capa-mapa" role="dialog" aria-modal="true" aria-label="Elegir en el mapa">
+            <div className="capa-mapa-barra">
+              <strong>Elige dónde quieres estudiar</strong>
+              <button type="button" className="boton" onClick={() => setMapaAbierto(false)} autoFocus>Cerrar</button>
+            </div>
+            <MapaGeo
+              datosMapaGeoEstados={mapa.datos}
+              universidadesFiltradas={mapa.universidades}
+              estadoSeleccionado={mapa.estado}
+              onSeleccionarEstado={st => elegirEnCapa(() => seleccionarEstadoDesdeMapa(st))}
+              onSeleccionarCiudad={ciudad => elegirEnCapa(() => seleccionarCiudadDesdeMapa(ciudad))}
+            />
+          </div>
+        )}
+
+        {angosto && listaAbajo && !contadorALaVista && !mapaAbierto && (
+          <button type="button" className="boton boton-primario ver-resultados" onClick={() => listaRef.current?.scrollIntoView({ block: 'start' })}>
+            Ver {universidadesFiltradas.length.toLocaleString()} {universidadesFiltradas.length === 1 ? 'universidad' : 'universidades'}
+          </button>
+        )}
       </>
     );
   })();

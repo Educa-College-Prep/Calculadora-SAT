@@ -18,20 +18,20 @@ const COLOR_BANDA = 'var(--tinta)';
 
 /**
  * Gráfico pequeño del rango intercuartil (percentil 25–75) del SAT.
- * Orden fijo: Verbal, Math, Total. Cada fila usa su propia escala
+ * Orden fijo: Lectura y Escritura, Matemáticas, Total. Cada fila usa su propia escala
  * (secciones 200–800, total 400–1600).
  *
  * College Scorecard no publica percentiles del TOTAL, así que se aproxima
- * sumando Verbal + Math (ver glosarioCampos.SAT_TOTAL).
+ * sumando las dos secciones (ver glosarioCampos.SAT_TOTAL).
  */
 export function RangosSAT({ uni }: { uni: Universidad }) {
   const rangos: Rango[] = [];
 
   if (uni.SATVR25 != null && uni.SATVR75 != null) {
-    rangos.push({ label: 'Verbal', p25: uni.SATVR25, p50: uni.SATVR50 ?? null, p75: uni.SATVR75, min: 200, max: 800, paso: 100 });
+    rangos.push({ label: 'Lectura y Escritura', p25: uni.SATVR25, p50: uni.SATVR50 ?? null, p75: uni.SATVR75, min: 200, max: 800, paso: 100 });
   }
   if (uni.SATMT25 != null && uni.SATMT75 != null) {
-    rangos.push({ label: 'Math', p25: uni.SATMT25, p50: uni.SATMT50 ?? null, p75: uni.SATMT75, min: 200, max: 800, paso: 100 });
+    rangos.push({ label: 'Matemáticas', p25: uni.SATMT25, p50: uni.SATMT50 ?? null, p75: uni.SATMT75, min: 200, max: 800, paso: 100 });
   }
   if (uni.SATVR25 != null && uni.SATVR75 != null && uni.SATMT25 != null && uni.SATMT75 != null) {
     rangos.push({

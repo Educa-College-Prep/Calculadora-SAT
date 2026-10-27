@@ -167,9 +167,9 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 
 /* El título es la pregunta que trae al estudiante ("¿A qué universidades… te alcanza tu SAT?"):
-   la marca ya está en la barra de Educa. Mediano, para que no tape el buscador. */
+   la marca ya está en la barra de Educa. Mediano y a todo el ancho de su columna (en dos
+   líneas parejas), para que no quede un hueco entre él y el buscador. */
 .cabecera h1 {
-  max-width: 18ch;
   font-size: clamp(26px, 3.2vw, 38px);
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -240,6 +240,49 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   .cuerpo { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* CELULAR (una columna): la hoja muestra solo el puntaje SAT y "Más filtros" despliega el
+   resto, para que los resultados queden cerca. En pantallas anchas el botón no existe. */
+.hoja-mas-filtros { display: none; }
+@media (max-width: 960px) {
+  .hoja .hoja-cabecera { order: -2; }
+  .hoja .hoja-seccion-sat, .hoja .hoja-mas-filtros { order: -1; }
+  .hoja-mas-filtros { display: flex; }
+  .hoja-plegada .hoja-seccion:not(.hoja-seccion-sat) { display: none; }
+}
+
+/* Botón fijo "Ver N universidades": abajo, al alcance del pulgar. */
+.ver-resultados {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  min-height: 48px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(17, 29, 63, 0.28);
+  transform: translateX(-50%);
+}
+.lista-ancla { scroll-margin-top: calc(var(--alto-barra, 0px) + 12px); }
+.resultado { scroll-margin-top: calc(var(--alto-barra, 0px) + 12px); }
+
+/* El mapa en celular: capa a pantalla completa, encima de todo (también de la barra de Educa). */
+.capa-mapa {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--papel);
+}
+.capa-mapa-barra { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.capa-mapa-barra strong { font-size: 17px; }
+
 @media (max-width: 600px) {
   #root { padding: 20px 16px 48px; }
   .panel-cabecera { padding: 16px 16px 10px; }
@@ -292,7 +335,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 
 /* Casillas del puntaje: grandes, como las del recuadro de respuestas. Etiqueta, casilla,
    escala y aviso en filas compartidas (subgrid): "Lectura y Escritura" ocupa dos líneas en
-   la columna angosta y "Math" una, pero las casillas quedan a la misma altura. */
+   la columna angosta y "Matemáticas" una, pero las casillas quedan a la misma altura. */
 .casillas-sat {
   display: grid;
   grid-template-columns: 1fr 1fr;
