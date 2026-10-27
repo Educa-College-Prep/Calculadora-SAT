@@ -54,6 +54,10 @@ export interface Universidad {
   /** Orden en el ranking U.S. News (se calcula al cargar): primero las universidades
    *  nacionales (1–49) y luego los liberal arts colleges (1001–1049). null = no rankeada. */
   USNEWS_ORDEN?: number | null;
+  /** Costo real al año para alguien de fuera del estado: matrícula + vivienda, comida y libros. */
+  COSTO_ANUAL?: number | null;
+  /** true si el costo de vida es estimado (la universidad no publica el de su campus). */
+  COSTO_ANUAL_ESTIMADO?: boolean;
   /** URL de la calculadora de costo neto de la universidad (College Scorecard NPCURL). */
   NPCURL?: string | null;
 

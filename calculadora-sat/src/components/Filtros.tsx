@@ -83,7 +83,7 @@ function problemaTotal(n: number): string | null {
   if (n >= SAT_MIN) return 'El total va de 400 a 1600. Si es el puntaje de una sola sección, escríbelo arriba.';
   return 'El total va de 400 a 1600.';
 }
-const PRECIO_TOPE = 90000;
+const PRECIO_TOPE = 100000;
 const MARGEN_STICKY = 16;
 
 /**
@@ -517,22 +517,22 @@ export function Filtros({
 
       {/* MATRÍCULA */}
       <Seccion
-        titulo="Matrícula máxima al año"
-        ayuda="Se compara con la matrícula para alumnos de otros estados y del extranjero (out-of-state), que es la que pagarías como estudiante internacional."
+        titulo="Costo máximo al año"
+        ayuda="Lo que costaría un año completo: matrícula para alumnos de otros estados y del extranjero (out-of-state, la que pagarías como internacional) más vivienda, comida y libros. Es el mismo costo anual total de cada ficha, antes de becas."
       >
         <p className="precio-valor numero">
           {sinLimitePrecio ? 'Sin límite' : <>Hasta <strong>${precioMaximo.toLocaleString()}</strong> USD</>}
         </p>
         <input
-          type="range" min="1000" max={PRECIO_TOPE} step="1000" value={precioMaximo}
+          type="range" min="5000" max={PRECIO_TOPE} step="1000" value={precioMaximo}
           onChange={(e) => setPrecioMaximo(Number(e.target.value))}
           className="deslizador"
-          aria-label="Matrícula máxima al año en dólares"
+          aria-label="Costo máximo al año en dólares"
           aria-valuetext={sinLimitePrecio ? 'Sin límite' : `${precioMaximo} dólares`}
         />
         <div className="deslizador-escala numero" aria-hidden="true">
-          <span>$1k</span>
-          <span>$90k o más</span>
+          <span>$5k</span>
+          <span>$100k o más</span>
         </div>
       </Seccion>
     </aside>

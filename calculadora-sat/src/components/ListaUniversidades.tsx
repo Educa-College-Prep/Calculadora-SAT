@@ -24,6 +24,9 @@ interface Props {
   onAlternarGuardada: (uni: Universidad) => void;
   /** Tu puntaje SAT total (0 = sin puntaje): para la etiqueta Probabilidad alta / media / baja. */
   puntajeSAT: number;
+  /** Texto del buscador: si no hay resultados por él, el vacío lo dice y ofrece borrarlo. */
+  busqueda: string;
+  onBorrarBusqueda: () => void;
 }
 
 const OPCIONES_POR_PAGINA = [25, 50, 100, 200];
@@ -32,6 +35,12 @@ const OPCIONES_POR_PAGINA = [25, 50, 100, 200];
 function claseControl(control: string | null): string {
   return control === 'Pública' ? 'marca marca-publica' : 'marca marca-privada';
 }
+
+/** Datos que la fila no muestra pero por los que se puede ordenar: se agregan como cuarta columna. */
+const DATO_ORDEN: Record<string, { etiqueta: string; valor: (u: Universidad) => string | null }> = {
+  SAT_AVG: { etiqueta: 'SAT promedio', valor: u => (u.SAT_AVG != null ? String(u.SAT_AVG) : null) },
+  MD_EARN_WNE_4YR: { etiqueta: 'salario a 4 años', valor: u => formatDinero(u.MD_EARN_WNE_4YR) },
+};
 
 /**
  * Cada tarjeta va memoizada: al cambiar de página o de orden, React solo
@@ -44,6 +53,8 @@ const FilaUniversidad = memo(function FilaUniversidad({
   guardada,
   onAlternarGuardada,
   nivel,
+  ordenarPor,
+  guardarConTexto,
 }: {
   uni: Universidad;
   faltantes?: string[];
@@ -51,6 +62,10 @@ const FilaUniversidad = memo(function FilaUniversidad({
   guardada: boolean;
   onAlternarGuardada: (uni: Universidad) => void;
   nivel: Nivel | null;
+  /** El criterio de "Ordenar por": su dato se resalta (o se agrega) para que se vea por qué va aquí. */
+  ordenarPor: string;
+  /** "Guardar" con texto mientras Mi lista está vacía: así se entiende qué hace la estrella. */
+  guardarConTexto: boolean;
 }) {
   const incompleta = !!faltantes?.length;
   const ranking = posicionUSNews(uni);
@@ -83,7 +98,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
 
         {/* Tres datos para comparar de un vistazo, siempre en la misma columna. */}
         <span className="fila-datos">
-          <span className="dato">
+          <span className={`dato${ordenarPor === 'ADM_RATE' ? ' dato-orden' : ''}`}>
             <span className="dato-valor numero">{formatPorcentaje(uni.ADM_RATE) ?? '—'}</span>
             <span className="dato-etiqueta">admisión</span>
           </span>
@@ -93,10 +108,22 @@ const FilaUniversidad = memo(function FilaUniversidad({
             <span className="dato-valor numero">{rango ? `${rango[0]}–${rango[1]}` : '—'}</span>
             <span className="dato-etiqueta">rango SAT</span>
           </span>
-          <span className="dato">
-            <span className="dato-valor numero">{formatDinero(uni.TUITIONFEE_OUT) ?? '—'}</span>
-            <span className="dato-etiqueta">matrícula</span>
+          {/* Costo real al año (matrícula + vida), como el "Costo anual total" de la ficha.
+              "~" = el costo de vida es estimado. */}
+          <span className={`dato${ordenarPor === 'COSTO_ANUAL' ? ' dato-orden' : ''}`}
+            title="Matrícula (out-of-state) más vivienda, comida y libros, antes de becas">
+            <span className="dato-valor numero">
+              {uni.COSTO_ANUAL != null ? `${uni.COSTO_ANUAL_ESTIMADO ? '~' : ''}${formatDinero(uni.COSTO_ANUAL)}` : '—'}
+            </span>
+            <span className="dato-etiqueta">costo al año</span>
           </span>
+          {/* Ordenando por un dato que la fila no muestra, se agrega: así se ve por qué va aquí. */}
+          {DATO_ORDEN[ordenarPor] && (
+            <span className="dato dato-orden">
+              <span className="dato-valor numero">{DATO_ORDEN[ordenarPor].valor(uni) ?? '—'}</span>
+              <span className="dato-etiqueta">{DATO_ORDEN[ordenarPor].etiqueta}</span>
+            </span>
+          )}
         </span>
 
         {/* Datos faltantes para los filtros que el usuario activó */}
@@ -108,7 +135,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
           </span>
         )}
       </button>
-      <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} />
+      <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} etiqueta={guardarConTexto} />
     </li>
   );
 });
@@ -122,7 +149,7 @@ const ORDENES: { valor: string; texto: string; direccion?: 'asc' | 'desc' }[] = 
   { valor: 'USNEWS_ORDEN', texto: 'Ranking U.S. News 2027', direccion: 'asc' },
   { valor: 'ADM_RATE', texto: 'Tasa de admisión', direccion: 'desc' },
   { valor: 'SAT_AVG', texto: 'SAT promedio', direccion: 'desc' },
-  { valor: 'TUITIONFEE_OUT', texto: 'Matrícula', direccion: 'asc' },
+  { valor: 'COSTO_ANUAL', texto: 'Costo al año', direccion: 'asc' },
   { valor: 'MD_EARN_WNE_4YR', texto: 'Salario de egresados', direccion: 'desc' },
   { valor: 'INSTNM', texto: 'Nombre', direccion: 'asc' },
 ];
@@ -147,6 +174,8 @@ export function ListaUniversidades({
   guardadas,
   onAlternarGuardada,
   puntajeSAT,
+  busqueda,
+  onBorrarBusqueda,
 }: Props) {
   const [porPagina, setPorPagina] = useState<number>(50);
   const [pagina, setPagina] = useState<number>(1);
@@ -205,14 +234,23 @@ export function ListaUniversidades({
               </button>
             )}
           </div>
+          {ordenarPor === 'ninguno' && (
+            <p className="ayuda orden-explicacion">
+              {puntajeSAT > 0
+                ? 'Primero donde tu probabilidad es alta, luego media y baja; en cada una, por ranking y salario.'
+                : 'Primero las del ranking U.S. News; luego por salario de egresados.'}
+            </p>
+          )}
         </div>
       </div>
 
+      {/* Informativo, no alerta: que una universidad no publique SAT no es un error (muchas no
+          lo piden y deciden por el resto del perfil). */}
       {faltantesPorId.size > 0 && (
-        <p className="nota-alerta lista-aviso">
+        <p className="nota-info lista-aviso">
           {[...faltantesPorId.values()].every(f => f.length === 1 && f[0] === 'Sin datos SAT')
-            ? `${faltantesPorId.size.toLocaleString('en-US')} no publican puntajes SAT (muchas no lo piden), así que no se puede calcular tu probabilidad. No se descartaron: van al final, marcadas.`
-            : `${faltantesPorId.size.toLocaleString('en-US')} resultados no tienen los datos que piden tus filtros. No se descartaron: van al final y aparecen marcados.`}
+            ? `${faltantesPorId.size.toLocaleString('en-US')} no publican puntajes SAT: muchas no lo piden y deciden por tus notas, ensayos y actividades. Están al final de la lista, marcadas.`
+            : `${faltantesPorId.size.toLocaleString('en-US')} no tienen alguno de los datos que piden tus filtros. Están al final de la lista, marcadas.`}
         </p>
       )}
 
@@ -228,6 +266,8 @@ export function ListaUniversidades({
                 guardada={guardadas.has(claveUniversidad(uni))}
                 onAlternarGuardada={onAlternarGuardada}
                 nivel={puntajeSAT > 0 ? clasificar(uni, puntajeSAT) : null}
+                ordenarPor={ordenarPor}
+                guardarConTexto={guardadas.size === 0}
               />
             ))}
           </ul>
@@ -259,10 +299,18 @@ export function ListaUniversidades({
         </>
       ) : (
         <div className="panel-cuerpo">
-          <p className="vacio">
-            Ninguna universidad encaja con todos tus filtros. Prueba subir la matrícula máxima,
-            quitar el estado o cambiar la política SAT.
-          </p>
+          {/* El vacío nombra la causa: si hay búsqueda, casi siempre es ella. */}
+          {busqueda.trim() ? (
+            <p className="vacio">
+              Ninguna universidad coincide con “{busqueda.trim()}” y tus filtros.{' '}
+              <button type="button" className="boton" onClick={onBorrarBusqueda}>Borrar la búsqueda</button>
+            </p>
+          ) : (
+            <p className="vacio">
+              Ninguna universidad encaja con todos tus filtros. Prueba subir el costo máximo,
+              quitar el estado o cambiar la política SAT.
+            </p>
+          )}
         </div>
       )}
     </section>

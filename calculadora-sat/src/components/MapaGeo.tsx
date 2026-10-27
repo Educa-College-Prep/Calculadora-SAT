@@ -13,6 +13,8 @@ interface Props {
   estadoSeleccionado: string;
   onSeleccionarEstado: (estado: string) => void;
   onSeleccionarCiudad?: (ciudad: string) => void;
+  /** Alto del mapa del país (en la portada de escritorio va más grande). */
+  alto?: string;
 }
 
 // Fuera del componente: si se recrearan en cada render, Google Charts
@@ -41,7 +43,7 @@ const stateMapOptionsSeleccion = {
   legend: 'none',
 };
 
-export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidadesFiltradas, estadoSeleccionado, onSeleccionarEstado, onSeleccionarCiudad }: Props) {
+export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidadesFiltradas, estadoSeleccionado, onSeleccionarEstado, onSeleccionarCiudad, alto = '300px' }: Props) {
   const esNacional = estadoSeleccionado === 'todos';
 
   const chartEvents = useMemo(() => [
@@ -86,7 +88,7 @@ export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidade
               chartEvents={chartEvents}
               chartType="GeoChart"
               width="100%"
-              height="300px"
+              height={alto}
               data={datosMapaGeoEstados}
               options={esNacional ? stateMapOptions : stateMapOptionsSeleccion}
             />
