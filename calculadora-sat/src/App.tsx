@@ -4,7 +4,8 @@ import { NOMBRES_ESTADOS } from './utils/estados';
 import { crearIndiceBusqueda, buscarUniversidades } from './utils/busqueda';
 
 import { Buscador } from './components/Buscador';
-import { Filtros } from './components/Filtros';
+import { Filtros, PuntajeSAT, AYUDA_PUNTAJE } from './components/Filtros';
+import { InfoTooltip } from './components/InfoTooltip';
 import { tipoControl } from './utils/tipoControl';
 import { useValorEstable } from './utils/useValorEstable';
 import { useMedia } from './utils/useMedia';
@@ -561,143 +562,165 @@ export default function App() {
 
     return (
       <>
-        <header className="cabecera">
-          <div>
-            <h1>¿A qué universidades de EE. UU. te alcanza tu SAT?</h1>
-            <button type="button" className="boton boton-mi-lista" onClick={abrirMiLista}>
-              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
-              Mi lista y comparar
-              <span className="contador numero">{universidadesGuardadas.length}</span>
-            </button>
-          </div>
-          <Buscador
-            busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
-            mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
-            sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
-            onSeleccionar={seleccionarUniversidad}
-          />
-        </header>
-
-        <div className="cuerpo">
-          <Filtros
-            estadoSeleccionado={estadoSeleccionado} setEstadoSeleccionado={setEstadoSeleccionado}
-            ciudadSeleccionada={ciudadSeleccionada} setCiudadSeleccionada={setCiudadSeleccionada}
-            estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
-            puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
-            puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
-            puntajeSoloTotal={puntajeSoloTotal} setPuntajeSoloTotal={setPuntajeSoloTotal}
-            puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
-            tiposUniversidad={tiposUniversidad} setTiposUniversidad={setTiposUniversidad}
-            precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
-            nombresEstados={NOMBRES_ESTADOS}
-            filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
-            conteoNiveles={conteoNiveles}
-            conteoPolitica={conteoPolitica}
-            nivelesSAT={nivelesSAT} setNivelesSAT={setNivelesSAT}
-            onAbrirMapa={angosto ? () => setMapaAbierto(true) : undefined}
-          />
-
-          <main className="columna-principal">
-            {/* Lo primero que se lee: cuántas universidades quedan con lo que marcaste. */}
-            <div className="resultado" aria-live="polite" ref={resultadoRef}>
-              {conteoNiveles ? (
-                // Con puntaje, la respuesta al título: cuántas de cada probabilidad. Cada cifra
-                // filtra la lista a ese grupo (otro toque la quita).
-                <>
-                  <span className="resultado-texto">Con tu SAT de <strong className="numero">{filtros.sat}</strong>, tu probabilidad de entrar es:</span>
-                  <span className="reparto">
-                    {NIVELES.map(n => {
-                      const solo = nivelesSAT.length === 1 && nivelesSAT[0] === n.nivel;
-                      return (
-                        <button key={n.nivel} type="button" className={`reparto-nivel reparto-${n.clase}`} aria-pressed={solo}
-                          onClick={() => setNivelesSAT(solo ? [] : [n.nivel])} title={n.explicacion}>
-                          <span className="reparto-cifra numero">{conteoNiveles[n.nivel].toLocaleString()}</span>
-                          <span className="reparto-etiqueta">
-                            <BarrasNivel barras={n.barras} />
-                            {/* En celular solo "alta / media / baja": el título ya dice "probabilidad". */}
-                            <span className="reparto-prob">probabilidad </span>{n.nivel.replace('Probabilidad ', '')}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
-                  <span className="resultado-texto">
-                    {universidadesFiltradas.length === 1 ? 'universidad encaja' : 'universidades encajan'} con lo que marcaste
-                  </span>
-                </>
-              )}
-              <span className="resultado-nota">
-                {[
-                  conteoNiveles && sinSAT > 0 ? `y ${sinSAT.toLocaleString()} que no publican puntajes SAT` : null,
-                  conteoNiveles && nivelesSAT.length > 0 && nivelesSAT.length < 3
-                    ? `mostrando ${universidadesFiltradas.length.toLocaleString()} en la lista` : null,
-                  `de ${universidades.length.toLocaleString()} en la base de datos`,
-                  hayFiltrosUbicacion
-                    ? `en ${NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado}${filtros.ciudad !== 'todas' ? `, ${filtros.ciudad}` : ''}`
-                    : null,
-                ].filter(Boolean).join(' · ')}
-                {filtrosActivos.length > 0 && (
-                  <>
-                    {' · '}
-                    <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={limpiarFiltros}
-                      title={`Quita: ${filtrosActivos.join(', ')}`}>
-                      Quitar filtros
-                    </button>
-                  </>
-                )}
-              </span>
-            </div>
-
-            {universidadesFiltradas.length > 0 && (
-            <section className="tablero">
-              {!angosto && (
-                <MapaGeo
-                  alto="380px"
-                  datosMapaGeoEstados={mapa.datos}
-                  universidadesFiltradas={mapa.universidades}
-                  estadoSeleccionado={mapa.estado}
-                  onSeleccionarEstado={seleccionarEstadoDesdeMapa}
-                  onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
-                />
-              )}
-
-              {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
-                  va el resumen en vez de estirar las barras. */}
-              <div className="tablero-lateral">
-                {/* Primero lo que se sabe del lugar elegido; debajo, las mejores de ahí. */}
-                {hayFiltrosUbicacion && (
-                  <ResumenEstado
-                    universidades={universidadesFiltradas}
-                    estadoSeleccionado={filtros.estado}
-                  />
-                )}
-                <TopUniversidades
-                  universidades={topUniversidades}
-                  grupos={listaEquilibrada}
-                  lugar={hayFiltrosUbicacion ? (filtros.ciudad !== 'todas' ? filtros.ciudad : NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado) : null}
+        {/* PORTADA EN TRES BANDAS a todo el ancho, como la ficha: (1) la pregunta, con tu puntaje
+            SAT y la respuesta; (2) dónde están, con el mapa grande y tu lista; (3) los resultados,
+            con el resto de los filtros al lado. */}
+        <div className="portada portada-3">
+          <section className="banda banda-blanco portada-pregunta" aria-label="Tu puntaje SAT">
+            <div className="in">
+              <header className="cabecera">
+                <div>
+                  <h1>¿A qué universidades de EE. UU. te alcanza tu SAT?</h1>
+                  <button type="button" className="boton boton-mi-lista" onClick={abrirMiLista}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
+                    Mi lista y comparar
+                    <span className="contador numero">{universidadesGuardadas.length}</span>
+                  </button>
+                </div>
+                <Buscador
+                  busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
+                  mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
+                  sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
                   onSeleccionar={seleccionarUniversidad}
                 />
+              </header>
+              <div className="pregunta-cuerpo">
+                <fieldset className="pregunta-puntaje">
+                  <legend className="hoja-titulo">Tu puntaje SAT<InfoTooltip texto={AYUDA_PUNTAJE} /></legend>
+                  <PuntajeSAT puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
+                    puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
+                    puntajeSoloTotal={puntajeSoloTotal} setPuntajeSoloTotal={setPuntajeSoloTotal}
+                    puntajeTotal={puntajeTotal} />
+                </fieldset>
+                <div className="resultado" aria-live="polite" ref={resultadoRef}>
+                  {conteoNiveles ? (
+                    // Con puntaje, la respuesta al título: cuántas de cada probabilidad. Cada cifra
+                    // filtra la lista a ese grupo (otro toque la quita).
+                    <>
+                      <span className="resultado-texto">Con tu SAT de <strong className="numero">{filtros.sat}</strong>, tu probabilidad de entrar es:</span>
+                      <span className="reparto">
+                        {NIVELES.map(n => {
+                          const solo = nivelesSAT.length === 1 && nivelesSAT[0] === n.nivel;
+                          return (
+                            <button key={n.nivel} type="button" className={`reparto-nivel reparto-${n.clase}`} aria-pressed={solo}
+                              onClick={() => setNivelesSAT(solo ? [] : [n.nivel])} title={n.explicacion}>
+                              <span className="reparto-cifra numero">{conteoNiveles[n.nivel].toLocaleString()}</span>
+                              <span className="reparto-etiqueta">
+                                <BarrasNivel barras={n.barras} />
+                                {/* En celular solo "alta / media / baja": el título ya dice "probabilidad". */}
+                                <span className="reparto-prob">probabilidad </span>{n.nivel.replace('Probabilidad ', '')}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
+                      <span className="resultado-texto">
+                        {universidadesFiltradas.length === 1 ? 'universidad encaja' : 'universidades encajan'} con lo que marcaste
+                      </span>
+                    </>
+                  )}
+                  <span className="resultado-nota">
+                    {[
+                      conteoNiveles && sinSAT > 0 ? `y ${sinSAT.toLocaleString()} que no publican puntajes SAT` : null,
+                      conteoNiveles && nivelesSAT.length > 0 && nivelesSAT.length < 3
+                        ? `mostrando ${universidadesFiltradas.length.toLocaleString()} en la lista` : null,
+                      `de ${universidades.length.toLocaleString()} en la base de datos`,
+                      hayFiltrosUbicacion
+                        ? `en ${NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado}${filtros.ciudad !== 'todas' ? `, ${filtros.ciudad}` : ''}`
+                        : null,
+                    ].filter(Boolean).join(' · ')}
+                    {filtrosActivos.length > 0 && (
+                      <>
+                        {' · '}
+                        <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={limpiarFiltros}
+                          title={`Quita: ${filtrosActivos.join(', ')}`}>
+                          Quitar filtros
+                        </button>
+                      </>
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {universidadesFiltradas.length > 0 && (
+            <section className="banda banda-gris" aria-label="Dónde están">
+              <div className="in">
+                <section className="tablero">
+                  {!angosto && (
+                    <MapaGeo
+                      alto="380px"
+                      datosMapaGeoEstados={mapa.datos}
+                      universidadesFiltradas={mapa.universidades}
+                      estadoSeleccionado={mapa.estado}
+                      onSeleccionarEstado={seleccionarEstadoDesdeMapa}
+                      onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
+                    />
+                  )}
+
+                  {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
+                      va el resumen en vez de estirar las barras. */}
+                  <div className="tablero-lateral">
+                    {/* Primero lo que se sabe del lugar elegido; debajo, las mejores de ahí. */}
+                    {hayFiltrosUbicacion && (
+                      <ResumenEstado
+                        universidades={universidadesFiltradas}
+                        estadoSeleccionado={filtros.estado}
+                      />
+                    )}
+                    <TopUniversidades
+                      universidades={topUniversidades}
+                      grupos={listaEquilibrada}
+                      lugar={hayFiltrosUbicacion ? (filtros.ciudad !== 'todas' ? filtros.ciudad : NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado) : null}
+                      onSeleccionar={seleccionarUniversidad}
+                    />
+                  </div>
+                </section>
               </div>
             </section>
-            )}
+          )}
 
-            <div ref={listaRef} className="lista-ancla">
-            <ListaUniversidades
-              universidadesFiltradas={universidadesFiltradas} universidadesOrdenadas={universidadesOrdenadas}
-              faltantesPorId={faltantesPorId}
-              totalUniversidades={universidades.length} ordenarPor={ordenarPor} setOrdenarPor={setOrdenarPor}
-              ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
-              onSeleccionar={seleccionarUniversidad}
-              guardadas={miLista.guardadas} onAlternarGuardada={miLista.alternar}
-              puntajeSAT={filtros.sat}
-              busqueda={busquedaNombre} onBorrarBusqueda={() => setBusquedaNombre('')}
-            />
+          <section className="banda banda-blanco" aria-label="Resultados">
+            <div className="in cuerpo">
+              <Filtros
+                estadoSeleccionado={estadoSeleccionado} setEstadoSeleccionado={setEstadoSeleccionado}
+                ciudadSeleccionada={ciudadSeleccionada} setCiudadSeleccionada={setCiudadSeleccionada}
+                estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
+                puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
+                puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
+                puntajeSoloTotal={puntajeSoloTotal} setPuntajeSoloTotal={setPuntajeSoloTotal}
+                puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
+                tiposUniversidad={tiposUniversidad} setTiposUniversidad={setTiposUniversidad}
+                precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
+                nombresEstados={NOMBRES_ESTADOS}
+                filtrosActivos={filtrosActivos} onLimpiar={limpiarFiltros}
+                conteoNiveles={conteoNiveles}
+                conteoPolitica={conteoPolitica}
+                nivelesSAT={nivelesSAT} setNivelesSAT={setNivelesSAT}
+                onAbrirMapa={angosto ? () => setMapaAbierto(true) : undefined}
+                conPuntaje={false}
+              />
+              <main className="columna-principal">
+                <div ref={listaRef} className="lista-ancla">
+                <ListaUniversidades
+                  universidadesFiltradas={universidadesFiltradas} universidadesOrdenadas={universidadesOrdenadas}
+                  faltantesPorId={faltantesPorId}
+                  totalUniversidades={universidades.length} ordenarPor={ordenarPor} setOrdenarPor={setOrdenarPor}
+                  ordenDireccion={ordenDireccion} setOrdenDireccion={setOrdenDireccion}
+                  onSeleccionar={seleccionarUniversidad}
+                  guardadas={miLista.guardadas} onAlternarGuardada={miLista.alternar}
+                  puntajeSAT={filtros.sat}
+                  busqueda={busquedaNombre} onBorrarBusqueda={() => setBusquedaNombre('')}
+                />
+                </div>
+              </main>
             </div>
-          </main>
+          </section>
         </div>
 
         {angosto && mapaAbierto && (

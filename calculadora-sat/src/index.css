@@ -2138,3 +2138,49 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
   .total-sat input { min-height: 44px; }
   .total-sat { padding-block: 0; }
 }
+
+/* =========================================================
+   Portada en bandas a todo el ancho, como la ficha. Usa los tokens de la ficha
+   (--bg, --surface…) con los valores de la portada.
+   ========================================================= */
+#root:has(> .portada) { max-width: none; padding: 0; }
+#root:has(> .portada) > :not(.portada) {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 48px);
+}
+.portada { --bg: var(--papel); --surface: var(--hoja); --muted: var(--grafito-suave); }
+.portada .banda { padding-block: clamp(28px, 4vw, 48px); scroll-margin-top: 0; }
+.portada .banda-blanco + .banda-blanco { padding-top: 0; }
+
+/* Banda 1: la pregunta. Arriba el título y el buscador; abajo tu puntaje y la respuesta. */
+.portada-pregunta .cabecera { margin-bottom: 28px; }
+.pregunta-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: 24px 48px;
+  align-items: start;
+}
+.pregunta-puntaje {
+  min-width: 0;
+  margin: 0;
+  padding: 20px;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+}
+.pregunta-cuerpo .resultado { align-self: center; }
+
+/* El título del recuadro adentro, no montado sobre el borde (lo que hace un <legend>). */
+.pregunta-puntaje > legend { float: left; width: 100%; margin-bottom: 12px; }
+.pregunta-puntaje > legend + * { clear: both; }
+
+/* Banda 2: el mapa con más protagonismo y tu lista al lado (en pantallas angostas, uno debajo del otro). */
+@media (min-width: 1181px) {
+  .portada-3 .tablero { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+}
+
+@media (max-width: 960px) {
+  .pregunta-cuerpo { grid-template-columns: minmax(0, 1fr); }
+  .portada { padding-bottom: 96px; }
+}
