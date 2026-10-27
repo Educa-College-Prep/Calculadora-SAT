@@ -118,7 +118,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
  * elegir universidad. Cada uno trae su dirección natural (la que se aplica al elegirlo).
  */
 const ORDENES: { valor: string; texto: string; direccion?: 'asc' | 'desc' }[] = [
-  { valor: 'ninguno', texto: 'Por defecto' },
+  { valor: 'ninguno', texto: 'Recomendado' },
   { valor: 'USNEWS_ORDEN', texto: 'Ranking U.S. News 2027', direccion: 'asc' },
   { valor: 'ADM_RATE', texto: 'Tasa de admisión', direccion: 'desc' },
   { valor: 'SAT_AVG', texto: 'SAT promedio', direccion: 'desc' },
@@ -210,8 +210,9 @@ export function ListaUniversidades({
 
       {faltantesPorId.size > 0 && (
         <p className="nota-alerta lista-aviso">
-          {faltantesPorId.size} resultados no tienen los datos que piden tus filtros.
-          No se descartaron: van al final y aparecen marcados.
+          {[...faltantesPorId.values()].every(f => f.length === 1 && f[0] === 'Sin datos SAT')
+            ? `${faltantesPorId.size.toLocaleString('en-US')} no publican puntajes SAT (muchas no lo piden), así que no se puede calcular tu probabilidad. No se descartaron: van al final, marcadas.`
+            : `${faltantesPorId.size.toLocaleString('en-US')} resultados no tienen los datos que piden tus filtros. No se descartaron: van al final y aparecen marcados.`}
         </p>
       )}
 

@@ -261,12 +261,27 @@ export default function App() {
   }, []);
 
   const universidadesOrdenadas = useMemo(() => {
-    const hayFaltantes = faltantesPorId.size > 0;
     // Sin orden elegido pero con búsqueda activa, se ordena por relevancia (MIT antes que Smith College).
     const posicion = resultadoBusqueda?.posicion;
-    if (!hayFaltantes && ordenarPor === 'ninguno' && !posicion) return universidadesFiltradas;
 
     const sinDato = (u: Universidad) => (u._id != null && faltantesPorId.has(u._id) ? 1 : 0);
+    // Orden recomendado: con puntaje, primero donde tienes más probabilidad; dentro de cada
+    // nivel (y sin puntaje), primero las del ranking, después las de SAT promedio más alto (las
+    // más competitivas a tu alcance) y al final las que tienen menos datos, así la lista no
+    // empieza con universidades llenas de "—".
+    const SIN_RANKING = 1e6;
+    const ORDEN_NIVEL: Record<Nivel, number> = { 'Probabilidad alta': 0, 'Probabilidad media': 1, 'Probabilidad baja': 2 };
+    const nivelDe = (u: Universidad) => {
+      const n = filtros.sat > 0 ? clasificar(u, filtros.sat) : null;
+      return n ? ORDEN_NIVEL[n] : 3;
+    };
+    const datos = (u: Universidad) =>
+      Number(u.ADM_RATE != null) + Number(u.SAT_AVG != null) + Number(u.TUITIONFEE_OUT != null);
+    const recomendado = (a: Universidad, b: Universidad) =>
+      nivelDe(a) - nivelDe(b)
+      || (a.USNEWS_ORDEN ?? SIN_RANKING) - (b.USNEWS_ORDEN ?? SIN_RANKING)
+      || (b.SAT_AVG ?? 0) - (a.SAT_AVG ?? 0)
+      || datos(b) - datos(a);
 
     return [...universidadesFiltradas].sort((a, b) => {
       // Primero las que sí se pudieron evaluar; las incompletas al final.
@@ -274,7 +289,8 @@ export default function App() {
       if (diferencia !== 0) return diferencia;
 
       if (ordenarPor === 'ninguno') {
-        return posicion ? (posicion.get(a._id ?? -1) ?? 0) - (posicion.get(b._id ?? -1) ?? 0) : 0;
+        // Buscando un nombre, manda la relevancia (MIT antes que Smith College).
+        return posicion ? (posicion.get(a._id ?? -1) ?? 0) - (posicion.get(b._id ?? -1) ?? 0) : recomendado(a, b);
       }
       const valA = (a as any)[ordenarPor];
       const valB = (b as any)[ordenarPor];
@@ -286,13 +302,13 @@ export default function App() {
       }
       return ordenDireccion === 'asc' ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
     });
-  }, [universidadesFiltradas, faltantesPorId, ordenarPor, ordenDireccion, resultadoBusqueda]);
+  }, [universidadesFiltradas, faltantesPorId, ordenarPor, ordenDireccion, resultadoBusqueda, filtros.sat]);
 
   // "Top universidades": ranking U.S. News y, si no alcanza, SAT promedio más alto.
   // 8 en todo el país; 5 con un estado elegido, porque arriba va también su resumen.
   const topUniversidades = useMemo(
-    () => elegirTop(universidadesFiltradas, filtros.estado !== 'todos' ? 5 : 8),
-    [universidadesFiltradas, filtros.estado]
+    () => elegirTop(universidadesFiltradas, filtros.estado !== 'todos' ? 5 : 8, filtros.sat),
+    [universidadesFiltradas, filtros.estado, filtros.sat]
   );
 
   // --- PREPARACIÓN DE DATOS DEL MAPA GEO ---
@@ -548,6 +564,7 @@ export default function App() {
                   universidades={topUniversidades}
                   lugar={hayFiltrosUbicacion ? (filtros.ciudad !== 'todas' ? filtros.ciudad : NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado) : null}
                   onSeleccionar={seleccionarUniversidad}
+                  puntajeSAT={filtros.sat}
                 />
               </div>
             </section>
