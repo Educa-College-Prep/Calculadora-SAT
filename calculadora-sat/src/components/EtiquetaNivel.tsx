@@ -13,13 +13,18 @@ export function BarrasNivel({ barras }: { barras: number }) {
   );
 }
 
-/** Etiqueta Probabilidad alta / media / baja de una universidad según tu puntaje. */
-export function EtiquetaNivel({ nivel }: { nivel: Nivel }) {
+/**
+ * Etiqueta Probabilidad alta / media / baja de una universidad según tu puntaje. `corta`: solo
+ * "Alta" / "Media" / "Baja", para donde el título ya dice que se habla de probabilidad (el
+ * lector de pantalla oye el nombre completo).
+ */
+export function EtiquetaNivel({ nivel, corta = false }: { nivel: Nivel; corta?: boolean }) {
   const info = NIVELES.find(n => n.nivel === nivel)!;
+  const palabra = nivel.replace('Probabilidad ', '');
   return (
     <span className={`marca marca-nivel marca-nivel-${info.clase}`} title={info.explicacion}>
       <BarrasNivel barras={info.barras} />
-      {nivel}
+      {corta ? <><span aria-hidden="true">{palabra.charAt(0).toUpperCase() + palabra.slice(1)}</span><span className="visualmente-oculto">{nivel}</span></> : nivel}
     </span>
   );
 }

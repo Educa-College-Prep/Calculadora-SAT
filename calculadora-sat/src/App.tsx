@@ -326,7 +326,7 @@ export default function App() {
 
     Object.keys(conteoPorEstado).sort().forEach(estado => {
       const nombreEstado = NOMBRES_ESTADOS[estado] ?? estado;
-      const tooltip = `<div style="padding:8px 10px; line-height:1.35; color:#26292b; font-family:Lexend, sans-serif;">
+      const tooltip = `<div style="padding:8px 10px; line-height:1.35; color:#1b2a57; font-family:Lexend, sans-serif;">
       <strong style="font-size:15px;">${nombreEstado}</strong><br />
       <span style="font-size:13px; color:#5d6467;">${conteoPorEstado[estado]} universidades · clic para ver condados</span>
     </div>`;
@@ -653,7 +653,7 @@ export default function App() {
         )}
 
         {angosto && listaAbajo && !contadorALaVista && !mapaAbierto && (
-          <button type="button" className="boton boton-primario ver-resultados" onClick={() => listaRef.current?.scrollIntoView({ block: 'start' })}>
+          <button type="button" className="boton ver-resultados" onClick={() => listaRef.current?.scrollIntoView({ block: 'start' })}>
             Ver {universidadesFiltradas.length.toLocaleString()} {universidadesFiltradas.length === 1 ? 'universidad' : 'universidades'}
           </button>
         )}

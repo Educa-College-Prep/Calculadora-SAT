@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { Universidad } from '../types';
-import { posicionUSNews, textoPuesto, NOMBRE_LISTA, EDICION_USNEWS, FUENTE_USNEWS } from '../data/rankingUSNews';
+import { posicionUSNews, textoPuesto, NOMBRE_LISTA, EDICION_USNEWS, FUENTE_USNEWS, nivelRanking } from '../data/rankingUSNews';
 import { clasificar } from '../utils/nivelSAT';
 import { EtiquetaNivel } from './EtiquetaNivel';
 
@@ -50,15 +50,18 @@ export const TopUniversidades = memo(function TopUniversidades({ universidades, 
                     <span className="top-identidad">
                       <span className="top-nombre">{uni.INSTNM}</span>
                       <span className="top-lugar">{uni.CITY}, {uni.STABBR}</span>
-                      {nivel && <EtiquetaNivel nivel={nivel} />}
                     </span>
-                    {ranking ? (
-                      <span className="marca marca-ranking top-motivo" title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
-                        {textoPuesto(ranking)}
-                      </span>
-                    ) : (
-                      <span className="marca top-motivo">SAT prom. {uni.SAT_AVG}</span>
-                    )}
+                    {/* A la derecha, por qué está (ranking) y, con puntaje, tu probabilidad. */}
+                    <span className="top-chips">
+                      {ranking ? (
+                        <span className={`marca marca-ranking marca-ranking-${nivelRanking(ranking.puesto)} top-motivo`} title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
+                          {textoPuesto(ranking)}
+                        </span>
+                      ) : (
+                        <span className="marca top-motivo">SAT prom. {uni.SAT_AVG}</span>
+                      )}
+                      {nivel && <EtiquetaNivel nivel={nivel} corta />}
+                    </span>
                   </button>
                 </li>
               );

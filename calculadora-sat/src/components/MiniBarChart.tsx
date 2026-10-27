@@ -21,7 +21,7 @@ interface Props {
  * dentro de las tarjetas de detalle de universidad. El tooltip al pasar el mouse
  * muestra el valor exacto formateado.
  */
-export function MiniBarChart({ datos, color = '#1b5fa8', formato = 'numero', altura = 200, maxY, pisoCero = false }: Props) {
+export function MiniBarChart({ datos, color = '#2a3f8f', formato = 'numero', altura = 200, maxY, pisoCero = false }: Props) {
   if (datos.length === 0) return null;
 
   // `original` guarda el valor real para el tooltip; `valor` es lo que se dibuja.

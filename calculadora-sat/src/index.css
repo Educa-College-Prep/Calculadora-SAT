@@ -1,35 +1,35 @@
 /* =========================================================
-   Concepto "Hoja de respuestas": papel blanco, tinta azul de
-   formulario (el azul de la marca), grafito de lápiz y un
-   resaltador para lo que encaja contigo. Colores con significado fijo:
-     azul tinta     → marca / público / activo / estructura
-     verde azulado  → privado sin fines de lucro
-     ámbar          → avisos (datos faltantes)
-     resaltador     → tu puntaje y lo que encaja contigo
+   Paleta de "La carta de admisión" (DESIGN.md), la misma de la ficha. Los nombres vienen
+   del concepto anterior ("hoja de respuestas") y se conservan para no tocar cada regla;
+   los valores son los de la ficha. Colores con significado fijo:
+     azul Educa / marino → marca / pública / activo / estructura
+     verde campus        → privada sin fines de lucro
+     ámbar               → avisos (datos faltantes)
+     sol                 → una sola acción principal por pantalla (Un Solo Sol)
    ========================================================= */
 :root {
-  --papel: #f2f5f9;          /* fondo de página, papel de formulario */
+  --papel: #f2f3f8;          /* niebla: fondo de página */
   --hoja: #ffffff;           /* superficies */
-  --tinta: #1b5fa8;          /* tinta azul de formulario: color de marca */
-  --tinta-fuerte: #12407a;
-  --tinta-suave: #cddcf0;    /* reglas y bordes */
-  --tinta-fondo: #e9f0fa;    /* relleno de lo seleccionado */
-  --grafito: #26292b;        /* texto y burbujas rellenas */
-  --grafito-suave: #5d6467;  /* texto secundario (6:1 sobre blanco) */
-  --linea: #dde3ea;          /* divisores neutros */
-  --boligrafo: #0f766e;      /* privadas sin fines de lucro (verde azulado) */
+  --tinta: #2a3f8f;          /* azul Educa: color de marca, enlaces, acción */
+  --tinta-fuerte: #1c2c6e;   /* marino */
+  --tinta-suave: #c9d4f3;    /* reglas y bordes azulados */
+  --tinta-fondo: #e8ecf8;    /* azul Educa suave: relleno de lo seleccionado */
+  --grafito: #1b2a57;        /* tinta noche: texto y burbujas rellenas */
+  --grafito-suave: #5b6582;  /* gris pizarra: texto secundario (5.9:1 sobre blanco) */
+  --linea: #d9deea;          /* divisores neutros */
+  --boligrafo: #2e7b6b;      /* verde campus: privadas sin fines de lucro */
   --boligrafo-fondo: #e1f3f0;
   --alerta: #8f4f00;
   --alerta-fondo: #fff3d6;
   --alerta-borde: #f0c96a;
-  --resaltador: #ffe14d;
+  --resaltador: #ffd23f;     /* sol: solo la acción principal */
   /* Etiquetas de nivel en la ficha (Selectiva → Élite, Top 10% → Top 1%): solo pintan el punto. */
   --nivel-1: #3b82f6;
   --nivel-2: #7c4ddb;
   --nivel-3: #e2a300;
   --error: #b42318;
 
-  --radio: 14px;
+  --radio: 18px;
   --radio-chico: 8px;
 
   --fuente: 'Lexend', 'Avenir Next', 'Segoe UI', sans-serif;
@@ -203,8 +203,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  background: linear-gradient(transparent 58%, var(--resaltador) 58%, var(--resaltador) 92%, transparent 92%);
-  padding: 0 2px;
+  color: var(--tinta-fuerte);
 }
 .resultado-texto { font-size: 17px; font-weight: 600; }
 .resultado-nota { flex-basis: 100%; font-size: 13px; color: var(--grafito-suave); }
@@ -215,6 +214,10 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   gap: 20px;
   align-items: stretch;
 }
+/* Con el mapa de todo el país (alto fijo), el panel no se estira hasta el alto del Top: si no,
+   queda un recuadro con mucho blanco arriba y abajo. Con un estado elegido sí se estira, porque
+   el mapa de condados llena el espacio. */
+.tablero:has(.mapa-nacional:only-child) { align-items: start; }
 .tablero-lateral {
   display: flex;
   flex-direction: column;
@@ -252,6 +255,9 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 
 /* Botón fijo "Ver N universidades": abajo, al alcance del pulgar. */
 .ver-resultados {
+  color: var(--tinta-fuerte);
+  background: var(--resaltador);
+  border-color: var(--resaltador);
   position: fixed;
   left: 50%;
   bottom: max(16px, env(safe-area-inset-bottom, 0px));
@@ -264,6 +270,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   box-shadow: 0 10px 24px rgba(17, 29, 63, 0.28);
   transform: translateX(-50%);
 }
+.ver-resultados:hover:not(:disabled) { color: var(--tinta-fuerte); background: #ffdc5c; border-color: #ffdc5c; }
+.ver-resultados:focus-visible { outline-color: var(--tinta-fuerte); }
 .lista-ancla { scroll-margin-top: calc(var(--alto-barra, 0px) + 12px); }
 .resultado { scroll-margin-top: calc(var(--alto-barra, 0px) + 12px); }
 
@@ -301,7 +309,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   position: relative;
   padding: 20px 20px 24px;
   background: var(--hoja);
-  border: 1.5px solid var(--tinta);
+  border: 1px solid var(--linea);
   border-radius: var(--radio);
   display: flex;
   flex-direction: column;
@@ -407,13 +415,11 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .total-sat input:focus { box-shadow: none; }
 .total-sat:focus-within { border-style: solid; border-color: var(--tinta); box-shadow: 0 0 0 3px var(--tinta-fondo); }
 .total-sat-escala { color: var(--grafito-suave); font-weight: 500; }
-.total-sat-listo { border-style: solid; border-color: var(--grafito); }
+.total-sat-listo { border-style: solid; }
 .total-sat-error, .total-sat-error:focus-within { border-style: solid; border-color: var(--error); }
 .total-sat + .casilla-error { margin-top: 4px; }
-.total-sat-listo input {
-  background: linear-gradient(transparent 55%, var(--resaltador) 55%, var(--resaltador) 95%, transparent 95%);
-  padding: 0 3px;
-}
+.total-sat-listo { background: var(--tinta-fondo); border-color: var(--tinta); }
+.total-sat-listo input { color: var(--tinta-fuerte); }
 
 .ayuda-aviso { color: var(--alerta); font-weight: 600; }
 
@@ -589,8 +595,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   line-height: 1.45;
   color: var(--alerta);
   background: var(--alerta-fondo);
-  border-left: 3px solid var(--alerta-borde);
-  border-radius: 0 var(--radio-chico) var(--radio-chico) 0;
+  border: 1px solid var(--alerta-borde);
+  border-radius: var(--radio-chico);
 }
 
 /* ---------- Lista de resultados ---------- */
@@ -1643,15 +1649,11 @@ html { scroll-behavior: smooth; }
 }
 
 /* Ranking U.S. News: insignia en la lista y línea destacada en la ficha. */
-.marca-ranking { color: var(--grafito); background: var(--resaltador); border-color: #e6c400; }
-.ficha-ranking {
-  display: inline-block;
-  margin: 0 0 12px;
-  padding: 4px 12px;
-  font-size: 15px;
-  background: var(--resaltador);
-  border-radius: 16px;
-}
+.marca-ranking { font-weight: 700; }
+.marca-ranking-oro { color: #2a2100; background: #ffd23f; border-color: #f0bf1a; }
+.marca-ranking-plata { color: #1b2a57; background: #e3e8f2; border-color: #c9d1e3; }
+.marca-ranking-bronce { color: #3a1d05; background: #f0b47e; border-color: #de9a5f; }
+.marca-ranking-neutro { color: var(--grafito); background: var(--hoja); border-color: var(--linea); }
 
 /* Mi lista: estrella para guardar (en cada fila y en la ficha). */
 .fila { display: flex; align-items: stretch; }
@@ -1671,23 +1673,23 @@ html { scroll-behavior: smooth; }
 }
 .boton-guardar:hover { color: var(--tinta-fuerte); background: var(--tinta-fondo); }
 .boton-guardar:focus-visible { outline-offset: -3px; }
-.boton-guardar-activo { color: #c79a00; }
-.boton-guardar-activo:hover { color: #a07c00; }
+.boton-guardar-activo { color: var(--tinta); }
+.boton-guardar-activo:hover { color: var(--tinta-fuerte); }
 .boton-guardar-texto { display: inline-flex; width: auto; gap: 8px; padding: 8px 16px; color: var(--tinta-fuerte); }
-.boton-guardar-texto.boton-guardar-activo { color: var(--grafito); background: var(--resaltador); border-color: #e6c400; }
-.boton-guardar-texto.boton-guardar-activo svg { color: var(--grafito); }
+.boton-guardar-texto.boton-guardar-activo { color: #fff; background: var(--tinta-fuerte); border-color: var(--tinta-fuerte); }
+.boton-guardar-texto.boton-guardar-activo svg { color: #fff; }
 .ficha-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 
 /* Mi lista y comparar */
 .boton-mi-lista { margin-top: 18px; }
-.boton-mi-lista svg { color: #c79a00; }
+.boton-mi-lista svg { color: var(--tinta); }
 .contador {
   min-width: 22px;
   padding: 0 7px;
   font-size: 12px;
   line-height: 20px;
-  color: var(--grafito);
-  background: var(--resaltador);
+  color: #fff;
+  background: var(--tinta-fuerte);
   border-radius: 999px;
 }
 
@@ -1880,8 +1882,8 @@ html { scroll-behavior: smooth; }
 }
 .top-fila:hover { background: var(--tinta-fondo); }
 .top-numero { font-size: 18px; font-weight: 800; color: var(--tinta); text-align: center; }
-.top-identidad { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
-.top-identidad .marca-nivel { margin-top: 4px; }
+.top-identidad { display: flex; flex-direction: column; min-width: 0; }
+.top-chips { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .top-nombre { font-size: 14px; font-weight: 700; line-height: 1.3; color: var(--tinta-fuerte); }
 .top-lugar { font-size: 12px; color: var(--grafito-suave); }
 .top-motivo { white-space: nowrap; }

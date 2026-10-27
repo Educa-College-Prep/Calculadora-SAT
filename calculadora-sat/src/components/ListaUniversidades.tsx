@@ -3,7 +3,7 @@ import type { Universidad } from '../types';
 import { formatNivel, formatDinero, formatPorcentaje, chipPoliticaSAT } from '../utils/formatters';
 import { BotonGuardar } from './BotonGuardar';
 import { claveUniversidad } from '../utils/useMiLista';
-import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
+import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS, nivelRanking } from '../data/rankingUSNews';
 import { clasificar, rangoSAT } from '../utils/nivelSAT';
 import type { Nivel } from '../utils/nivelSAT';
 import { EtiquetaNivel } from './EtiquetaNivel';
@@ -69,7 +69,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
           <span className="marcas">
             {nivel && <EtiquetaNivel nivel={nivel} />}
             {ranking && (
-              <span className="marca marca-ranking" title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
+              <span className={`marca marca-ranking marca-ranking-${nivelRanking(ranking.puesto)}`} title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
                 {textoPuesto(ranking)}
               </span>
             )}
