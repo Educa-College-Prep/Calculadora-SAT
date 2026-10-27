@@ -54,6 +54,8 @@ export default function App() {
 
   const [puntajeMath, setPuntajeMath] = useState<number>(0);
   const [puntajeLectura, setPuntajeLectura] = useState<number>(0);
+  /** Total escrito directamente, para quien no recuerda sus dos secciones (0 = vacío). */
+  const [puntajeSoloTotal, setPuntajeSoloTotal] = useState<number>(0);
 
   const [exigirSAT, setExigirSAT] = useState<string>('todos');
   /** "Tus posibilidades de entrar": niveles marcados (vacío = todos); solo con puntaje SAT. */
@@ -116,8 +118,9 @@ export default function App() {
     [universidades, estadoSeleccionado]
   );
 
-  // Solo hay total (y filtro SAT) cuando se ingresaron las dos secciones.
-  const puntajeTotal = puntajeMath > 0 && puntajeLectura > 0 ? puntajeMath + puntajeLectura : 0;
+  // El total sale de las dos secciones o, si no las hay, del total escrito a mano. Con una
+  // sola sección no hay total (ni filtro SAT): no se puede adivinar la otra.
+  const puntajeTotal = puntajeMath > 0 && puntajeLectura > 0 ? puntajeMath + puntajeLectura : puntajeSoloTotal;
 
   // Los controles (deslizador, casillas) se actualizan al instante con los valores de
   // arriba. El filtrado y todo lo que se dibuja con él usan esta copia diferida: React
@@ -233,7 +236,7 @@ export default function App() {
   // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
   // estado+ciudad cuentan como uno cada uno).
   const filtrosActivos = ([
-    [puntajeMath > 0 || puntajeLectura > 0, 'puntaje SAT'],
+    [puntajeMath > 0 || puntajeLectura > 0 || puntajeSoloTotal > 0, 'puntaje SAT'],
     [estadoSeleccionado !== 'todos', 'estado'],
     [exigirSAT !== 'todos', '¿piden el SAT?'],
     // Marcar los tres niveles equivale a no filtrar.
@@ -248,6 +251,7 @@ export default function App() {
     setBusquedaNombre('');
     setPuntajeMath(0);
     setPuntajeLectura(0);
+    setPuntajeSoloTotal(0);
     setEstadoSeleccionado('todos');
     setCiudadSeleccionada('todas');
     setExigirSAT('todos');
@@ -487,6 +491,7 @@ export default function App() {
             estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
             puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
             puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
+            puntajeSoloTotal={puntajeSoloTotal} setPuntajeSoloTotal={setPuntajeSoloTotal}
             puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
             tiposUniversidad={tiposUniversidad} setTiposUniversidad={setTiposUniversidad}
             precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
