@@ -4,11 +4,33 @@ export const formatDinero = (valor: number | null | undefined): string | null =>
 export const formatPorcentaje = (valor: number | null | undefined): string | null =>
   valor != null ? `${(valor * 100).toFixed(1)}%` : null;
 
-/** ICLEVEL viene como "4-Year" / "2-Year"; en la web se muestra como tipo de grado. */
+/**
+ * ICLEVEL viene como "4-Year" / "2-Year": si ofrece carreras de 4 años (bachiller) o solo de
+ * 2 (associate, como un técnico). Se dice en años, que se entiende sin conocer los títulos de EE. UU.
+ */
 export const formatNivel = (nivel: string | null | undefined): string | null => {
-  if (nivel === '4-Year') return 'Grado Bachiller';
-  if (nivel === '2-Year') return 'Grado Associate';
+  if (nivel === '4-Year') return 'Carreras de 4 años';
+  if (nivel === '2-Year') return 'Carreras de 2 años';
   return nivel ?? null;
+};
+
+/**
+ * Política del SAT (ADMCON7) con las mismas palabras del filtro "¿Piden el SAT?", para que la
+ * lista, la ficha y Mi lista digan lo mismo. null si no se sabe.
+ */
+export const formatPoliticaSAT = (politica: string | null | undefined): string | null => {
+  if (politica === 'Requerido') return 'Obligatorio';
+  if (politica === 'Considerado pero no requerido') return 'Opcional';
+  if (politica === 'Ni requerido ni recomendado') return 'No lo toman en cuenta';
+  if (politica === 'Recomendado') return 'Recomendado';
+  return null;
+};
+
+/** La política del SAT como chip de la lista: "SAT obligatorio", "SAT opcional"… */
+export const chipPoliticaSAT = (politica: string | null | undefined): string | null => {
+  if (politica === 'Ni requerido ni recomendado') return 'No toman en cuenta el SAT';
+  const texto = formatPoliticaSAT(politica);
+  return texto ? `SAT ${texto.toLowerCase()}` : null;
 };
 
 /**

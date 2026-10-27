@@ -20,13 +20,13 @@ export const TopUniversidades = memo(function TopUniversidades({ universidades, 
             ? `Según el ranking U.S. News ${EDICION_USNEWS}, entre tus resultados.`
             : conRanking > 0
               ? `Primero las del ranking U.S. News ${EDICION_USNEWS}; después, las de SAT promedio más alto. Entre tus resultados.`
-              : `Ninguna de tus resultados está en el top de U.S. News ${EDICION_USNEWS}: estas son las de SAT promedio más alto.`}
+              : `Ninguno de tus resultados está en el top de U.S. News ${EDICION_USNEWS}: estas son las de SAT promedio más alto.`}
         </p>
       </div>
 
       <div className="panel-cuerpo">
         {universidades.length === 0 ? (
-          <p className="vacio">Ninguna de tus resultados tiene ranking ni SAT promedio publicado.</p>
+          <p className="vacio">Ninguno de tus resultados tiene ranking ni SAT promedio publicado.</p>
         ) : (
           <ol className="top-lista">
             {universidades.map((uni, i) => {

@@ -5,7 +5,7 @@
 export const glosarioCampos: Record<string, string> = {
   // Identificación
   CONTROL: 'Tipo de propiedad: Pública (financiada por el estado) o Privada sin fines de lucro. Las privadas con fines de lucro no se incluyen en esta web.',
-  ICLEVEL: 'Tipo de grado del programa principal: Grado Bachiller (programa de 4 años) o Grado Associate (programa de 2 años).',
+  ICLEVEL: 'Qué carreras ofrece: de 4 años (bachiller, el título universitario) o solo de 2 años (associate, parecido a un técnico; muchos alumnos después pasan a una de 4 años).',
 
   // Estudiantes
   UGDS: 'Número total de estudiantes de pregrado matriculados actualmente.',

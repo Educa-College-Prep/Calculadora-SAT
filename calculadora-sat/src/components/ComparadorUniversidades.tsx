@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { Universidad } from '../types';
-import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
+import { formatDinero, formatPorcentaje, formatNivel, formatPoliticaSAT } from '../utils/formatters';
 import { calcularCostoVida } from '../utils/costos';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { posicionUSNews, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
@@ -57,7 +57,7 @@ const GRUPOS: Grupo[] = [
         },
       },
       { etiqueta: 'Tipo', texto: u => u.CONTROL ?? null },
-      { etiqueta: 'Nivel', texto: u => formatNivel(u.ICLEVEL) },
+      { etiqueta: 'Carreras', texto: u => formatNivel(u.ICLEVEL) },
       { etiqueta: 'Alumnos de pregrado', ayuda: glosarioCampos.UGDS, numero: u => u.UGDS, formato: 'numero' },
       { etiqueta: 'Alumnos por profesor', ayuda: glosarioCampos.STUFACR, numero: u => u.STUFACR, texto: u => u.STUFACR != null ? `${u.STUFACR}:1` : null, mejor: 'menor' },
     ],
@@ -68,7 +68,7 @@ const GRUPOS: Grupo[] = [
       { etiqueta: 'Tasa de admisión', ayuda: glosarioCampos.ADM_RATE, numero: u => u.ADM_RATE, formato: 'porcentaje' },
       { etiqueta: 'Rango SAT (25–75%)', ayuda: glosarioCampos.SAT_RANGO, texto: rangoSAT },
       { etiqueta: 'SAT promedio', ayuda: glosarioCampos.SAT_AVG, numero: u => u.SAT_AVG, texto: u => u.SAT_AVG != null ? String(u.SAT_AVG) : null },
-      { etiqueta: 'Política SAT', ayuda: glosarioCampos.ADMCON7, texto: u => u.ADMCON7 ?? null },
+      { etiqueta: 'Política SAT', ayuda: glosarioCampos.ADMCON7, texto: u => formatPoliticaSAT(u.ADMCON7) },
     ],
   },
   {

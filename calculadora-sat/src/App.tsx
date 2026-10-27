@@ -213,7 +213,7 @@ export default function App() {
         conteoNiveles: null, conteoPolitica: contarPolitica(sinFiltroPolitica),
       };
     }
-    const conteo: Record<Nivel, number> = { 'Alta probabilidad': 0, 'Intermedia': 0, 'Baja': 0 };
+    const conteo: Record<Nivel, number> = { 'Probabilidad alta': 0, 'Probabilidad media': 0, 'Probabilidad baja': 0 };
     for (const uni of lista) {
       const n = clasificar(uni, sat);
       if (n) conteo[n]++;
@@ -469,7 +469,7 @@ export default function App() {
       <>
         <header className="cabecera">
           <div>
-            <h1>Educa College Finder</h1>
+            <h1>¿A qué universidades de EE. UU. te alcanza tu SAT?</h1>
             <button type="button" className="boton boton-mi-lista" onClick={abrirMiLista}>
               <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
               Mi lista y comparar

@@ -153,6 +153,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   line-height: 1.45;
   color: var(--grafito-suave);
   margin: 4px 0 0;
+  /* Reparte las palabras para que la última línea no quede con una sola ("mapa."). */
+  text-wrap: pretty;
 }
 
 /* ---------- Estructura de la página principal ---------- */
@@ -161,16 +163,18 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);
   gap: 16px 40px;
   align-items: end;
-  padding-bottom: 24px;
-  margin-bottom: 24px;
-  border-bottom: 2px solid var(--grafito);
+  margin-bottom: 28px;
 }
 
+/* El título es la pregunta que trae al estudiante ("¿A qué universidades… te alcanza tu SAT?"):
+   la marca ya está en la barra de Educa. Mediano, para que no tape el buscador. */
 .cabecera h1 {
-  font-size: clamp(30px, 4.4vw, 52px);
+  max-width: 18ch;
+  font-size: clamp(26px, 3.2vw, 38px);
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1;
+  line-height: 1.1;
+  text-wrap: balance;
 }
 
 .cuerpo {
@@ -1802,9 +1806,11 @@ html { scroll-behavior: smooth; }
 /* Semáforo: verde = alta probabilidad, ámbar = intermedia, rojo = baja. Texto oscuro del mismo
    tono para que se lea bien; las barras de señal lo dicen también sin depender del color. */
 .marca-nivel { font-weight: 700; }
-.marca-nivel-alta { color: #166534; background: #dcfce7; border-color: #86efac; }
-.marca-nivel-intermedia { color: #9a3412; background: #ffedd5; border-color: #fdba74; }
-.marca-nivel-baja { color: #991b1b; background: #fee2e2; border-color: #fca5a5; }
+/* Sin semáforo: el rojo se leía como "rechazado" junto a la universidad soñada. Azul Educa,
+   violeta y gris pizarra (DESIGN.md); las barras dicen el nivel sin depender del color. */
+.marca-nivel-alta { color: #2a3f8f; background: #e8ecf8; border-color: #b9c4ea; }
+.marca-nivel-intermedia { color: #4a3a86; background: #efebf8; border-color: #cbc0e8; }
+.marca-nivel-baja { color: #4a5470; background: #f2f3f8; border-color: #d9deea; }
 
 .nivel-opcion-cuenta { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--grafito-suave); }
 .burbuja-deshabilitada { opacity: 0.55; cursor: not-allowed; }

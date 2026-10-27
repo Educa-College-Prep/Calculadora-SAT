@@ -13,7 +13,7 @@ export function BarrasNivel({ barras }: { barras: number }) {
   );
 }
 
-/** Etiqueta Alta probabilidad / Intermedia / Baja de una universidad según tu puntaje. */
+/** Etiqueta Probabilidad alta / media / baja de una universidad según tu puntaje. */
 export function EtiquetaNivel({ nivel }: { nivel: Nivel }) {
   const info = NIVELES.find(n => n.nivel === nivel)!;
   return (

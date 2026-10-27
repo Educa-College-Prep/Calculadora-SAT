@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent, ReactNode } from 'react';
 import type { Universidad } from '../types';
-import { formatDinero, formatPorcentaje, formatNivel } from '../utils/formatters';
+import { formatDinero, formatPorcentaje, formatNivel, formatPoliticaSAT } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
 import { calcularCostoVida } from '../utils/costos';
 import { etiquetaSAT, etiquetaSelectividad } from '../utils/etiquetasNivel';
@@ -337,10 +337,10 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
                   <dd className="numero">{formatPorcentaje(uni.ADM_RATE)}</dd>
                 </div>
               )}
-              {uni.ADMCON7 && (
+              {formatPoliticaSAT(uni.ADMCON7) && (
                 <div className="dato-fila">
                   <dt>Política SAT<InfoTooltip texto={glosarioCampos.ADMCON7} /></dt>
-                  <dd>{uni.ADMCON7}</dd>
+                  <dd>{formatPoliticaSAT(uni.ADMCON7)}</dd>
                 </div>
               )}
             </dl>
