@@ -21,23 +21,23 @@ const stateMapOptions = {
   region: 'US',
   displayMode: 'regions',
   resolution: 'provinces',
-  // Escala en la tinta azul de la hoja: más oscuro = más universidades.
+  // Escala en azul Educa (DESIGN.md): más oscuro = más universidades.
   colorAxis: {
-    colors: ['#e4edf8', '#7ea6d8', '#1b5fa8', '#0d2f5c']
+    colors: ['#e8ecf8', '#8e9fd6', '#2a3f8f', '#1c2c6e']
   },
   backgroundColor: '#ffffff',
-  datalessRegionColor: '#eef2f6',
+  datalessRegionColor: '#eef0f6',
   defaultColor: '#d3dae3',
   keepAspectRatio: true,
   enableRegionInteractivity: true,
   tooltip: { isHtml: true, trigger: 'focus' },
-  legend: { textStyle: { color: '#26292b', fontName: 'Lexend', fontSize: 12 } },
+  legend: { textStyle: { color: '#1b2a57', fontName: 'Lexend', fontSize: 12 } },
 };
 
 // Con un estado elegido: solo ese en azul, el resto en gris (pero clickeable).
 const stateMapOptionsSeleccion = {
   ...stateMapOptions,
-  colorAxis: { minValue: 0, maxValue: 1, colors: ['#e3e8ee', '#1b5fa8'] },
+  colorAxis: { minValue: 0, maxValue: 1, colors: ['#e3e6ef', '#2a3f8f'] },
   legend: 'none',
 };
 

@@ -66,7 +66,7 @@ export const ResumenEstado = memo(function ResumenEstado({ universidades, estado
           <Cifra
             valor={resumen.total.toLocaleString()}
             etiqueta="Universidades"
-            nota={`${resumen.cuatroAnios} de bachiller, ${resumen.total - resumen.cuatroAnios} de associate`}
+            nota={`${resumen.cuatroAnios} de 4 años, ${resumen.total - resumen.cuatroAnios} de 2 años`}
           />
           <Cifra
             valor={resumen.total ? `${Math.round((resumen.publicas / resumen.total) * 100)}%` : '—'}
@@ -91,12 +91,12 @@ export const ResumenEstado = memo(function ResumenEstado({ universidades, estado
             <svg width="100%" height={resumen.topCiudades.length * 24} role="img" aria-label="Ciudades con más universidades">
               {resumen.topCiudades.map(([ciudad, cantidad], i) => (
                 <g key={ciudad} transform={`translate(0, ${i * 24})`}>
-                  <text x="0" y="15" fontSize="13" fill="#26292b">
+                  <text x="0" y="15" fontSize="13" fill="#1b2a57">
                     {ciudad.length > 16 ? ciudad.slice(0, 15) + '…' : ciudad}
                   </text>
-                  <rect x="122" y="6" width={anchoBarra} height="10" rx="5" fill="#e9f0fa" />
-                  <rect x="122" y="6" width={Math.max(5, (cantidad / maxCiudad) * anchoBarra)} height="10" rx="5" fill="#1b5fa8" />
-                  <text x={122 + anchoBarra + 8} y="15" fontSize="13" fontWeight="700" fill="#26292b">{cantidad}</text>
+                  <rect x="122" y="6" width={anchoBarra} height="10" rx="5" fill="#e8ecf8" />
+                  <rect x="122" y="6" width={Math.max(5, (cantidad / maxCiudad) * anchoBarra)} height="10" rx="5" fill="#2a3f8f" />
+                  <text x={122 + anchoBarra + 8} y="15" fontSize="13" fontWeight="700" fill="#1b2a57">{cantidad}</text>
                 </g>
               ))}
             </svg>

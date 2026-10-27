@@ -1,9 +1,9 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import type { Universidad } from '../types';
-import { formatNivel, formatDinero, formatPorcentaje } from '../utils/formatters';
+import { formatNivel, formatDinero, formatPorcentaje, chipPoliticaSAT } from '../utils/formatters';
 import { BotonGuardar } from './BotonGuardar';
 import { claveUniversidad } from '../utils/useMiLista';
-import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS } from '../data/rankingUSNews';
+import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS, nivelRanking } from '../data/rankingUSNews';
 import { clasificar, rangoSAT } from '../utils/nivelSAT';
 import type { Nivel } from '../utils/nivelSAT';
 import { EtiquetaNivel } from './EtiquetaNivel';
@@ -22,7 +22,7 @@ interface Props {
   /** Claves (claveUniversidad) de las universidades en "Mi lista". */
   guardadas: Set<string>;
   onAlternarGuardada: (uni: Universidad) => void;
-  /** Tu puntaje SAT total (0 = sin puntaje): para la etiqueta Alta probabilidad / Intermedia / Baja. */
+  /** Tu puntaje SAT total (0 = sin puntaje): para la etiqueta Probabilidad alta / media / baja. */
   puntajeSAT: number;
 }
 
@@ -69,15 +69,15 @@ const FilaUniversidad = memo(function FilaUniversidad({
           <span className="marcas">
             {nivel && <EtiquetaNivel nivel={nivel} />}
             {ranking && (
-              <span className="marca marca-ranking" title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
+              <span className={`marca marca-ranking marca-ranking-${nivelRanking(ranking.puesto)}`} title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
                 {textoPuesto(ranking)}
               </span>
             )}
             {uni.CONTROL && <span className={claseControl(uni.CONTROL)}>{uni.CONTROL}</span>}
             {uni.ICLEVEL && <span className="marca">{formatNivel(uni.ICLEVEL)}</span>}
-            {uni.ADMCON7 === 'Requerido'
-              ? <span className="marca marca-sat">SAT obligatorio</span>
-              : uni.ADMCON7 && <span className="marca">SAT: {uni.ADMCON7.toLowerCase()}</span>}
+            {chipPoliticaSAT(uni.ADMCON7) && (
+              <span className={`marca${uni.ADMCON7 === 'Requerido' ? ' marca-sat' : ''}`}>{chipPoliticaSAT(uni.ADMCON7)}</span>
+            )}
           </span>
         </span>
 
@@ -113,6 +113,27 @@ const FilaUniversidad = memo(function FilaUniversidad({
   );
 });
 
+/**
+ * Criterios de "Ordenar por". Pocos y en palabras del estudiante: lo que de verdad compara al
+ * elegir universidad. Cada uno trae su dirección natural (la que se aplica al elegirlo).
+ */
+const ORDENES: { valor: string; texto: string; direccion?: 'asc' | 'desc' }[] = [
+  { valor: 'ninguno', texto: 'Recomendado' },
+  { valor: 'USNEWS_ORDEN', texto: 'Ranking U.S. News 2027', direccion: 'asc' },
+  { valor: 'ADM_RATE', texto: 'Tasa de admisión', direccion: 'desc' },
+  { valor: 'SAT_AVG', texto: 'SAT promedio', direccion: 'desc' },
+  { valor: 'TUITIONFEE_OUT', texto: 'Matrícula', direccion: 'asc' },
+  { valor: 'MD_EARN_WNE_4YR', texto: 'Salario de egresados', direccion: 'desc' },
+  { valor: 'INSTNM', texto: 'Nombre', direccion: 'asc' },
+];
+
+/** Qué dice el botón de dirección según el criterio: "Mayor primero", "A → Z", "#1 primero". */
+function textoDireccion(orden: { valor: string }, direccion: 'asc' | 'desc'): string {
+  if (orden.valor === 'INSTNM') return direccion === 'asc' ? 'A → Z' : 'Z → A';
+  if (orden.valor === 'USNEWS_ORDEN') return direccion === 'asc' ? '#1 primero' : '#1 al final';
+  return direccion === 'asc' ? 'Menor primero' : 'Mayor primero';
+}
+
 export function ListaUniversidades({
   universidadesFiltradas,
   universidadesOrdenadas,
@@ -129,6 +150,7 @@ export function ListaUniversidades({
 }: Props) {
   const [porPagina, setPorPagina] = useState<number>(50);
   const [pagina, setPagina] = useState<number>(1);
+  const ordenActual = ORDENES.find(o => o.valor === ordenarPor);
 
   const totalPaginas = Math.max(1, Math.ceil(universidadesOrdenadas.length / porPagina));
 
@@ -163,71 +185,34 @@ export function ListaUniversidades({
         <div className="orden">
           <label className="campo-etiqueta" htmlFor="ordenar-por">Ordenar por</label>
           <div className="orden-controles">
-            <select id="ordenar-por" value={ordenarPor} onChange={(e) => setOrdenarPor(e.target.value)}>
-            <option value="ninguno">Por defecto</option>
-            <optgroup label="Rankings">
-              <option value="USNEWS_ORDEN">Ranking U.S. News 2027</option>
-            </optgroup>
-            <optgroup label="Identificación">
-              <option value="INSTNM">Nombre (A-Z)</option>
-              <option value="CITY">Ciudad</option>
-              <option value="STABBR">Estado</option>
-            </optgroup>
-            <optgroup label="Admisiones">
-              <option value="ADM_RATE">Tasa de Admisión</option>
-              <option value="SAT_AVG">Promedio SAT</option>
-            </optgroup>
-            <optgroup label="Estudiantes">
-              <option value="UGDS">Total Estudiantes Pregrado</option>
-              <option value="UGDS_HISP">% Estudiantes Hispanos</option>
-              <option value="STUFACR">Ratio Estudiante-Facultad</option>
-            </optgroup>
-            <optgroup label="Costos">
-              <option value="TUITIONFEE_IN">Matrícula (Dentro de Estado)</option>
-              <option value="TUITIONFEE_OUT">Matrícula (Fuera de Estado)</option>
-              <option value="COSTT4_A">Costo Total Anual</option>
-              <option value="NPT4_PUB">Costo Neto (Pública)</option>
-              <option value="NPT4_PRIV">Costo Neto (Privada)</option>
-            </optgroup>
-            <optgroup label="Precio Neto por Ingreso Familiar">
-              <option value="NPT41_PUB">Ingreso hasta $30k (Pública)</option>
-              <option value="NPT41_PRIV">Ingreso hasta $30k (Privada)</option>
-              <option value="NPT43_PUB">Ingreso $48k–$75k (Pública)</option>
-              <option value="NPT43_PRIV">Ingreso $48k–$75k (Privada)</option>
-              <option value="NPT45_PUB">Ingreso más de $110k (Pública)</option>
-              <option value="NPT45_PRIV">Ingreso más de $110k (Privada)</option>
-            </optgroup>
-            <optgroup label="Salarios Graduados">
-              <option value="MD_EARN_WNE_1YR">Salario Mediano (1 año)</option>
-              <option value="MD_EARN_WNE_5YR">Salario Mediano (5 años)</option>
-              <option value="MD_EARN_WNE_P6">Salario Mediano (6 años)</option>
-              <option value="MD_EARN_WNE_P8">Salario Mediano (8 años)</option>
-              <option value="MD_EARN_WNE_P10">Salario Mediano (10 años)</option>
-            </optgroup>
-            <optgroup label="Retorno vs Secundaria">
-              <option value="GT_THRESHOLD_P6">% Supera Salario Secundaria (6 años)</option>
-              <option value="GT_THRESHOLD_P10">% Supera Salario Secundaria (10 años)</option>
-            </optgroup>
-            <optgroup label="Programas">
-              <option value="PRGMOFR">Cantidad de Programas Ofrecidos</option>
-            </optgroup>
+            <select id="ordenar-por" value={ordenarPor} onChange={(e) => {
+              // Al elegir un criterio, la dirección natural: la matrícula más barata primero, el
+              // salario más alto primero… Después se puede invertir con el botón.
+              const criterio = ORDENES.find(o => o.valor === e.target.value);
+              setOrdenarPor(e.target.value);
+              if (criterio?.direccion) setOrdenDireccion(criterio.direccion);
+            }}>
+              {ORDENES.map(o => <option key={o.valor} value={o.valor}>{o.texto}</option>)}
             </select>
-            <button
-              type="button"
-              className="boton"
-              onClick={() => setOrdenDireccion(ordenDireccion === 'asc' ? 'desc' : 'asc')}
-              aria-label={ordenDireccion === 'asc' ? 'Orden ascendente; cambiar a descendente' : 'Orden descendente; cambiar a ascendente'}
-            >
-              {ordenDireccion === 'asc' ? '↑ Asc.' : '↓ Desc.'}
-            </button>
+            {ordenActual?.direccion && (
+              <button
+                type="button"
+                className="boton"
+                onClick={() => setOrdenDireccion(ordenDireccion === 'asc' ? 'desc' : 'asc')}
+                aria-label={`${textoDireccion(ordenActual, ordenDireccion)}. Cambiar a ${textoDireccion(ordenActual, ordenDireccion === 'asc' ? 'desc' : 'asc').toLowerCase()}`}
+              >
+                {textoDireccion(ordenActual, ordenDireccion)}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {faltantesPorId.size > 0 && (
         <p className="nota-alerta lista-aviso">
-          {faltantesPorId.size} resultados no tienen los datos que piden tus filtros.
-          No se descartaron: van al final y aparecen marcados.
+          {[...faltantesPorId.values()].every(f => f.length === 1 && f[0] === 'Sin datos SAT')
+            ? `${faltantesPorId.size.toLocaleString('en-US')} no publican puntajes SAT (muchas no lo piden), así que no se puede calcular tu probabilidad. No se descartaron: van al final, marcadas.`
+            : `${faltantesPorId.size.toLocaleString('en-US')} resultados no tienen los datos que piden tus filtros. No se descartaron: van al final y aparecen marcados.`}
         </p>
       )}
 

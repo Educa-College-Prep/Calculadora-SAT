@@ -1,35 +1,35 @@
 /* =========================================================
-   Concepto "Hoja de respuestas": papel blanco, tinta azul de
-   formulario (el azul de la marca), grafito de lápiz y un
-   resaltador para lo que encaja contigo. Colores con significado fijo:
-     azul tinta     → marca / público / activo / estructura
-     verde azulado  → privado sin fines de lucro
-     ámbar          → avisos (datos faltantes)
-     resaltador     → tu puntaje y lo que encaja contigo
+   Paleta de "La carta de admisión" (DESIGN.md), la misma de la ficha. Los nombres vienen
+   del concepto anterior ("hoja de respuestas") y se conservan para no tocar cada regla;
+   los valores son los de la ficha. Colores con significado fijo:
+     azul Educa / marino → marca / pública / activo / estructura
+     verde campus        → privada sin fines de lucro
+     ámbar               → avisos (datos faltantes)
+     sol                 → una sola acción principal por pantalla (Un Solo Sol)
    ========================================================= */
 :root {
-  --papel: #f2f5f9;          /* fondo de página, papel de formulario */
+  --papel: #f2f3f8;          /* niebla: fondo de página */
   --hoja: #ffffff;           /* superficies */
-  --tinta: #1b5fa8;          /* tinta azul de formulario: color de marca */
-  --tinta-fuerte: #12407a;
-  --tinta-suave: #cddcf0;    /* reglas y bordes */
-  --tinta-fondo: #e9f0fa;    /* relleno de lo seleccionado */
-  --grafito: #26292b;        /* texto y burbujas rellenas */
-  --grafito-suave: #5d6467;  /* texto secundario (6:1 sobre blanco) */
-  --linea: #dde3ea;          /* divisores neutros */
-  --boligrafo: #0f766e;      /* privadas sin fines de lucro (verde azulado) */
+  --tinta: #2a3f8f;          /* azul Educa: color de marca, enlaces, acción */
+  --tinta-fuerte: #1c2c6e;   /* marino */
+  --tinta-suave: #c9d4f3;    /* reglas y bordes azulados */
+  --tinta-fondo: #e8ecf8;    /* azul Educa suave: relleno de lo seleccionado */
+  --grafito: #1b2a57;        /* tinta noche: texto y burbujas rellenas */
+  --grafito-suave: #5b6582;  /* gris pizarra: texto secundario (5.9:1 sobre blanco) */
+  --linea: #d9deea;          /* divisores neutros */
+  --boligrafo: #2e7b6b;      /* verde campus: privadas sin fines de lucro */
   --boligrafo-fondo: #e1f3f0;
   --alerta: #8f4f00;
   --alerta-fondo: #fff3d6;
   --alerta-borde: #f0c96a;
-  --resaltador: #ffe14d;
+  --resaltador: #ffd23f;     /* sol: solo la acción principal */
   /* Etiquetas de nivel en la ficha (Selectiva → Élite, Top 10% → Top 1%): solo pintan el punto. */
   --nivel-1: #3b82f6;
   --nivel-2: #7c4ddb;
   --nivel-3: #e2a300;
   --error: #b42318;
 
-  --radio: 14px;
+  --radio: 18px;
   --radio-chico: 8px;
 
   --fuente: 'Lexend', 'Avenir Next', 'Segoe UI', sans-serif;
@@ -153,6 +153,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   line-height: 1.45;
   color: var(--grafito-suave);
   margin: 4px 0 0;
+  /* Reparte las palabras para que la última línea no quede con una sola ("mapa."). */
+  text-wrap: pretty;
 }
 
 /* ---------- Estructura de la página principal ---------- */
@@ -161,16 +163,18 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);
   gap: 16px 40px;
   align-items: end;
-  padding-bottom: 24px;
-  margin-bottom: 24px;
-  border-bottom: 2px solid var(--grafito);
+  margin-bottom: 28px;
 }
 
+/* El título es la pregunta que trae al estudiante ("¿A qué universidades… te alcanza tu SAT?"):
+   la marca ya está en la barra de Educa. Mediano y a todo el ancho de su columna (en dos
+   líneas parejas), para que no quede un hueco entre él y el buscador. */
 .cabecera h1 {
-  font-size: clamp(30px, 4.4vw, 52px);
+  font-size: clamp(26px, 3.2vw, 38px);
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1;
+  line-height: 1.1;
+  text-wrap: balance;
 }
 
 .cuerpo {
@@ -199,8 +203,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  background: linear-gradient(transparent 58%, var(--resaltador) 58%, var(--resaltador) 92%, transparent 92%);
-  padding: 0 2px;
+  color: var(--tinta-fuerte);
 }
 .resultado-texto { font-size: 17px; font-weight: 600; }
 .resultado-nota { flex-basis: 100%; font-size: 13px; color: var(--grafito-suave); }
@@ -211,6 +214,10 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   gap: 20px;
   align-items: stretch;
 }
+/* Con el mapa de todo el país (alto fijo), el panel no se estira hasta el alto del Top: si no,
+   queda un recuadro con mucho blanco arriba y abajo. Con un estado elegido sí se estira, porque
+   el mapa de condados llena el espacio. */
+.tablero:has(.mapa-nacional:only-child) { align-items: start; }
 .tablero-lateral {
   display: flex;
   flex-direction: column;
@@ -236,6 +243,54 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   .cuerpo { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* CELULAR (una columna): la hoja muestra solo el puntaje SAT y "Más filtros" despliega el
+   resto, para que los resultados queden cerca. En pantallas anchas el botón no existe. */
+.hoja-mas-filtros { display: none; }
+@media (max-width: 960px) {
+  .hoja .hoja-cabecera { order: -2; }
+  .hoja .hoja-seccion-sat, .hoja .hoja-mas-filtros { order: -1; }
+  .hoja-mas-filtros { display: flex; }
+  .hoja-plegada .hoja-seccion:not(.hoja-seccion-sat) { display: none; }
+}
+
+/* Botón fijo "Ver N universidades": abajo, al alcance del pulgar. */
+.ver-resultados {
+  color: var(--tinta-fuerte);
+  background: var(--resaltador);
+  border-color: var(--resaltador);
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  min-height: 48px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(17, 29, 63, 0.28);
+  transform: translateX(-50%);
+}
+.ver-resultados:hover:not(:disabled) { color: var(--tinta-fuerte); background: #ffdc5c; border-color: #ffdc5c; }
+.ver-resultados:focus-visible { outline-color: var(--tinta-fuerte); }
+.lista-ancla { scroll-margin-top: calc(var(--alto-barra, 0px) + 12px); }
+.resultado { scroll-margin-top: calc(var(--alto-barra, 0px) + 12px); }
+
+/* El mapa en celular: capa a pantalla completa, encima de todo (también de la barra de Educa). */
+.capa-mapa {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--papel);
+}
+.capa-mapa-barra { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.capa-mapa-barra strong { font-size: 17px; }
+
 @media (max-width: 600px) {
   #root { padding: 20px 16px 48px; }
   .panel-cabecera { padding: 16px 16px 10px; }
@@ -254,7 +309,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   position: relative;
   padding: 20px 20px 24px;
   background: var(--hoja);
-  border: 1.5px solid var(--tinta);
+  border: 1px solid var(--linea);
   border-radius: var(--radio);
   display: flex;
   flex-direction: column;
@@ -286,14 +341,17 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   color: var(--tinta-fuerte);
 }
 
-/* Casillas del puntaje: grandes, como las del recuadro de respuestas. */
+/* Casillas del puntaje: grandes, como las del recuadro de respuestas. Etiqueta, casilla,
+   escala y aviso en filas compartidas (subgrid): "Lectura y Escritura" ocupa dos líneas en
+   la columna angosta y "Matemáticas" una, pero las casillas quedan a la misma altura. */
 .casillas-sat {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-rows: auto auto auto auto;
+  column-gap: 10px;
 }
-.casilla-sat { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.casilla-etiqueta { font-size: 13px; font-weight: 600; color: var(--grafito-suave); }
+.casilla-sat { display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 4px; min-width: 0; }
+.casilla-etiqueta { align-self: end; font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--grafito-suave); }
 .casilla-sat input {
   min-height: 56px;
   padding: 6px 8px;
@@ -309,7 +367,24 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .casilla-sat input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .casilla-sat input[aria-invalid="true"] { border-color: var(--error); }
 .casilla-escala { font-size: 12px; color: var(--grafito-suave); text-align: center; }
-.casilla-error { font-size: 12px; color: var(--error); font-weight: 600; }
+.casilla-error { margin: 0; font-size: 12px; line-height: 1.4; color: var(--error); font-weight: 600; text-wrap: pretty; }
+.casilla-error:empty { display: none; }
+/* "¿Es tu total? Usar 1200 como total": la salida más probable, a un toque. */
+.casilla-sugerencia {
+  display: block;
+  margin-top: 4px;
+  padding: 4px 0;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  color: var(--tinta-fuerte);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.casilla-sugerencia:hover { color: var(--tinta); }
 
 .total-sat {
   display: flex;
@@ -322,18 +397,29 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   font-size: 14px;
   font-weight: 600;
 }
-.total-sat strong {
+/* El total también se escribe: el recuadro hace de campo y el input va sin borde propio. */
+.total-sat input {
+  width: 5ch;
+  min-height: 0;
   margin-left: auto;
+  padding: 0 3px;
   font-size: 26px;
   font-weight: 800;
   line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
+.total-sat input:focus { box-shadow: none; }
+.total-sat:focus-within { border-style: solid; border-color: var(--tinta); box-shadow: 0 0 0 3px var(--tinta-fondo); }
 .total-sat-escala { color: var(--grafito-suave); font-weight: 500; }
-.total-sat-listo { border-style: solid; border-color: var(--grafito); }
-.total-sat-listo strong {
-  background: linear-gradient(transparent 55%, var(--resaltador) 55%, var(--resaltador) 95%, transparent 95%);
-  padding: 0 3px;
-}
+.total-sat-listo { border-style: solid; }
+.total-sat-error, .total-sat-error:focus-within { border-style: solid; border-color: var(--error); }
+.total-sat + .casilla-error { margin-top: 4px; }
+.total-sat-listo { background: var(--tinta-fondo); border-color: var(--tinta); }
+.total-sat-listo input { color: var(--tinta-fuerte); }
 
 .ayuda-aviso { color: var(--alerta); font-weight: 600; }
 
@@ -509,8 +595,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   line-height: 1.45;
   color: var(--alerta);
   background: var(--alerta-fondo);
-  border-left: 3px solid var(--alerta-borde);
-  border-radius: 0 var(--radio-chico) var(--radio-chico) 0;
+  border: 1px solid var(--alerta-borde);
+  border-radius: var(--radio-chico);
 }
 
 /* ---------- Lista de resultados ---------- */
@@ -1563,15 +1649,11 @@ html { scroll-behavior: smooth; }
 }
 
 /* Ranking U.S. News: insignia en la lista y línea destacada en la ficha. */
-.marca-ranking { color: var(--grafito); background: var(--resaltador); border-color: #e6c400; }
-.ficha-ranking {
-  display: inline-block;
-  margin: 0 0 12px;
-  padding: 4px 12px;
-  font-size: 15px;
-  background: var(--resaltador);
-  border-radius: 16px;
-}
+.marca-ranking { font-weight: 700; }
+.marca-ranking-oro { color: #2a2100; background: #ffd23f; border-color: #f0bf1a; }
+.marca-ranking-plata { color: #1b2a57; background: #e3e8f2; border-color: #c9d1e3; }
+.marca-ranking-bronce { color: #3a1d05; background: #f0b47e; border-color: #de9a5f; }
+.marca-ranking-neutro { color: var(--grafito); background: var(--hoja); border-color: var(--linea); }
 
 /* Mi lista: estrella para guardar (en cada fila y en la ficha). */
 .fila { display: flex; align-items: stretch; }
@@ -1591,23 +1673,23 @@ html { scroll-behavior: smooth; }
 }
 .boton-guardar:hover { color: var(--tinta-fuerte); background: var(--tinta-fondo); }
 .boton-guardar:focus-visible { outline-offset: -3px; }
-.boton-guardar-activo { color: #c79a00; }
-.boton-guardar-activo:hover { color: #a07c00; }
+.boton-guardar-activo { color: var(--tinta); }
+.boton-guardar-activo:hover { color: var(--tinta-fuerte); }
 .boton-guardar-texto { display: inline-flex; width: auto; gap: 8px; padding: 8px 16px; color: var(--tinta-fuerte); }
-.boton-guardar-texto.boton-guardar-activo { color: var(--grafito); background: var(--resaltador); border-color: #e6c400; }
-.boton-guardar-texto.boton-guardar-activo svg { color: var(--grafito); }
+.boton-guardar-texto.boton-guardar-activo { color: #fff; background: var(--tinta-fuerte); border-color: var(--tinta-fuerte); }
+.boton-guardar-texto.boton-guardar-activo svg { color: #fff; }
 .ficha-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 
 /* Mi lista y comparar */
 .boton-mi-lista { margin-top: 18px; }
-.boton-mi-lista svg { color: #c79a00; }
+.boton-mi-lista svg { color: var(--tinta); }
 .contador {
   min-width: 22px;
   padding: 0 7px;
   font-size: 12px;
   line-height: 20px;
-  color: var(--grafito);
-  background: var(--resaltador);
+  color: #fff;
+  background: var(--tinta-fuerte);
   border-radius: 999px;
 }
 
@@ -1769,9 +1851,11 @@ html { scroll-behavior: smooth; }
 /* Semáforo: verde = alta probabilidad, ámbar = intermedia, rojo = baja. Texto oscuro del mismo
    tono para que se lea bien; las barras de señal lo dicen también sin depender del color. */
 .marca-nivel { font-weight: 700; }
-.marca-nivel-alta { color: #166534; background: #dcfce7; border-color: #86efac; }
-.marca-nivel-intermedia { color: #9a3412; background: #ffedd5; border-color: #fdba74; }
-.marca-nivel-baja { color: #991b1b; background: #fee2e2; border-color: #fca5a5; }
+/* Sin semáforo: el rojo se leía como "rechazado" junto a la universidad soñada. Azul Educa,
+   violeta y gris pizarra (DESIGN.md); las barras dicen el nivel sin depender del color. */
+.marca-nivel-alta { color: #2a3f8f; background: #e8ecf8; border-color: #b9c4ea; }
+.marca-nivel-intermedia { color: #4a3a86; background: #efebf8; border-color: #cbc0e8; }
+.marca-nivel-baja { color: #4a5470; background: #f2f3f8; border-color: #d9deea; }
 
 .nivel-opcion-cuenta { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--grafito-suave); }
 .burbuja-deshabilitada { opacity: 0.55; cursor: not-allowed; }
@@ -1799,6 +1883,7 @@ html { scroll-behavior: smooth; }
 .top-fila:hover { background: var(--tinta-fondo); }
 .top-numero { font-size: 18px; font-weight: 800; color: var(--tinta); text-align: center; }
 .top-identidad { display: flex; flex-direction: column; min-width: 0; }
+.top-chips { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .top-nombre { font-size: 14px; font-weight: 700; line-height: 1.3; color: var(--tinta-fuerte); }
 .top-lugar { font-size: 12px; color: var(--grafito-suave); }
 .top-motivo { white-space: nowrap; }

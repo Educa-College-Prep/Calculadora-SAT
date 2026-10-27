@@ -7,6 +7,7 @@ import { Buscador } from './components/Buscador';
 import { Filtros } from './components/Filtros';
 import { tipoControl } from './utils/tipoControl';
 import { useValorEstable } from './utils/useValorEstable';
+import { useMedia } from './utils/useMedia';
 import { posicionUSNews } from './data/rankingUSNews';
 import { useMiLista, claveUniversidad } from './utils/useMiLista';
 import type { TipoControl } from './utils/tipoControl';
@@ -54,6 +55,8 @@ export default function App() {
 
   const [puntajeMath, setPuntajeMath] = useState<number>(0);
   const [puntajeLectura, setPuntajeLectura] = useState<number>(0);
+  /** Total escrito directamente, para quien no recuerda sus dos secciones (0 = vacío). */
+  const [puntajeSoloTotal, setPuntajeSoloTotal] = useState<number>(0);
 
   const [exigirSAT, setExigirSAT] = useState<string>('todos');
   /** "Tus posibilidades de entrar": niveles marcados (vacío = todos); solo con puntaje SAT. */
@@ -116,8 +119,9 @@ export default function App() {
     [universidades, estadoSeleccionado]
   );
 
-  // Solo hay total (y filtro SAT) cuando se ingresaron las dos secciones.
-  const puntajeTotal = puntajeMath > 0 && puntajeLectura > 0 ? puntajeMath + puntajeLectura : 0;
+  // El total sale de las dos secciones o, si no las hay, del total escrito a mano. Con una
+  // sola sección no hay total (ni filtro SAT): no se puede adivinar la otra.
+  const puntajeTotal = puntajeMath > 0 && puntajeLectura > 0 ? puntajeMath + puntajeLectura : puntajeSoloTotal;
 
   // Los controles (deslizador, casillas) se actualizan al instante con los valores de
   // arriba. El filtrado y todo lo que se dibuja con él usan esta copia diferida: React
@@ -210,7 +214,7 @@ export default function App() {
         conteoNiveles: null, conteoPolitica: contarPolitica(sinFiltroPolitica),
       };
     }
-    const conteo: Record<Nivel, number> = { 'Alta probabilidad': 0, 'Intermedia': 0, 'Baja': 0 };
+    const conteo: Record<Nivel, number> = { 'Probabilidad alta': 0, 'Probabilidad media': 0, 'Probabilidad baja': 0 };
     for (const uni of lista) {
       const n = clasificar(uni, sat);
       if (n) conteo[n]++;
@@ -233,7 +237,7 @@ export default function App() {
   // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
   // estado+ciudad cuentan como uno cada uno).
   const filtrosActivos = ([
-    [puntajeMath > 0 || puntajeLectura > 0, 'puntaje SAT'],
+    [puntajeMath > 0 || puntajeLectura > 0 || puntajeSoloTotal > 0, 'puntaje SAT'],
     [estadoSeleccionado !== 'todos', 'estado'],
     [exigirSAT !== 'todos', '¿piden el SAT?'],
     // Marcar los tres niveles equivale a no filtrar.
@@ -248,6 +252,7 @@ export default function App() {
     setBusquedaNombre('');
     setPuntajeMath(0);
     setPuntajeLectura(0);
+    setPuntajeSoloTotal(0);
     setEstadoSeleccionado('todos');
     setCiudadSeleccionada('todas');
     setExigirSAT('todos');
@@ -257,12 +262,27 @@ export default function App() {
   }, []);
 
   const universidadesOrdenadas = useMemo(() => {
-    const hayFaltantes = faltantesPorId.size > 0;
     // Sin orden elegido pero con búsqueda activa, se ordena por relevancia (MIT antes que Smith College).
     const posicion = resultadoBusqueda?.posicion;
-    if (!hayFaltantes && ordenarPor === 'ninguno' && !posicion) return universidadesFiltradas;
 
     const sinDato = (u: Universidad) => (u._id != null && faltantesPorId.has(u._id) ? 1 : 0);
+    // Orden recomendado: con puntaje, primero donde tienes más probabilidad; dentro de cada
+    // nivel (y sin puntaje), primero las del ranking, después las de SAT promedio más alto (las
+    // más competitivas a tu alcance) y al final las que tienen menos datos, así la lista no
+    // empieza con universidades llenas de "—".
+    const SIN_RANKING = 1e6;
+    const ORDEN_NIVEL: Record<Nivel, number> = { 'Probabilidad alta': 0, 'Probabilidad media': 1, 'Probabilidad baja': 2 };
+    const nivelDe = (u: Universidad) => {
+      const n = filtros.sat > 0 ? clasificar(u, filtros.sat) : null;
+      return n ? ORDEN_NIVEL[n] : 3;
+    };
+    const datos = (u: Universidad) =>
+      Number(u.ADM_RATE != null) + Number(u.SAT_AVG != null) + Number(u.TUITIONFEE_OUT != null);
+    const recomendado = (a: Universidad, b: Universidad) =>
+      nivelDe(a) - nivelDe(b)
+      || (a.USNEWS_ORDEN ?? SIN_RANKING) - (b.USNEWS_ORDEN ?? SIN_RANKING)
+      || (b.SAT_AVG ?? 0) - (a.SAT_AVG ?? 0)
+      || datos(b) - datos(a);
 
     return [...universidadesFiltradas].sort((a, b) => {
       // Primero las que sí se pudieron evaluar; las incompletas al final.
@@ -270,7 +290,8 @@ export default function App() {
       if (diferencia !== 0) return diferencia;
 
       if (ordenarPor === 'ninguno') {
-        return posicion ? (posicion.get(a._id ?? -1) ?? 0) - (posicion.get(b._id ?? -1) ?? 0) : 0;
+        // Buscando un nombre, manda la relevancia (MIT antes que Smith College).
+        return posicion ? (posicion.get(a._id ?? -1) ?? 0) - (posicion.get(b._id ?? -1) ?? 0) : recomendado(a, b);
       }
       const valA = (a as any)[ordenarPor];
       const valB = (b as any)[ordenarPor];
@@ -282,13 +303,13 @@ export default function App() {
       }
       return ordenDireccion === 'asc' ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
     });
-  }, [universidadesFiltradas, faltantesPorId, ordenarPor, ordenDireccion, resultadoBusqueda]);
+  }, [universidadesFiltradas, faltantesPorId, ordenarPor, ordenDireccion, resultadoBusqueda, filtros.sat]);
 
   // "Top universidades": ranking U.S. News y, si no alcanza, SAT promedio más alto.
   // 8 en todo el país; 5 con un estado elegido, porque arriba va también su resumen.
   const topUniversidades = useMemo(
-    () => elegirTop(universidadesFiltradas, filtros.estado !== 'todos' ? 5 : 8),
-    [universidadesFiltradas, filtros.estado]
+    () => elegirTop(universidadesFiltradas, filtros.estado !== 'todos' ? 5 : 8, filtros.sat),
+    [universidadesFiltradas, filtros.estado, filtros.sat]
   );
 
   // --- PREPARACIÓN DE DATOS DEL MAPA GEO ---
@@ -305,7 +326,7 @@ export default function App() {
 
     Object.keys(conteoPorEstado).sort().forEach(estado => {
       const nombreEstado = NOMBRES_ESTADOS[estado] ?? estado;
-      const tooltip = `<div style="padding:8px 10px; line-height:1.35; color:#26292b; font-family:Lexend, sans-serif;">
+      const tooltip = `<div style="padding:8px 10px; line-height:1.35; color:#1b2a57; font-family:Lexend, sans-serif;">
       <strong style="font-size:15px;">${nombreEstado}</strong><br />
       <span style="font-size:13px; color:#5d6467;">${conteoPorEstado[estado]} universidades · clic para ver condados</span>
     </div>`;
@@ -340,6 +361,55 @@ export default function App() {
   const seleccionarCiudadDesdeMapa = useCallback((ciudad: string) => {
     setCiudadSeleccionada(ciudad);
   }, []);
+
+  // CELULAR (una sola columna, hasta 960px): el mapa no va en la página, porque empujaba los
+  // resultados una pantalla más abajo y un toque equivocado abría los condados. Se abre en una
+  // capa encima de todo; al elegir un lugar se cierra y lleva a los resultados.
+  const angosto = useMedia('(max-width: 960px)');
+  const [mapaAbierto, setMapaAbierto] = useState(false);
+  const resultadoRef = useRef<HTMLDivElement>(null);
+  const irAResultados = useCallback(() => {
+    requestAnimationFrame(() => resultadoRef.current?.scrollIntoView({ block: 'start' }));
+  }, []);
+  const elegirEnCapa = useCallback((elegir: () => void) => {
+    elegir();
+    setMapaAbierto(false);
+    irAResultados();
+  }, [irAResultados]);
+  useEffect(() => {
+    if (!mapaAbierto) return;
+    // Mientras la capa está abierta, la página de atrás no se mueve y Escape la cierra.
+    const cerrarConEscape = (e: KeyboardEvent) => { if (e.key === 'Escape') setMapaAbierto(false); };
+    document.documentElement.style.overflow = 'hidden';
+    window.addEventListener('keydown', cerrarConEscape);
+    return () => {
+      document.documentElement.style.overflow = '';
+      window.removeEventListener('keydown', cerrarConEscape);
+    };
+  }, [mapaAbierto]);
+  // Al pasar a pantalla ancha, el mapa vuelve a la página.
+  if (!angosto && mapaAbierto) setMapaAbierto(false);
+
+  // Botón fijo "Ver N universidades": en celular, mientras la lista todavía está más abajo
+  // (llenando el puntaje o los filtros), lleva a ella y dice cuántas hay. Se esconde cuando ya
+  // se ve el contador de resultados, que dice lo mismo (y si no, lo taparía).
+  const listaRef = useRef<HTMLDivElement>(null);
+  const [listaAbajo, setListaAbajo] = useState(true);
+  const [contadorALaVista, setContadorALaVista] = useState(false);
+  useEffect(() => {
+    const lista = listaRef.current;
+    const contador = resultadoRef.current;
+    if (!lista || !contador) return;
+    const observador = new IntersectionObserver(entradas => {
+      for (const entrada of entradas) {
+        if (entrada.target === lista) setListaAbajo(!entrada.isIntersecting && entrada.boundingClientRect.top > 0);
+        else setContadorALaVista(entrada.isIntersecting);
+      }
+    });
+    observador.observe(lista);
+    observador.observe(contador);
+    return () => observador.disconnect();
+  });
 
   // El detalle se abre como una entrada del historial del navegador: así el botón
   // "atrás" vuelve a la lista (y "adelante" reabre la universidad) en vez de salir de la web.
@@ -465,7 +535,7 @@ export default function App() {
       <>
         <header className="cabecera">
           <div>
-            <h1>Educa College Finder</h1>
+            <h1>¿A qué universidades de EE. UU. te alcanza tu SAT?</h1>
             <button type="button" className="boton boton-mi-lista" onClick={abrirMiLista}>
               <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
               Mi lista y comparar
@@ -487,6 +557,7 @@ export default function App() {
             estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
             puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
             puntajeLectura={puntajeLectura} setPuntajeLectura={setPuntajeLectura}
+            puntajeSoloTotal={puntajeSoloTotal} setPuntajeSoloTotal={setPuntajeSoloTotal}
             puntajeTotal={puntajeTotal} exigirSAT={exigirSAT} setExigirSAT={setExigirSAT}
             tiposUniversidad={tiposUniversidad} setTiposUniversidad={setTiposUniversidad}
             precioMaximo={precioMaximo} setPrecioMaximo={setPrecioMaximo}
@@ -495,11 +566,12 @@ export default function App() {
             conteoNiveles={conteoNiveles}
             conteoPolitica={conteoPolitica}
             nivelesSAT={nivelesSAT} setNivelesSAT={setNivelesSAT}
+            onAbrirMapa={angosto ? () => setMapaAbierto(true) : undefined}
           />
 
           <main className="columna-principal">
             {/* Lo primero que se lee: cuántas universidades quedan con lo que marcaste. */}
-            <div className="resultado" aria-live="polite">
+            <div className="resultado" aria-live="polite" ref={resultadoRef}>
               <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
               <span className="resultado-texto">
                 {universidadesFiltradas.length === 1 ? 'universidad encaja' : 'universidades encajan'} con lo que marcaste
@@ -521,13 +593,15 @@ export default function App() {
             </div>
 
             <section className="tablero">
-              <MapaGeo
-                datosMapaGeoEstados={mapa.datos}
-                universidadesFiltradas={mapa.universidades}
-                estadoSeleccionado={mapa.estado}
-                onSeleccionarEstado={seleccionarEstadoDesdeMapa}
-                onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
-              />
+              {!angosto && (
+                <MapaGeo
+                  datosMapaGeoEstados={mapa.datos}
+                  universidadesFiltradas={mapa.universidades}
+                  estadoSeleccionado={mapa.estado}
+                  onSeleccionarEstado={seleccionarEstadoDesdeMapa}
+                  onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
+                />
+              )}
 
               {/* El gráfico conserva su alto natural y, con un estado elegido, debajo
                   va el resumen en vez de estirar las barras. */}
@@ -543,10 +617,12 @@ export default function App() {
                   universidades={topUniversidades}
                   lugar={hayFiltrosUbicacion ? (filtros.ciudad !== 'todas' ? filtros.ciudad : NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado) : null}
                   onSeleccionar={seleccionarUniversidad}
+                  puntajeSAT={filtros.sat}
                 />
               </div>
             </section>
 
+            <div ref={listaRef} className="lista-ancla">
             <ListaUniversidades
               universidadesFiltradas={universidadesFiltradas} universidadesOrdenadas={universidadesOrdenadas}
               faltantesPorId={faltantesPorId}
@@ -556,8 +632,31 @@ export default function App() {
               guardadas={miLista.guardadas} onAlternarGuardada={miLista.alternar}
               puntajeSAT={filtros.sat}
             />
+            </div>
           </main>
         </div>
+
+        {angosto && mapaAbierto && (
+          <div className="capa-mapa" role="dialog" aria-modal="true" aria-label="Elegir en el mapa">
+            <div className="capa-mapa-barra">
+              <strong>Elige dónde quieres estudiar</strong>
+              <button type="button" className="boton" onClick={() => setMapaAbierto(false)} autoFocus>Cerrar</button>
+            </div>
+            <MapaGeo
+              datosMapaGeoEstados={mapa.datos}
+              universidadesFiltradas={mapa.universidades}
+              estadoSeleccionado={mapa.estado}
+              onSeleccionarEstado={st => elegirEnCapa(() => seleccionarEstadoDesdeMapa(st))}
+              onSeleccionarCiudad={ciudad => elegirEnCapa(() => seleccionarCiudadDesdeMapa(ciudad))}
+            />
+          </div>
+        )}
+
+        {angosto && listaAbajo && !contadorALaVista && !mapaAbierto && (
+          <button type="button" className="boton ver-resultados" onClick={() => listaRef.current?.scrollIntoView({ block: 'start' })}>
+            Ver {universidadesFiltradas.length.toLocaleString()} {universidadesFiltradas.length === 1 ? 'universidad' : 'universidades'}
+          </button>
+        )}
       </>
     );
   })();
