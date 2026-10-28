@@ -1,0 +1,478 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-27T18:16:30+00:00",
+  "title": "Design System: College Finder · Educa College Prep",
+  "extensions": {
+    "colorMeta": {
+      "marino": {
+        "role": "primary",
+        "displayName": "Marino Educa",
+        "canonical": "#1c2c6e",
+        "tonalRamp": [
+          "oklch(15% 0.088 269)",
+          "oklch(26% 0.107 269)",
+          "oklch(38% 0.107 269)",
+          "oklch(49% 0.089 269)",
+          "oklch(61% 0.070 269)",
+          "oklch(72% 0.051 269)",
+          "oklch(84% 0.033 269)",
+          "oklch(95% 0.017 269)"
+        ]
+      },
+      "azul-educa": {
+        "role": "primary",
+        "displayName": "Azul Educa",
+        "canonical": "#2a3f8f",
+        "tonalRamp": [
+          "oklch(15% 0.088 269)",
+          "oklch(26% 0.109 269)",
+          "oklch(38% 0.131 269)",
+          "oklch(49% 0.117 269)",
+          "oklch(61% 0.096 269)",
+          "oklch(72% 0.074 269)",
+          "oklch(84% 0.052 269)",
+          "oklch(95% 0.031 269)"
+        ]
+      },
+      "azul-educa-suave": {
+        "role": "primary",
+        "displayName": "Azul Educa suave",
+        "canonical": "#e8ecf8",
+        "tonalRamp": [
+          "oklch(15% 0.003 271)",
+          "oklch(26% 0.003 271)",
+          "oklch(38% 0.003 271)",
+          "oklch(49% 0.006 271)",
+          "oklch(61% 0.009 271)",
+          "oklch(72% 0.012 271)",
+          "oklch(84% 0.014 271)",
+          "oklch(95% 0.017 271)"
+        ]
+      },
+      "sol": {
+        "role": "secondary",
+        "displayName": "Sol",
+        "canonical": "#ffd23f",
+        "tonalRamp": [
+          "oklch(15% 0.024 91)",
+          "oklch(26% 0.024 91)",
+          "oklch(38% 0.048 91)",
+          "oklch(49% 0.074 91)",
+          "oklch(61% 0.100 91)",
+          "oklch(72% 0.126 91)",
+          "oklch(84% 0.152 91)",
+          "oklch(95% 0.146 91)"
+        ]
+      },
+      "violeta-atardecer": {
+        "role": "secondary",
+        "displayName": "Violeta atardecer",
+        "canonical": "#4a3a86",
+        "tonalRamp": [
+          "oklch(15% 0.078 290)",
+          "oklch(26% 0.098 290)",
+          "oklch(38% 0.117 290)",
+          "oklch(49% 0.107 290)",
+          "oklch(61% 0.088 290)",
+          "oklch(72% 0.068 290)",
+          "oklch(84% 0.049 290)",
+          "oklch(95% 0.029 290)"
+        ]
+      },
+      "verde-campus": {
+        "role": "tertiary",
+        "displayName": "Verde campus",
+        "canonical": "#2e7b6b",
+        "tonalRamp": [
+          "oklch(15% 0.037 177)",
+          "oklch(26% 0.050 177)",
+          "oklch(38% 0.063 177)",
+          "oklch(49% 0.075 177)",
+          "oklch(61% 0.071 177)",
+          "oklch(72% 0.058 177)",
+          "oklch(84% 0.046 177)",
+          "oklch(95% 0.033 177)"
+        ]
+      },
+      "oro": {
+        "role": "tertiary",
+        "displayName": "Oro (ranking 1–10)",
+        "canonical": "#ffd23f",
+        "tonalRamp": [
+          "oklch(15% 0.024 91)",
+          "oklch(26% 0.024 91)",
+          "oklch(38% 0.048 91)",
+          "oklch(49% 0.074 91)",
+          "oklch(61% 0.100 91)",
+          "oklch(72% 0.126 91)",
+          "oklch(84% 0.152 91)",
+          "oklch(95% 0.146 91)"
+        ]
+      },
+      "plata": {
+        "role": "tertiary",
+        "displayName": "Plata (ranking 11–25)",
+        "canonical": "#e3e8f2",
+        "tonalRamp": [
+          "oklch(15% 0.002 264)",
+          "oklch(26% 0.002 264)",
+          "oklch(38% 0.003 264)",
+          "oklch(49% 0.006 264)",
+          "oklch(61% 0.008 264)",
+          "oklch(72% 0.010 264)",
+          "oklch(84% 0.013 264)",
+          "oklch(95% 0.014 264)"
+        ]
+      },
+      "bronce": {
+        "role": "tertiary",
+        "displayName": "Bronce (ranking 26–50)",
+        "canonical": "#f0b47e",
+        "tonalRamp": [
+          "oklch(15% 0.015 63)",
+          "oklch(26% 0.023 63)",
+          "oklch(38% 0.039 63)",
+          "oklch(49% 0.054 63)",
+          "oklch(61% 0.070 63)",
+          "oklch(72% 0.086 63)",
+          "oklch(84% 0.096 63)",
+          "oklch(95% 0.080 63)"
+        ]
+      },
+      "sube": {
+        "role": "tertiary",
+        "displayName": "Sube",
+        "canonical": "#1e7b4a",
+        "tonalRamp": [
+          "oklch(15% 0.056 155)",
+          "oklch(26% 0.074 155)",
+          "oklch(38% 0.093 155)",
+          "oklch(49% 0.111 155)",
+          "oklch(61% 0.100 155)",
+          "oklch(72% 0.082 155)",
+          "oklch(84% 0.064 155)",
+          "oklch(95% 0.045 155)"
+        ]
+      },
+      "baja": {
+        "role": "tertiary",
+        "displayName": "Baja",
+        "canonical": "#b4232f",
+        "tonalRamp": [
+          "oklch(15% 0.091 23)",
+          "oklch(26% 0.120 23)",
+          "oklch(38% 0.148 23)",
+          "oklch(49% 0.177 23)",
+          "oklch(61% 0.153 23)",
+          "oklch(72% 0.125 23)",
+          "oklch(84% 0.096 23)",
+          "oklch(95% 0.067 23)"
+        ]
+      },
+      "tinta-noche": {
+        "role": "neutral",
+        "displayName": "Tinta noche",
+        "canonical": "#1b2a57",
+        "tonalRamp": [
+          "oklch(15% 0.066 267)",
+          "oklch(26% 0.080 267)",
+          "oklch(38% 0.074 267)",
+          "oklch(49% 0.061 267)",
+          "oklch(61% 0.048 267)",
+          "oklch(72% 0.034 267)",
+          "oklch(84% 0.021 267)",
+          "oklch(95% 0.013 267)"
+        ]
+      },
+      "gris-pizarra": {
+        "role": "neutral",
+        "displayName": "Gris pizarra",
+        "canonical": "#5b6582",
+        "tonalRamp": [
+          "oklch(15% 0.024 270)",
+          "oklch(26% 0.031 270)",
+          "oklch(38% 0.039 270)",
+          "oklch(49% 0.047 270)",
+          "oklch(61% 0.041 270)",
+          "oklch(72% 0.034 270)",
+          "oklch(84% 0.026 270)",
+          "oklch(95% 0.018 270)"
+        ]
+      },
+      "niebla": {
+        "role": "neutral",
+        "displayName": "Niebla",
+        "canonical": "#f2f3f8",
+        "tonalRamp": [
+          "oklch(15% 0.001 277)",
+          "oklch(26% 0.001 277)",
+          "oklch(38% 0.001 277)",
+          "oklch(49% 0.002 277)",
+          "oklch(61% 0.003 277)",
+          "oklch(72% 0.004 277)",
+          "oklch(84% 0.006 277)",
+          "oklch(95% 0.007 277)"
+        ]
+      },
+      "blanco": {
+        "role": "neutral",
+        "displayName": "Blanco",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "linea": {
+        "role": "neutral",
+        "displayName": "Línea",
+        "canonical": "#d9deea",
+        "tonalRamp": [
+          "oklch(15% 0.003 268)",
+          "oklch(26% 0.003 268)",
+          "oklch(38% 0.005 268)",
+          "oklch(49% 0.007 268)",
+          "oklch(61% 0.010 268)",
+          "oklch(72% 0.013 268)",
+          "oklch(84% 0.016 268)",
+          "oklch(95% 0.016 268)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Nombre de la universidad en el hero."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Título de cada banda."
+      },
+      "cifra": {
+        "displayName": "Cifra",
+        "purpose": "Números del resumen, tabulares."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Títulos de panel."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto corrido de la ficha."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Etiquetas, ayudas y fuentes."
+      }
+    },
+    "shadows": [
+      {
+        "name": "casillas",
+        "value": "0 18px 40px -26px rgba(28, 44, 110, 0.6)",
+        "purpose": "Levanta el recuadro de lo esencial."
+      },
+      {
+        "name": "flotante",
+        "value": "0 6px 20px rgba(17, 29, 63, 0.18)",
+        "purpose": "Barra flotante de Guardar/Comparar."
+      },
+      {
+        "name": "chip-sobre-foto",
+        "value": "0 6px 18px -8px rgba(0, 0, 0, 0.5)",
+        "purpose": "Chip de ranking sobre la foto."
+      },
+      {
+        "name": "texto-sobre-foto",
+        "value": "0 2px 24px rgba(0, 0, 0, 0.35)",
+        "purpose": "text-shadow del nombre en el hero."
+      }
+    ],
+    "motion": [
+      {
+        "name": "estado",
+        "value": "0.15s ease",
+        "purpose": "Bordes y fondos al pasar el mouse."
+      },
+      {
+        "name": "barra-flotante",
+        "value": "transform 0.25s ease, opacity 0.2s ease",
+        "purpose": "La barra entra y sale al subir o bajar."
+      },
+      {
+        "name": "foto",
+        "value": "opacity 0.35s ease",
+        "purpose": "Aparición de la foto del hero."
+      },
+      {
+        "name": "reducido",
+        "value": "prefers-reduced-motion: reduce → sin transiciones ni scroll suave",
+        "purpose": "Respeta la preferencia del sistema."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": 480,
+        "value": "480px"
+      },
+      {
+        "name": 520,
+        "value": "520px"
+      },
+      {
+        "name": 600,
+        "value": "600px"
+      },
+      {
+        "name": 640,
+        "value": "640px"
+      },
+      {
+        "name": 760,
+        "value": "760px"
+      },
+      {
+        "name": 860,
+        "value": "860px"
+      },
+      {
+        "name": 960,
+        "value": "960px"
+      },
+      {
+        "name": 1180,
+        "value": "1180px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón sol (acción principal)",
+      "kind": "button",
+      "refersTo": "boton-sol",
+      "description": "Una sola acción principal por pantalla, como ver el campus tour.",
+      "html": "<button class=\"ds-btn-sol\">▶ Ver campus tour</button>",
+      "css": ".ds-btn-sol { font-family: Lexend, 'Avenir Next', 'Segoe UI', sans-serif; display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:12px 20px; font-size:15px; font-weight:800; color:#1c2c6e; background:#ffd23f; border:0; border-radius:999px; cursor:pointer; transition:filter .15s; } .ds-btn-sol:hover { filter:brightness(1.06); } .ds-btn-sol:focus-visible { outline:2px solid #2a3f8f; outline-offset:2px; }"
+    },
+    {
+      "name": "Botón marino",
+      "kind": "button",
+      "refersTo": "boton-marino",
+      "description": "Acción secundaria con peso, sobre fondos claros o amarillos.",
+      "html": "<button class=\"ds-btn-marino\">Calcula cuánto te costaría</button>",
+      "css": ".ds-btn-marino { font-family: Lexend, 'Avenir Next', 'Segoe UI', sans-serif; display:inline-flex; align-items:center; min-height:44px; padding:12px 20px; font-size:15px; font-weight:800; color:#fff; background:#1c2c6e; border:0; border-radius:999px; cursor:pointer; transition:filter .15s; } .ds-btn-marino:hover { filter:brightness(1.06); } .ds-btn-marino:focus-visible { outline:2px solid #2a3f8f; outline-offset:2px; }"
+    },
+    {
+      "name": "Botón enlace",
+      "kind": "button",
+      "refersTo": "boton-enlace",
+      "description": "Enlaces de contacto y acciones terciarias.",
+      "html": "<a class=\"ds-btn-enlace\" href=\"#\">Postular</a>",
+      "css": ".ds-btn-enlace { font-family: Lexend, 'Avenir Next', 'Segoe UI', sans-serif; display:inline-flex; align-items:center; min-height:40px; padding:8px 16px; font-weight:600; color:#2a3f8f; text-decoration:none; background:#fff; border:1px solid #d9deea; border-radius:999px; transition:border-color .15s; } .ds-btn-enlace:hover { border-color:#2a3f8f; } .ds-btn-enlace:focus-visible { outline:2px solid #2a3f8f; outline-offset:2px; }"
+    },
+    {
+      "name": "Chips de tipo",
+      "kind": "chip",
+      "refersTo": "chip-tipo-publica",
+      "description": "Pública en azul, privada en verde; siempre con texto.",
+      "html": "<span class=\"ds-chip ds-chip-pub\">Pública</span> <span class=\"ds-chip ds-chip-priv\">Privada sin fines de lucro</span>",
+      "css": ".ds-chip { font-family: Lexend, 'Avenir Next', 'Segoe UI', sans-serif; display:inline-block; padding:5px 14px; font-size:14px; font-weight:700; color:#fff; border-radius:999px; } .ds-chip-pub { background:#2a3f8f; } .ds-chip-priv { background:#2e7b6b; }"
+    },
+    {
+      "name": "Chip de ranking (oro)",
+      "kind": "chip",
+      "refersTo": "chip-ranking-oro",
+      "description": "Puesto U.S. News con trofeo; oro 1–10, plata 11–25, bronce 26–50.",
+      "html": "<p class=\"ds-rank\"><span class=\"ds-rank-ico\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z\"/><path d=\"M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3\"/></svg></span><span><b>#2</b> en Universidades nacionales</span><small>U.S. News 2027</small></p>",
+      "css": ".ds-rank { font-family: Lexend, 'Avenir Next', 'Segoe UI', sans-serif; display:flex; align-items:center; gap:8px; width:fit-content; margin:0; padding:6px 16px 6px 8px; font-size:15px; font-weight:600; color:#2a2100; background:#ffd23f; border-radius:999px; box-shadow:0 6px 18px -8px rgba(0,0,0,.5); } .ds-rank b { font-size:17px; font-weight:800; } .ds-rank small { font-size:12.5px; opacity:.75; } .ds-rank-ico { display:grid; place-items:center; width:26px; height:26px; background:rgba(0,0,0,.12); border-radius:50%; }"
+    },
+    {
+      "name": "Casillas del resumen",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Lo esencial en casillas blancas dentro de un borde azul con sombra larga.",
+      "html": "<dl class=\"ds-casillas\"><div><dt>Tasa de admisión</dt><dd>5.4%</dd></div><div><dt>Puntaje SAT promedio</dt><dd>1546</dd></div><div><dt>Costo anual total</dt><dd>$95,984</dd></div></dl>",
+      "css": ".ds-casillas { font-family: Lexend, 'Avenir Next', 'Segoe UI', sans-serif; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.5px; margin:0; background:#d9deea; border:1.5px solid #2a3f8f; border-radius:20px; overflow:hidden; box-shadow:0 18px 40px -26px rgba(28,44,110,.6); } .ds-casillas div { padding:20px; background:#fff; } .ds-casillas dt { font-size:13px; font-weight:600; color:#2a3f8f; } .ds-casillas dd { margin:8px 0 0; font-size:34px; font-weight:700; color:#1b2a57; font-variant-numeric:tabular-nums; }"
+    },
+    {
+      "name": "Bloque sol",
+      "kind": "card",
+      "refersTo": "bloque-sol",
+      "description": "Cierra una sección con su acción principal (la calculadora).",
+      "html": "<div class=\"ds-sol\"><p><b>¿Cuánto te costaría a ti?</b> Calcúlalo con tu situación.</p><button class=\"ds-sol-btn\">Calcula tu costo</button></div>",
+      "css": ".ds-sol { font-family: Lexend, 'Avenir Next', 'Segoe UI', sans-serif; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 24px; padding:24px 28px; color:#1c2c6e; background:#ffd23f; border-radius:18px; } .ds-sol p { margin:0; font-size:17px; } .ds-sol-btn { font:inherit; min-height:44px; padding:12px 20px; font-weight:800; color:#fff; background:#1c2c6e; border:0; border-radius:999px; cursor:pointer; } .ds-sol-btn:focus-visible { outline:2px solid #1c2c6e; outline-offset:2px; }"
+    },
+    {
+      "name": "Campo de búsqueda",
+      "kind": "input",
+      "refersTo": "campo",
+      "description": "Campo con borde suave y halo azul al enfocar.",
+      "html": "<input class=\"ds-campo\" type=\"text\" placeholder=\"Ej.: computación, economía, medicina…\">",
+      "css": ".ds-campo { font-family: Lexend, 'Avenir Next', 'Segoe UI', sans-serif; width:100%; min-height:42px; padding:9px 12px; font-size:15px; color:#1b2a57; background:#fff; border:1.5px solid #d9deea; border-radius:8px; transition:border-color .15s; } .ds-campo:hover { border-color:#c9d4f3; } .ds-campo:focus { outline:none; border-color:#2a3f8f; box-shadow:0 0 0 3px #e8ecf8; }"
+    },
+    {
+      "name": "Pestañas de la ficha",
+      "kind": "nav",
+      "refersTo": "",
+      "description": "Barra pegada con subrayado azul en la sección activa.",
+      "html": "<nav class=\"ds-tabs\"><a href=\"#\" class=\"ds-on\">Resumen</a><a href=\"#\">Experiencia Educa</a><a href=\"#\">Admisión</a><a href=\"#\">Costos</a></nav>",
+      "css": ".ds-tabs { font-family: Lexend, 'Avenir Next', 'Segoe UI', sans-serif; display:flex; gap:4px; min-height:56px; background:#fff; border-bottom:1px solid #d9deea; } .ds-tabs a { position:relative; display:flex; align-items:center; padding:0 14px; font-weight:600; color:#5b6582; text-decoration:none; } .ds-tabs a:hover, .ds-tabs a.ds-on { color:#1b2a57; } .ds-tabs a.ds-on::after { content:''; position:absolute; left:8px; right:8px; bottom:0; height:4px; background:#2a3f8f; border-radius:4px 4px 0 0; } .ds-tabs a:focus-visible { outline:2px solid #2a3f8f; outline-offset:-2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La carta de admisión",
+    "overview": "Cada universidad se presenta como el lugar al que el estudiante quiere llegar: la foto del campus a todo el ancho, el nombre en grande y en blanco, y la marca Educa (azul marino y amarillo sol) acompañando. Es aspiracional, pero no promete nada: debajo de la foto vienen los números oficiales, grandes y claros, con su fuente. El sueño arriba, los datos honestos abajo.\n\nLa página se organiza en **bandas** a todo el ancho que alternan gris niebla y blanco, con el contenido centrado (máximo 1280px). Hay una sola banda de marca, en degradado marino a violeta, reservada para la experiencia Educa (campus tour y testimonios), y un solo bloque amarillo por página para la acción principal. Los controles son ovalados y generosos, fáciles de tocar en el celular, que es donde entra la mayoría.\n\nEste es el sistema oficial. Hoy lo usa la ficha de universidad; la vista principal y Mi lista todavía usan el sistema anterior (\"Hoja de respuestas\": azul tinta `#1b5fa8`, grafito `#26292b`, papel `#f2f5f9`, resaltador `#ffe14d`) y deben migrar a este.",
+    "keyCharacteristics": [
+      "Foto del campus como protagonista, con un degradado neutro solo en la franja inferior donde va el texto.",
+      "Bandas a todo el ancho, gris niebla y blanco alternados; una banda de marca y un bloque amarillo como máximo por página.",
+      "Cifras grandes y tabulares (tasa de admisión, SAT, costos), cada una con su fuente.",
+      "Todo ovalado y táctil: botones, chips, ranking, barra flotante.",
+      "Una sola familia tipográfica, Lexend, del peso 400 al 800."
+    ],
+    "rules": [
+      {
+        "name": "The Un Solo Sol Rule",
+        "body": "El amarillo sol marca una sola acción principal por pantalla (el campus tour en el hero, la calculadora en Costos). Nunca dos amarillos compitiendo en la misma vista: por eso \"En Mi lista\" guardado va en blanco con texto marino, no en amarillo.",
+        "section": "colors"
+      },
+      {
+        "name": "The Color Con Significado Rule",
+        "body": "Azul = pública, verde = privada, oro/plata/bronce = ranking. El color nunca es la única señal: el texto (\"Pública\", \"#16\") siempre está visible.",
+        "section": "colors"
+      },
+      {
+        "name": "The Cifras Tabulares Rule",
+        "body": "Todo número que se compare (porcentajes, puntajes, montos) usa cifras tabulares, para que las columnas queden alineadas.",
+        "section": "typography"
+      },
+      {
+        "name": "The Plano Por Defecto Rule",
+        "body": "Paneles, bandas y tarjetas no llevan sombra. Si algo necesita destacarse, primero se prueba con fondo o borde.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** usar el amarillo sol (#ffd23f) para una sola acción principal por pantalla.",
+      "**Do** citar la fuente debajo de cada dato (College Scorecard, IPEDS, U.S. News, Wikipedia) en 12px gris pizarra.",
+      "**Do** mostrar \"Sin dato\" o \"—\" cuando falta un dato, nunca un valor inventado ni un cero.",
+      "**Do** usar cifras tabulares en todo número comparable.",
+      "**Do** mantener los botones y chips ovalados (999px) y con al menos 40–44px de alto.",
+      "**Do** alternar bandas niebla y blanco; dentro de una banda blanca, los paneles van en niebla.",
+      "**Do** distinguir pública (azul Educa) y privada (verde campus) siempre con color y con texto."
+    ],
+    "donts": [
+      "**Don't** teñir la foto del hero con un degradado de color (morado u otro): la sombra es un azul casi negro y solo en la franja inferior.",
+      "**Don't** poner dos elementos amarillos en la misma vista (por ejemplo, \"En Mi lista\" en amarillo junto a \"Ver campus tour\").",
+      "**Don't** usar el amarillo del ranking (oro) fuera del chip de ranking de los puestos 1–10.",
+      "**Don't** pintar con degradado las casillas del resumen: las cinco van en blanco.",
+      "**Don't** usar botones rectangulares: todo lo que se toca es ovalado.",
+      "**Don't** sumar sombras a paneles o tarjetas comunes.",
+      "**Don't** usar los colores del sistema anterior (azul tinta #1b5fa8, grafito #26292b, resaltador #ffe14d) en pantallas nuevas."
+    ]
+  }
+}
