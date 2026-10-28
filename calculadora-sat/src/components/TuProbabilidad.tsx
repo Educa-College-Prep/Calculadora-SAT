@@ -6,14 +6,14 @@ import { BarrasNivel } from './EtiquetaNivel';
 import { InputTotalSAT } from './Filtros';
 
 /**
- * Comparación de tu puntaje con la mitad central de los admitidos, en palabras: dentro del
- * rango, por encima o cuántos puntos te faltan para el 25%.
+ * Dónde quedas frente a la mitad central de los admitidos, en palabras: dentro, por encima o
+ * cuántos puntos te faltan. Los números del rango no se repiten aquí: están justo debajo, en
+ * las barras de "Rango SAT de los admitidos".
  */
 function comparacion(sat: number, [p25, p75]: [number, number]): string {
-  const rango = `La mitad central de sus admitidos sacó aproximadamente entre ${p25} y ${p75}`;
-  if (sat >= p75) return `${rango}: estás por encima de ese rango.`;
-  if (sat >= p25) return `${rango}: estás dentro de ese rango.`;
-  return `${rango}: estás ${p25 - sat} puntos por debajo.`;
+  if (sat >= p75) return 'Estás por encima de la mitad central de sus admitidos.';
+  if (sat >= p25) return 'Estás dentro de la mitad central de sus admitidos.';
+  return `Estás ${p25 - sat} puntos por debajo de la mitad central de sus admitidos.`;
 }
 
 /**
@@ -53,7 +53,7 @@ export function TuProbabilidad({ uni, puntaje, onCambiarPuntaje, onVerAdmision }
     return (
       <section className="tu-prob tu-prob-pregunta" aria-labelledby="tu-prob-titulo">
         <div className="tu-prob-texto">
-          <h2 id="tu-prob-titulo" className="tu-prob-titulo">¿Te alcanza tu SAT para entrar?</h2>
+          <h3 id="tu-prob-titulo" className="tu-prob-titulo">¿Te alcanza tu SAT para entrar?</h3>
           <p className="tu-prob-detalle">Escribe tu puntaje total y lo comparamos con el de sus admitidos.</p>
         </div>
         <div className="tu-prob-campo">
@@ -73,16 +73,16 @@ export function TuProbabilidad({ uni, puntaje, onCambiarPuntaje, onVerAdmision }
     <section className={`tu-prob tu-prob-${info.clase}`} aria-labelledby="tu-prob-titulo">
       <div className="tu-prob-texto">
         <p className="tu-prob-con">Con tu SAT de <strong className="numero">{puntaje}</strong></p>
-        <h2 id="tu-prob-titulo" className="tu-prob-titulo">
+        <h3 id="tu-prob-titulo" className="tu-prob-titulo">
           <BarrasNivel barras={info.barras} />{nivel}
-        </h2>
+        </h3>
         <p className="tu-prob-detalle">{info.explicacion} {comparacion(puntaje, rango)}</p>
         {/* Que el puntaje no se lea como una promesa (decisión de Educa: nada está garantizado). */}
         <p className="fuente">Solo compara tu puntaje: también cuentan tus notas, ensayos y actividades. Rango SAT: College Scorecard.</p>
-      </div>
-      <div className="tu-prob-acciones">
-        {onVerAdmision && <a className="tu-prob-enlace" href="#admision" onClick={onVerAdmision}>Ver tu puntaje frente a los admitidos</a>}
-        <button type="button" className="tu-prob-enlace" onClick={() => setCambiando(true)}>Cambiar mi puntaje</button>
+        <div className="tu-prob-acciones">
+          {onVerAdmision && <a className="tu-prob-enlace" href="#admision" onClick={onVerAdmision}>Ver tu puntaje frente a los admitidos</a>}
+          <button type="button" className="tu-prob-enlace" onClick={() => setCambiando(true)}>Cambiar mi puntaje</button>
+        </div>
       </div>
     </section>
   );

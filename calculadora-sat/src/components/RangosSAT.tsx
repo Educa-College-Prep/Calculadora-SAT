@@ -5,7 +5,6 @@ import { InfoTooltip } from './InfoTooltip';
 interface Rango {
   label: string;
   p25: number;
-  p50: number | null;
   p75: number;
   min: number;
   max: number;
@@ -19,7 +18,8 @@ const COLOR_BANDA = 'var(--tinta)';
 /**
  * Gráfico pequeño del rango intercuartil (percentil 25–75) del SAT.
  * Orden fijo: Lectura y Escritura, Matemáticas, Total. Cada fila usa su propia escala
- * (secciones 200–800, total 400–1600).
+ * (secciones 200–800, total 400–1600). Sin mediana: casi coincide con el centro de la banda
+ * y solo sumaba ruido; lo que importa es dónde queda tu puntaje frente al 25–75.
  *
  * College Scorecard no publica percentiles del TOTAL, así que se aproxima
  * sumando las dos secciones (ver glosarioCampos.SAT_TOTAL).
@@ -31,16 +31,15 @@ export function RangosSAT({ uni, tuPuntaje = 0 }: { uni: Universidad; tuPuntaje?
   const rangos: Rango[] = [];
 
   if (uni.SATVR25 != null && uni.SATVR75 != null) {
-    rangos.push({ label: 'Lectura y Escritura', p25: uni.SATVR25, p50: uni.SATVR50 ?? null, p75: uni.SATVR75, min: 200, max: 800, paso: 100 });
+    rangos.push({ label: 'Lectura y Escritura', p25: uni.SATVR25, p75: uni.SATVR75, min: 200, max: 800, paso: 100 });
   }
   if (uni.SATMT25 != null && uni.SATMT75 != null) {
-    rangos.push({ label: 'Matemáticas', p25: uni.SATMT25, p50: uni.SATMT50 ?? null, p75: uni.SATMT75, min: 200, max: 800, paso: 100 });
+    rangos.push({ label: 'Matemáticas', p25: uni.SATMT25, p75: uni.SATMT75, min: 200, max: 800, paso: 100 });
   }
   if (uni.SATVR25 != null && uni.SATVR75 != null && uni.SATMT25 != null && uni.SATMT75 != null) {
     rangos.push({
       label: 'Total',
       p25: uni.SATVR25 + uni.SATMT25,
-      p50: uni.SATVR50 != null && uni.SATMT50 != null ? uni.SATVR50 + uni.SATMT50 : null,
       p75: uni.SATVR75 + uni.SATMT75,
       min: 400,
       max: 1600,
@@ -70,7 +69,6 @@ export function RangosSAT({ uni, tuPuntaje = 0 }: { uni: Universidad; tuPuntaje?
                 <span style={{ fontWeight: 600 }}>{r.label}</span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>
                   <strong>{r.p25} – {r.p75}</strong>
-                  {r.p50 != null && <span style={{ color: 'var(--grafito-suave)' }}> · mediana {r.p50}</span>}
                   {r.label === 'Total' && tuPuntaje > 0 && (
                     <span className="rango-tu-texto"> · <i className="rango-tu-punto" aria-hidden="true" />tú {tuPuntaje}</span>
                   )}
@@ -114,23 +112,6 @@ export function RangosSAT({ uni, tuPuntaje = 0 }: { uni: Universidad; tuPuntaje?
                     />
                   );
                 })}
-                {/* Mediana, si existe */}
-                {r.p50 != null && (
-                  <span
-                    title={`Mediana: ${r.p50}`}
-                    style={{
-                      position: 'absolute',
-                      top: '-4px',
-                      bottom: '-4px',
-                      left: pos(r.p50, r),
-                      width: '3px',
-                      transform: 'translateX(-50%)',
-                      background: 'var(--grafito)',
-                      borderRadius: '2px',
-                      border: '1px solid #fff',
-                    }}
-                  />
-                )}
                 {/* Tu puntaje, sobre la barra Total (dentro de la escala de 400 a 1600). */}
                 {r.label === 'Total' && tuPuntaje > 0 && (
                   <span className="rango-tu" aria-hidden="true"

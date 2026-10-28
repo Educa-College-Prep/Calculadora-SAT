@@ -336,8 +336,12 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
         {/* Tu probabilidad de entrar, justo antes del rango SAT con el que se calcula. */}
         <TuProbabilidad key={uni._id} uni={uni} puntaje={puntajeSAT} onCambiarPuntaje={onCambiarPuntajeSAT} />
         <div className="paneles">
+          {/* Primero las barras: son la prueba de "Tu probabilidad", que va justo arriba. */}
           <Panel titulo="Política y puntajes SAT">
-            <dl className="datos">
+            {(uni.SAT_AVG || uni.SATVR25 || uni.SATMT25)
+              ? <RangosSAT uni={uni} tuPuntaje={puntajeSAT} />
+              : <p className="ayuda">Esta universidad no publica puntajes SAT de sus admitidos.</p>}
+            <dl className="datos ficha-bloque">
               {uni.ADM_RATE != null && (
                 <div className="dato-fila">
                   <dt>Tasa de admisión<InfoTooltip texto={glosarioCampos.ADM_RATE} /></dt>
@@ -351,9 +355,6 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
                 </div>
               )}
             </dl>
-            {(uni.SAT_AVG || uni.SATVR25 || uni.SATMT25)
-              ? <div className="ficha-bloque"><RangosSAT uni={uni} tuPuntaje={puntajeSAT} /></div>
-              : <p className="ayuda">Esta universidad no publica puntajes SAT de sus admitidos.</p>}
           </Panel>
           {conFechas && (
             <Panel titulo="Fechas de postulación">

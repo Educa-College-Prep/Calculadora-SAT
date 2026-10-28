@@ -1283,14 +1283,7 @@ html { scroll-behavior: smooth; }
 /* "Tu probabilidad": la respuesta a "¿me alcanza mi SAT?" antes de las casillas. Sin caja ni
    sombra (Plano por defecto): la jerarquía la dan el tamaño y el color del nivel, los mismos
    de las etiquetas de la lista (azul alta, violeta media, gris baja). */
-.tu-prob {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px 40px;
-  margin: 0 0 clamp(24px, 3vw, 32px);
-}
+.tu-prob { margin: 0 0 clamp(28px, 3vw, 36px); }
 .tu-prob-alta { --c: #2a3f8f; }
 .tu-prob-intermedia { --c: #4a3a86; }
 .tu-prob-baja { --c: #4a5470; }
@@ -1310,7 +1303,8 @@ html { scroll-behavior: smooth; }
 }
 .tu-prob-titulo .barras-nivel { width: 30px; height: 26px; }
 .tu-prob-detalle { margin: 0; font-size: 16px; }
-.tu-prob-acciones { display: flex; flex-wrap: wrap; gap: 0 24px; }
+/* Las acciones, pegadas al texto que modifican (no sueltas al otro lado de la pantalla). */
+.tu-prob-acciones { display: flex; flex-wrap: wrap; gap: 0 24px; margin-top: 4px; }
 .tu-prob-enlace {
   display: inline-flex;
   align-items: center;
@@ -1327,7 +1321,13 @@ html { scroll-behavior: smooth; }
 }
 .tu-prob-enlace:hover { color: var(--navy); }
 /* Sin puntaje: la pregunta a la izquierda y el campo a la derecha (debajo en celular). */
-.tu-prob-pregunta { align-items: center; }
+.tu-prob-pregunta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 40px;
+}
 .tu-prob-pregunta .tu-prob-titulo { font-size: clamp(22px, 2.4vw, 28px); }
 .tu-prob-campo { display: flex; align-items: center; gap: 4px 20px; flex: 0 1 340px; flex-wrap: wrap; }
 .tu-prob-campo .total-sat { flex: 1 1 220px; margin-top: 0; background: var(--surface); }
@@ -1337,7 +1337,7 @@ html { scroll-behavior: smooth; }
 .tu-prob-sin-rango { max-width: 62ch; margin: 0 0 24px; color: var(--muted); }
 /* En celular los enlaces van debajo del texto, pegados a él. */
 @media (max-width: 520px) {
-  .tu-prob { gap: 4px; }
+  .tu-prob-pregunta { gap: 12px; }
 }
 
 /* Tu puntaje en la barra Total de "Rango SAT de los admitidos". */
