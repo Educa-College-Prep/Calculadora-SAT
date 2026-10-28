@@ -58,9 +58,10 @@ function resumen(uni: Universidad): string {
 }
 
 /**
- * "Sobre la universidad", en la banda Resumen: a la izquierda el resumen escrito a partir de
- * los datos; a la derecha, filas de un vistazo (entorno, alumnos, hispanos, alumnos por
- * profesor y graduación). Cada fila aparece solo si está su dato.
+ * "Sobre la universidad", en la banda Resumen: a la izquierda el texto de Wikipedia si lo hay
+ * y, si no, el resumen escrito a partir de los datos; a la derecha, filas de un vistazo
+ * (entorno, alumnos, hispanos, alumnos por profesor y graduación). Cada fila aparece solo si
+ * está su dato.
  */
 export function SobreUniversidad({ uni }: { uni: Universidad }) {
   const grad = graduacion(uni);
@@ -69,15 +70,19 @@ export function SobreUniversidad({ uni }: { uni: Universidad }) {
     <div className="sobre">
       <div>
         <h2 className="banda-titulo">Sobre la universidad</h2>
-        {/* Si la tiene, primero la descripción de Wikipedia (qué es y por qué es conocida) y
-            después el párrafo con los datos oficiales. La licencia pide citar el artículo. */}
-        {descripcion && <p className="sobre-texto">{descripcion.texto}</p>}
-        <p className="sobre-texto">{resumen(uni)}</p>
-        {descripcion && (
-          <p className="fuente">
-            El primer párrafo es una traducción resumida de <a href={urlArticulo(descripcion)} target="_blank" rel="noopener noreferrer">Wikipedia
-            (en inglés)</a>, <a href={LICENCIA_WIKIPEDIA.url} target="_blank" rel="noopener noreferrer">{LICENCIA_WIKIPEDIA.nombre}</a>.
-          </p>
+        {/* Con descripción de Wikipedia, solo ese texto y su crédito: el párrafo armado con
+            datos repetiría el entorno, los alumnos y la graduación, que ya están a la derecha.
+            Sin descripción, ese párrafo es la única explicación y se muestra solo. */}
+        {descripcion ? (
+          <>
+            <p className="sobre-texto">{descripcion.texto}</p>
+            <p className="fuente">
+              Traducción resumida de <a href={urlArticulo(descripcion)} target="_blank" rel="noopener noreferrer">Wikipedia
+              (en inglés)</a>, <a href={LICENCIA_WIKIPEDIA.url} target="_blank" rel="noopener noreferrer">{LICENCIA_WIKIPEDIA.nombre}</a>.
+            </p>
+          </>
+        ) : (
+          <p className="sobre-texto">{resumen(uni)}</p>
         )}
       </div>
       <dl className="datos sobre-datos">
