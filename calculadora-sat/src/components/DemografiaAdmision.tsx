@@ -16,7 +16,9 @@ interface FilaCDS {
 
 type Valor = number | null | undefined;
 
-const celda: CSSProperties = { padding: '10px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
+// El espacio entre columnas y el tamaño de las cifras se achican en celulares angostos
+// (variables --tabla-adm-* en index.css), para que la tabla quepa entera.
+const celda: CSSProperties = { padding: '10px var(--tabla-adm-espacio, 8px)', textAlign: 'right', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
 const encabezado: CSSProperties = { ...celda, paddingTop: '6px', paddingBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--grafito-suave)' };
 
 const fmt = (v: number | null | undefined) => (v != null ? v.toLocaleString() : '—');
@@ -28,11 +30,11 @@ const fmt = (v: number | null | undefined) => (v != null ? v.toLocaleString() : 
  */
 function CeldaEtapa({ parte, anterior, primera }: { parte: Valor; anterior: Valor; primera: boolean }) {
   if (parte == null) return <td style={celda}>—</td>;
-  if (primera) return <td style={{ ...celda, fontSize: '16px', fontWeight: 700 }}>{fmt(parte)}</td>;
+  if (primera) return <td style={{ ...celda, fontSize: 'var(--tabla-adm-cifra, 16px)', fontWeight: 700 }}>{fmt(parte)}</td>;
   const porcentaje = anterior ? `${((parte / anterior) * 100).toFixed(1)}%` : '—';
   return (
     <td style={celda}>
-      <span style={{ display: 'block', fontSize: '16px', fontWeight: 700 }}>{porcentaje}</span>
+      <span style={{ display: 'block', fontSize: 'var(--tabla-adm-cifra, 16px)', fontWeight: 700 }}>{porcentaje}</span>
       <span style={{ display: 'block', fontSize: '12px', color: 'var(--grafito-suave)' }}>{fmt(parte)}</span>
     </td>
   );
@@ -94,7 +96,7 @@ export function DemografiaAdmision({ uni, soloAdmision = false }: { uni: Univers
             </p>
           )}
           <div className="tabla-envoltura">
-          <table className="tabla" style={{ width: '100%', fontSize: '15px' }}>
+          <table className="tabla tabla-admision" style={{ width: '100%', fontSize: '15px' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--linea)' }}>
                 <th style={{ ...encabezado, textAlign: 'left' }}>{anioAdmision ? conMayuscula(anioAdmision) : ''}</th>
@@ -107,7 +109,9 @@ export function DemografiaAdmision({ uni, soloAdmision = false }: { uni: Univers
               {filas.map((f, i) => (
                 // Filas alternadas como en el Common Data Set.
                 <tr key={f.label} style={{ background: i % 2 === 0 ? 'var(--papel)' : 'transparent' }}>
-                  <td style={{ ...celda, textAlign: 'left', fontWeight: 600 }}>
+                  {/* La etiqueta sí puede partirse en dos líneas ("de los / postulantes"): así la
+                      tabla cabe entera en celulares angostos, sin esconder la columna Total. */}
+                  <td style={{ ...celda, textAlign: 'left', fontWeight: 600, whiteSpace: 'normal' }}>
                     {f.label}
                     {f.respecto && <span style={{ display: 'block', fontSize: '12px', fontWeight: 400, color: 'var(--grafito-suave)' }}>{f.respecto}</span>}
                   </td>

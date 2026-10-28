@@ -1317,6 +1317,9 @@ html { scroll-behavior: smooth; }
    escritorio, la probabilidad arriba a la izquierda, los puntajes a la derecha a todo el alto
    y el resto debajo de la probabilidad: los dos huecos que dejaban los paneles se llenan. */
 .admision, .admision-resto { display: grid; gap: 20px; align-items: start; }
+/* minmax(0, 1fr): la columna nunca crece más que la pantalla. Con "auto", la tabla de
+   postulantes (4 columnas) la estiraba en celulares angostos y todo se corría a la derecha. */
+.admision, .admision-resto { grid-template-columns: minmax(0, 1fr); }
 .admision { row-gap: 28px; }
 @media (min-width: 960px) {
   .admision {
@@ -1760,6 +1763,14 @@ html { scroll-behavior: smooth; }
 
 /* ---------- Tablas del detalle ---------- */
 .tabla-envoltura { overflow-x: auto; }
+/* Postulantes, admitidos y matriculados: en celulares angostos, columnas más juntas y cifras
+   un punto más chicas, para que se vea entera (con la columna Total) sin deslizar. */
+@media (max-width: 400px) {
+  .tabla-admision { --tabla-adm-espacio: 4px; --tabla-adm-cifra: 15px; }
+}
+@media (max-width: 350px) {
+  .tabla-admision { --tabla-adm-espacio: 2px; --tabla-adm-cifra: 14px; }
+}
 .tabla { border-collapse: collapse; }
 .tabla thead tr:last-child { border-bottom: 1.5px solid var(--grafito); }
 .tabla tbody { border-bottom: 1px solid var(--linea); }
@@ -2116,6 +2127,11 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
   .barra-educa-interior { min-height: 64px; gap: 10px; padding: 13px 14px; }
   .barra-educa-producto { padding-left: 10px; font-size: 13px; }
   .barra-educa-contacto { min-height: 42px; padding: 0 15px; border-radius: 10px; font-size: 13px; }
+}
+/* Celulares muy angostos (320px): sin "College Finder" (repite el enlace del logo), para que
+   "Contáctanos" quepa sin estirar la página. */
+@media (max-width: 350px) {
+  .barra-educa-producto { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .barra-educa-contacto { transition: none; }
