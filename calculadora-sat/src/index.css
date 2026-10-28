@@ -1283,7 +1283,30 @@ html { scroll-behavior: smooth; }
 /* "Tu probabilidad": la respuesta a "¿me alcanza mi SAT?" antes de las casillas. Sin caja ni
    sombra (Plano por defecto): la jerarquía la dan el tamaño y el color del nivel, los mismos
    de las etiquetas de la lista (azul alta, violeta media, gris baja). */
-.tu-prob { margin: 0 0 clamp(28px, 3vw, 36px); }
+.tu-prob { margin: 0; }
+
+/* ADMISIÓN: en celular, una columna (probabilidad → puntajes → postulantes y fechas). En
+   escritorio, la probabilidad arriba a la izquierda, los puntajes a la derecha a todo el alto
+   y el resto debajo de la probabilidad: los dos huecos que dejaban los paneles se llenan. */
+.admision, .admision-resto { display: grid; gap: 20px; align-items: start; }
+.admision { row-gap: 28px; }
+@media (min-width: 960px) {
+  .admision {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* La segunda fila es flexible: el alto extra de los puntajes cae ahí, no entre la
+       probabilidad y los postulantes. */
+    grid-template-rows: auto 1fr;
+    column-gap: 20px;
+  }
+  /* El padding alinea "Con tu SAT de…" con el título del panel de al lado. */
+  .admision-prob { grid-column: 1; grid-row: 1; padding-top: 24px; }
+  .admision-sat { grid-column: 2; grid-row: 1 / 3; }
+  .admision-resto { grid-column: 1; grid-row: 2; }
+  .admision-sin-prob .admision-resto { grid-row: 1 / 3; }
+  /* Sin nada a la izquierda, los puntajes solos y a un ancho que se lea bien. */
+  .admision-una-columna { grid-template-columns: minmax(0, 720px); }
+  .admision-una-columna .admision-sat { grid-column: 1; }
+}
 .tu-prob-alta { --c: #2a3f8f; }
 .tu-prob-intermedia { --c: #4a3a86; }
 .tu-prob-baja { --c: #4a5470; }

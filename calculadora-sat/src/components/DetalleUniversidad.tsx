@@ -16,6 +16,7 @@ import { UniversidadesSimilares } from './UniversidadesSimilares';
 import { posicionUSNews, nivelRanking, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
 import { TuProbabilidad } from './TuProbabilidad';
+import { rangoSAT } from '../utils/nivelSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
 import { SobreUniversidad, ContactoUniversidad } from './InfoUniversidad';
@@ -189,6 +190,11 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
   const conVideos = tieneVideos(videos);
   const conFechas = uni.UNITID != null && FECHAS_POSTULACION[uni.UNITID] != null;
   const calculadora = urlCalculadora(uni.NPCURL);
+  // Admisión: TuProbabilidad se muestra si hay rango SAT con qué comparar, o si tienes puntaje
+  // (para decir por qué no se puede calcular). Postulantes y fechas van debajo de ella.
+  const hayProbabilidad = rangoSAT(uni) != null || puntajeSAT > 0;
+  const hayResto = uni.APPLCN != null || conFechas;
+  const hayIzquierda = hayProbabilidad || hayResto;
   const conSalarios = salariosCarreras != null
     && (salariosCarreras.length > 0 || uni.MD_EARN_WNE_1YR != null || uni.MD_EARN_WNE_4YR != null);
   // Nombre corto para la barra de pestañas: la sigla conocida ("NYU", "MIT") o el nombre entero.
@@ -333,38 +339,53 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
 
       {/* ADMISIÓN: rango SAT y política, fechas de postulación (si se cargaron) y postulantes. */}
       <Banda id="admision" fondo="blanco" titulo="Admisión" subtitulo="Qué puntaje tienen los admitidos y cuántos entran.">
-        {/* Tu probabilidad de entrar, justo antes del rango SAT con el que se calcula. */}
-        <TuProbabilidad key={uni._id} uni={uni} puntaje={puntajeSAT} onCambiarPuntaje={onCambiarPuntajeSAT} />
-        <div className="paneles">
-          {/* Primero las barras: son la prueba de "Tu probabilidad", que va justo arriba. */}
-          <Panel titulo="Política y puntajes SAT">
-            {(uni.SAT_AVG || uni.SATVR25 || uni.SATMT25)
-              ? <RangosSAT uni={uni} tuPuntaje={puntajeSAT} />
-              : <p className="ayuda">Esta universidad no publica puntajes SAT de sus admitidos.</p>}
-            <dl className="datos ficha-bloque">
-              {uni.ADM_RATE != null && (
-                <div className="dato-fila">
-                  <dt>Tasa de admisión<InfoTooltip texto={glosarioCampos.ADM_RATE} /></dt>
-                  <dd className="numero">{formatPorcentaje(uni.ADM_RATE)}</dd>
-                </div>
-              )}
-              {formatPoliticaSAT(uni.ADMCON7) && (
-                <div className="dato-fila">
-                  <dt>Política SAT<InfoTooltip texto={glosarioCampos.ADMCON7} /></dt>
-                  <dd>{formatPoliticaSAT(uni.ADMCON7)}</dd>
-                </div>
-              )}
-            </dl>
-          </Panel>
-          {conFechas && (
-            <Panel titulo="Fechas de postulación">
-              <FechasPostulacion unitid={uni.UNITID!} />
-            </Panel>
+        {/* En escritorio, dos columnas: a la izquierda tu probabilidad y, debajo, postulantes y
+            fechas; a la derecha, a todo el alto, los puntajes SAT (la prueba de tu probabilidad,
+            a la misma altura). En el código el orden es probabilidad → puntajes → el resto: así
+            se apila en celular y así lo recorren el teclado y el lector de pantalla. Si falta la
+            columna izquierda, los puntajes van solos a todo el ancho. */}
+        <div className={`admision${hayProbabilidad ? '' : ' admision-sin-prob'}${hayIzquierda ? '' : ' admision-una-columna'}`}>
+          {hayProbabilidad && (
+            <div className="admision-prob">
+              <TuProbabilidad key={uni._id} uni={uni} puntaje={puntajeSAT} onCambiarPuntaje={onCambiarPuntajeSAT} />
+            </div>
           )}
-          {uni.APPLCN != null && (
-            <Panel titulo="Postulantes, admitidos y matriculados" ayuda={glosarioCampos.POSTULANTES}>
-              <DemografiaAdmision uni={uni} soloAdmision />
+          <div className="admision-sat">
+            <Panel titulo="Puntajes y política SAT">
+              {(uni.SAT_AVG || uni.SATVR25 || uni.SATMT25)
+                ? <RangosSAT uni={uni} tuPuntaje={puntajeSAT} />
+                : <p className="ayuda">Esta universidad no publica puntajes SAT de sus admitidos.</p>}
+              {(uni.ADM_RATE != null || formatPoliticaSAT(uni.ADMCON7)) && (
+                <dl className="datos ficha-bloque">
+                  {uni.ADM_RATE != null && (
+                    <div className="dato-fila">
+                      <dt>Tasa de admisión<InfoTooltip texto={glosarioCampos.ADM_RATE} /></dt>
+                      <dd className="numero">{formatPorcentaje(uni.ADM_RATE)}</dd>
+                    </div>
+                  )}
+                  {formatPoliticaSAT(uni.ADMCON7) && (
+                    <div className="dato-fila">
+                      <dt>Política SAT<InfoTooltip texto={glosarioCampos.ADMCON7} /></dt>
+                      <dd>{formatPoliticaSAT(uni.ADMCON7)}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
             </Panel>
+          </div>
+          {hayResto && (
+            <div className="admision-resto">
+              {uni.APPLCN != null && (
+                <Panel titulo="Postulantes, admitidos y matriculados" ayuda={glosarioCampos.POSTULANTES}>
+                  <DemografiaAdmision uni={uni} soloAdmision />
+                </Panel>
+              )}
+              {conFechas && (
+                <Panel titulo="Fechas de postulación">
+                  <FechasPostulacion unitid={uni.UNITID!} />
+                </Panel>
+              )}
+            </div>
           )}
         </div>
       </Banda>
