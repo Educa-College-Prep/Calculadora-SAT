@@ -595,15 +595,16 @@ export default function App() {
                 <div className="resultado" aria-live="polite" ref={resultadoRef}>
                   {conteoNiveles ? (
                     // Con puntaje, la respuesta al título: cuántas de cada probabilidad. Cada cifra
-                    // filtra la lista a ese grupo (otro toque la quita).
+                    // suma su grupo al filtro y otro toque lo quita; se pueden marcar varias, como
+                    // en el filtro lateral.
                     <>
                       <span className="resultado-texto">Con tu SAT de <strong className="numero">{filtros.sat}</strong>, tu probabilidad de entrar es:</span>
                       <span className="reparto">
                         {NIVELES.map(n => {
-                          const solo = nivelesSAT.length === 1 && nivelesSAT[0] === n.nivel;
+                          const marcado = nivelesSAT.includes(n.nivel);
                           return (
-                            <button key={n.nivel} type="button" className={`reparto-nivel reparto-${n.clase}`} aria-pressed={solo}
-                              onClick={() => setNivelesSAT(solo ? [] : [n.nivel])} title={n.explicacion}>
+                            <button key={n.nivel} type="button" className={`reparto-nivel reparto-${n.clase}`} aria-pressed={marcado}
+                              onClick={() => setNivelesSAT(marcado ? nivelesSAT.filter(x => x !== n.nivel) : [...nivelesSAT, n.nivel])} title={n.explicacion}>
                               <span className="reparto-cifra numero">{conteoNiveles[n.nivel].toLocaleString()}</span>
                               <span className="reparto-etiqueta">
                                 <BarrasNivel barras={n.barras} />
