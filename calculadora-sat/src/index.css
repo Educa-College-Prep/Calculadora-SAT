@@ -603,9 +603,10 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .lista-cabecera {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 12px 24px;
+  padding-block: 16px;
   border-bottom: 1px solid var(--linea);
 }
 .orden { display: flex; flex-direction: column; gap: 4px; min-width: min(100%, 300px); }
