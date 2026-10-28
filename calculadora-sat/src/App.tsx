@@ -541,6 +541,7 @@ export default function App() {
           onVerMiLista={abrirMiLista}
           universidades={universidades}
           onSeleccionar={seleccionarUniversidad}
+          indiceBusqueda={indiceBusqueda}
           puntajeSAT={puntajeTotal}
           // Desde la ficha solo se escribe el total: como en la portada, el total manda y las
           // secciones se borran.
