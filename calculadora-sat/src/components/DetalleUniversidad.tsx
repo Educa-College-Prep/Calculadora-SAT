@@ -354,7 +354,12 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
             <Panel titulo="Puntajes y política SAT">
               {(uni.SAT_AVG || uni.SATVR25 || uni.SATMT25)
                 ? <RangosSAT uni={uni} tuPuntaje={puntajeSAT} />
-                : <p className="ayuda">Esta universidad no publica puntajes SAT de sus admitidos.</p>}
+                : <p className="ayuda">
+                    {/* Si no usa el SAT, se dice también: explica por qué no hay barras. */}
+                    {uni.ADMCON7 === 'Ni requerido ni recomendado'
+                      ? 'Esta universidad no toma en cuenta el SAT para admitir y no publica puntajes de sus admitidos.'
+                      : 'Esta universidad no publica puntajes SAT de sus admitidos.'}
+                  </p>}
               {(uni.ADM_RATE != null || formatPoliticaSAT(uni.ADMCON7)) && (
                 <dl className="datos ficha-bloque">
                   {uni.ADM_RATE != null && (

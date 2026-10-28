@@ -1303,6 +1303,12 @@ html { scroll-behavior: smooth; }
   .admision-sat { grid-column: 2; grid-row: 1 / 3; }
   .admision-resto { grid-column: 1; grid-row: 2; }
   .admision-sin-prob .admision-resto { grid-row: 1 / 3; }
+  /* Las dos columnas cuadran: terminan a la misma altura. Los puntajes se estiran a todo el
+     alto y el último panel de la izquierda crece hasta el mismo borde de abajo. */
+  .admision { align-items: stretch; }
+  .admision-prob { align-self: start; }
+  .admision-sat, .admision-resto { display: flex; flex-direction: column; gap: 20px; }
+  .admision-sat > .ficha-panel, .admision-resto > .ficha-panel:last-child { flex: 1; }
   /* Sin nada a la izquierda, los puntajes solos y a un ancho que se lea bien. */
   .admision-una-columna { grid-template-columns: minmax(0, 720px); }
   .admision-una-columna .admision-sat { grid-column: 1; }
