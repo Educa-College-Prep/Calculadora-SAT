@@ -305,11 +305,8 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
         </div>
       </nav>
 
-      {/* RESUMEN: primero tu probabilidad de entrar (lo que viniste a saber), luego lo esencial
-          en cinco casillas y "Sobre la universidad". */}
+      {/* RESUMEN: lo esencial en cinco casillas y "Sobre la universidad". */}
       <Banda id="resumen" fondo="gris">
-        <TuProbabilidad key={uni._id} uni={uni} puntaje={puntajeSAT} onCambiarPuntaje={onCambiarPuntajeSAT}
-          onVerAdmision={e => irASeccion(e, 'admision')} />
         <dl className="esenciales" aria-label="Lo esencial">
           <Esencial etiqueta="Tasa de admisión" valor={formatPorcentaje(uni.ADM_RATE)} ayuda={glosarioCampos.ADM_RATE}
             nivel={etiquetaSelectividad(uni.ADM_RATE)} />
@@ -336,6 +333,8 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
 
       {/* ADMISIÓN: rango SAT y política, fechas de postulación (si se cargaron) y postulantes. */}
       <Banda id="admision" fondo="blanco" titulo="Admisión" subtitulo="Qué puntaje tienen los admitidos y cuántos entran.">
+        {/* Tu probabilidad de entrar, justo antes del rango SAT con el que se calcula. */}
+        <TuProbabilidad key={uni._id} uni={uni} puntaje={puntajeSAT} onCambiarPuntaje={onCambiarPuntajeSAT} />
         <div className="paneles">
           <Panel titulo="Política y puntajes SAT">
             <dl className="datos">

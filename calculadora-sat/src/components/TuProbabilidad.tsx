@@ -28,7 +28,8 @@ export function TuProbabilidad({ uni, puntaje, onCambiarPuntaje, onVerAdmision }
   /** Tu SAT total (0 = sin puntaje). */
   puntaje: number;
   onCambiarPuntaje: (total: number) => void;
-  onVerAdmision: (e: MouseEvent<HTMLAnchorElement>) => void;
+  /** Enlace a la sección Admisión; no hace falta si el bloque ya está ahí. */
+  onVerAdmision?: (e: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const [cambiando, setCambiando] = useState(false);
   const rango = rangoSAT(uni);
@@ -80,7 +81,7 @@ export function TuProbabilidad({ uni, puntaje, onCambiarPuntaje, onVerAdmision }
         <p className="fuente">Solo compara tu puntaje: también cuentan tus notas, ensayos y actividades. Rango SAT: College Scorecard.</p>
       </div>
       <div className="tu-prob-acciones">
-        <a className="tu-prob-enlace" href="#admision" onClick={onVerAdmision}>Ver tu puntaje frente a los admitidos</a>
+        {onVerAdmision && <a className="tu-prob-enlace" href="#admision" onClick={onVerAdmision}>Ver tu puntaje frente a los admitidos</a>}
         <button type="button" className="tu-prob-enlace" onClick={() => setCambiando(true)}>Cambiar mi puntaje</button>
       </div>
     </section>
