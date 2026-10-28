@@ -794,12 +794,52 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 
 /* Migas de pan, entre la cabecera de Educa y el hero: "← Resultados / Brown University". */
 .migas { font-size: 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
-.migas .in { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-block: 10px; }
-.migas a { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--brand); text-decoration: none; }
+.migas .in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-block: 10px; }
+.migas-ruta { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 auto; }
+
+/* Buscar otra universidad desde la ficha: a la derecha de la miga. En escritorio, el campo
+   siempre a la vista; en celular, un botón con lupa que lo despliega a todo el ancho. */
+.migas-buscar { flex: 0 1 340px; margin-left: auto; }
+.migas-buscar-boton { display: none; }
+.buscador-compacto .buscador-icono { left: 12px; }
+.buscador-compacto .buscador-campo input {
+  min-height: 40px;
+  padding-left: 38px;
+  font-size: 15px;
+  border-color: var(--line);
+}
+.buscador-compacto .buscador-campo input:focus { border-color: var(--brand); }
+.buscador-compacto .buscador-borrar { width: 32px; height: 32px; font-size: 20px; }
+.buscador-compacto .sugerencias { left: auto; width: min(420px, calc(100vw - 32px)); }
+@media (max-width: 640px) {
+  .migas-buscar-boton {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    margin-block: -6px;
+    padding: 0 4px;
+    font: inherit;
+    font-weight: 700;
+    color: var(--brand);
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .migas-buscar { flex: none; }
+  .migas-buscar-campo { display: none; }
+  /* Abierto: toma toda la fila, con el campo a lo ancho y "Cerrar" a su derecha. */
+  .migas-buscar-abierto { display: flex; flex: 1 1 100%; align-items: center; gap: 10px; }
+  .migas-buscar-abierto .migas-buscar-campo { display: block; flex: 1 1 auto; min-width: 0; order: -1; }
+  .migas-buscar-abierto .migas-buscar-boton svg { display: none; }
+  .buscador-compacto .sugerencias { left: 0; width: auto; }
+}
+.migas-ruta a { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--brand); text-decoration: none; }
 /* "← Resultados" se ve chico, pero se toca en 44px de alto sin agrandar la franja. */
-.migas a { padding-block: 12px; margin-block: -12px; }
-.migas a:hover { text-decoration: underline; }
-.migas span { color: var(--muted); }
+.migas-ruta a { padding-block: 12px; margin-block: -12px; }
+.migas-ruta a:hover { text-decoration: underline; }
+.migas-ruta > span { color: var(--muted); }
 .migas [aria-current='page'] {
   max-width: 60vw;
   overflow: hidden;
@@ -1329,6 +1369,9 @@ html { scroll-behavior: smooth; }
    escritorio, la probabilidad arriba a la izquierda, los puntajes a la derecha a todo el alto
    y el resto debajo de la probabilidad: los dos huecos que dejaban los paneles se llenan. */
 .admision, .admision-resto { display: grid; gap: 20px; align-items: start; }
+/* minmax(0, 1fr): la columna nunca crece más que la pantalla. Con "auto", la tabla de
+   postulantes (4 columnas) la estiraba en celulares angostos y todo se corría a la derecha. */
+.admision, .admision-resto { grid-template-columns: minmax(0, 1fr); }
 .admision { row-gap: 28px; }
 @media (min-width: 960px) {
   .admision {
@@ -1777,6 +1820,14 @@ html { scroll-behavior: smooth; }
 
 /* ---------- Tablas del detalle ---------- */
 .tabla-envoltura { overflow-x: auto; }
+/* Postulantes, admitidos y matriculados: en celulares angostos, columnas más juntas y cifras
+   un punto más chicas, para que se vea entera (con la columna Total) sin deslizar. */
+@media (max-width: 400px) {
+  .tabla-admision { --tabla-adm-espacio: 4px; --tabla-adm-cifra: 15px; }
+}
+@media (max-width: 350px) {
+  .tabla-admision { --tabla-adm-espacio: 2px; --tabla-adm-cifra: 14px; }
+}
 .tabla { border-collapse: collapse; }
 .tabla thead tr:last-child { border-bottom: 1.5px solid var(--grafito); }
 .tabla tbody { border-bottom: 1px solid var(--linea); }
@@ -2133,6 +2184,11 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
   .barra-educa-interior { min-height: 64px; gap: 10px; padding: 13px 14px; }
   .barra-educa-producto { padding-left: 10px; font-size: 13px; }
   .barra-educa-contacto { min-height: 42px; padding: 0 15px; border-radius: 10px; font-size: 13px; }
+}
+/* Celulares muy angostos (320px): sin "College Finder" (repite el enlace del logo), para que
+   "Contáctanos" quepa sin estirar la página. */
+@media (max-width: 350px) {
+  .barra-educa-producto { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .barra-educa-contacto { transition: none; }

@@ -16,6 +16,8 @@ import { UniversidadesSimilares } from './UniversidadesSimilares';
 import { posicionUSNews, nivelRanking, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
 import { TuProbabilidad } from './TuProbabilidad';
+import { BuscadorFicha } from './BuscadorFicha';
+import type { IndiceBusqueda } from '../utils/busqueda';
 import { CierreEduca } from './CierreEduca';
 import { rangoSAT } from '../utils/nivelSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
@@ -39,6 +41,8 @@ interface Props {
   /** Todas las universidades, para buscar las similares. */
   universidades: Universidad[];
   onSeleccionar: (uni: Universidad) => void;
+  /** El índice del buscador de la portada, para buscar otra universidad desde la ficha. */
+  indiceBusqueda: IndiceBusqueda;
   /** Tu SAT total, el mismo de la portada (0 = sin puntaje). */
   puntajeSAT: number;
   /** Escribir el puntaje desde la ficha lo cambia en toda la web (también en la lista). */
@@ -184,7 +188,7 @@ function irASeccion(e: MouseEvent<HTMLAnchorElement>, id: string) {
 const claseControl = (control: string | null) =>
   control === 'Pública' ? 'marca marca-publica' : 'marca marca-privada';
 
-export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista, universidades, onSeleccionar, puntajeSAT, onCambiarPuntajeSAT }: Props) {
+export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista, universidades, onSeleccionar, indiceBusqueda, puntajeSAT, onCambiarPuntajeSAT }: Props) {
   const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;
   // Lo que cuesta un año para alguien de fuera del estado (el público de esta web): matrícula + vida.
   const costoVida = calcularCostoVida(uni);
@@ -245,15 +249,20 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
       {/* Migas de pan: "← Resultados" vuelve a la lista con los filtros y la posición de antes
           (onVolver usa el historial, igual que el "atrás" del navegador). El href es la página
           principal, por si se abre en otra pestaña. */}
-      <nav className="migas" aria-label="Ruta">
+      <div className="migas">
         <div className="in">
-          <a href={import.meta.env.BASE_URL} onClick={e => { e.preventDefault(); onVolver(); }}>
-            <span aria-hidden="true">←</span> Resultados
-          </a>
-          <span aria-hidden="true">/</span>
-          <span aria-current="page">{uni.INSTNM}</span>
+          <nav className="migas-ruta" aria-label="Ruta">
+            <a href={import.meta.env.BASE_URL} onClick={e => { e.preventDefault(); onVolver(); }}>
+              <span aria-hidden="true">←</span> Resultados
+            </a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{uni.INSTNM}</span>
+          </nav>
+          {/* Para saltar a otra universidad sin volver a la lista. La key lo limpia al
+              cambiar de ficha. */}
+          <BuscadorFicha key={uni._id} indice={indiceBusqueda} onSeleccionar={onSeleccionar} />
         </div>
-      </nav>
+      </div>
       <BarraFlotante visible={subiendo && !accionesALaVista && cantidadMiLista > 0}>{comparar}</BarraFlotante>
 
       {/* HERO: la foto a todo el ancho es la protagonista. Solo la franja de abajo, donde va el

@@ -13,9 +13,22 @@ interface Props {
   sonAproximadas: boolean;
   /** Abre el detalle de la universidad (lo mismo que hacer clic en la tabla). */
   onSeleccionar: (uni: Universidad) => void;
+  /** Prefijo de los id del campo y la lista: la ficha tiene su propio buscador. */
+  id?: string;
+  etiqueta?: string;
+  /** La etiqueta solo para el lector de pantalla (en la ficha, el campo ya se explica solo). */
+  etiquetaOculta?: boolean;
+  placeholder?: string;
+  /** Versión chica, para la franja de arriba de la ficha. */
+  compacto?: boolean;
+  /** Al elegir: true = el nombre queda escrito (portada, para filtrar la lista al volver). */
+  conservarTexto?: boolean;
+  autoFocus?: boolean;
 }
 
-export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNombre, mostrarSugerencias, setMostrarSugerencias, sugerencias, sonAproximadas, onSeleccionar }: Props) {
+export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNombre, mostrarSugerencias, setMostrarSugerencias, sugerencias, sonAproximadas, onSeleccionar,
+  id = 'buscador', etiqueta = 'Busca una universidad', etiquetaOculta = false,
+  placeholder = 'Nombre o sigla: Harvard, MIT, UCLA…', compacto = false, conservarTexto = true, autoFocus = false }: Props) {
   const contenedorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,12 +49,13 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
   const indiceMarcado = abierto && marcada.busqueda === busquedaNombre ? marcada.indice : -1;
   const marcar = (indice: number) => {
     setMarcada({ busqueda: busquedaNombre, indice });
-    document.getElementById(`sugerencia-${indice}`)?.scrollIntoView({ block: 'nearest' });
+    document.getElementById(`${id}-sugerencia-${indice}`)?.scrollIntoView({ block: 'nearest' });
   };
 
-  // El nombre queda en el buscador: al volver del detalle, la lista ya está filtrada.
+  // En la portada el nombre queda en el buscador: al volver del detalle, la lista ya está
+  // filtrada. En la ficha se limpia: el campo es para saltar a otra.
   const elegir = (uni: Universidad) => {
-    setBusquedaNombre(uni.INSTNM);
+    setBusquedaNombre(conservarTexto ? uni.INSTNM : '');
     setMostrarSugerencias(false);
     onSeleccionar(uni);
   };
@@ -65,27 +79,28 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
   };
 
   return (
-    <div ref={contenedorRef} className="buscador">
-      <label htmlFor="buscador-universidad" className="buscador-etiqueta">Busca una universidad</label>
+    <div ref={contenedorRef} className={`buscador${compacto ? ' buscador-compacto' : ''}`}>
+      <label htmlFor={`${id}-universidad`} className={etiquetaOculta ? 'visualmente-oculto' : 'buscador-etiqueta'}>{etiqueta}</label>
       <div className="buscador-campo">
         <svg className="buscador-icono" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
         </svg>
         <input
-          id="buscador-universidad"
+          id={`${id}-universidad`}
+          autoFocus={autoFocus}
           type="text"
           autoComplete="off"
           value={busquedaNombre}
           onChange={(e) => { setBusquedaNombre(e.target.value); setMostrarSugerencias(true); }}
           onFocus={() => setMostrarSugerencias(true)}
           onKeyDown={alPresionarTecla}
-          placeholder="Nombre o sigla: Harvard, MIT, UCLA…"
+          placeholder={placeholder}
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={abierto}
-          aria-controls="buscador-sugerencias"
-          aria-activedescendant={indiceMarcado >= 0 ? `sugerencia-${indiceMarcado}` : undefined}
+          aria-controls={`${id}-sugerencias`}
+          aria-activedescendant={indiceMarcado >= 0 ? `${id}-sugerencia-${indiceMarcado}` : undefined}
         />
         {busquedaNombre && (
           <button
@@ -100,7 +115,7 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
       </div>
 
       {abierto && (
-        <ul id="buscador-sugerencias" className="sugerencias">
+        <ul id={`${id}-sugerencias`} className="sugerencias">
           {sugerencias.length > 0 && sonAproximadas && (
             <li className="sugerencias-nota">¿Quisiste decir…?</li>
           )}
@@ -108,7 +123,7 @@ export const Buscador = memo(function Buscador({ busquedaNombre, setBusquedaNomb
             sugerencias.map((uni, idx) => (
               <li key={uni._id ?? idx}>
                 <button
-                  id={`sugerencia-${idx}`}
+                  id={`${id}-sugerencia-${idx}`}
                   type="button"
                   className={idx === indiceMarcado ? 'sugerencia sugerencia-marcada' : 'sugerencia'}
                   onClick={() => elegir(uni)}
