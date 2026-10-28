@@ -54,7 +54,7 @@ export const TopUniversidades = memo(function TopUniversidades({ universidades, 
         <h2 className="titulo-seccion">{lugar ? `${titulo} en ${lugar}` : titulo}</h2>
         <p className="ayuda" title={`Fuente: ${FUENTE_USNEWS}`}>
           {grupos
-            ? `Como la arma un consejero: varias donde tienes probabilidad alta, otras media y un par de baja. En cada grupo, las mejores según el ranking U.S. News ${EDICION_USNEWS} y el salario de egresados.`
+            ? `En cada grupo, las mejores según el ranking U.S. News ${EDICION_USNEWS} y el salario de egresados.`
             : conRanking === universidades.length
             ? `Según el ranking U.S. News ${EDICION_USNEWS}, entre tus resultados.`
             : conRanking > 0
