@@ -796,6 +796,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .migas { font-size: 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
 .migas .in { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-block: 10px; }
 .migas a { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--brand); text-decoration: none; }
+/* "← Resultados" se ve chico, pero se toca en 44px de alto sin agrandar la franja. */
+.migas a { padding-block: 12px; margin-block: -12px; }
 .migas a:hover { text-decoration: underline; }
 .migas span { color: var(--muted); }
 .migas [aria-current='page'] {
@@ -811,7 +813,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 /* Foco visible: azul sobre fondos claros, amarillo sobre los oscuros. */
 .ficha a:focus-visible, .ficha button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 .ficha .hero a:focus-visible, .ficha .hero button:focus-visible,
-.ficha .banda-marca a:focus-visible, .ficha .bloque-sol a:focus-visible { outline-color: var(--sun); }
+.ficha .banda-marca a:focus-visible, .ficha .bloque-sol a:focus-visible,
+.ficha .banda-contacto a:focus-visible { outline-color: var(--sun); }
 
 /* Botones de la ficha: principal amarillo, secundario navy y enlace con borde. */
 .boton-sol, .boton-marino {
@@ -1087,6 +1090,10 @@ html { scroll-behavior: smooth; }
 .paneles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 20px; align-items: start; }
 .ficha-panel { padding: 24px; background: var(--bg); border: 1px solid var(--line); border-radius: 18px; }
 .ficha-panel-titulo { margin: 0 0 14px; font-size: 17px; font-weight: 700; }
+/* Título con su "?" al lado (fuera del h3, para que el título no se lea "… Más información"). */
+.titulo-con-ayuda { display: flex; align-items: center; flex-wrap: wrap; margin: 0 0 14px; }
+.titulo-con-ayuda > h3 { margin: 0; }
+.titulo-con-ayuda-chico { margin-bottom: 10px; }
 
 /* Experiencia Educa: banda azul con un círculo decorativo arriba a la derecha. */
 .banda-marca {
@@ -1107,6 +1114,27 @@ html { scroll-behavior: smooth; }
   pointer-events: none;
 }
 .banda-marca .in { position: relative; }
+
+/* CIERRE CON EDUCA: marino liso (la banda en degradado es solo la de los videos). El texto a
+   la izquierda y el botón sol a la derecha; en celular, uno debajo del otro. En esta parte de
+   la página no hay otro amarillo a la vista (Un Solo Sol). */
+.banda-contacto { color: #fff; background: var(--navy); }
+.cierre-educa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 48px;
+}
+.cierre-educa-texto { flex: 1 1 420px; max-width: 62ch; }
+.cierre-educa .banda-titulo { color: #fff; text-wrap: balance; }
+.cierre-educa-texto p { margin: 12px 0 0; font-size: 17px; color: rgba(255, 255, 255, 0.85); }
+.cierre-educa-accion { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.cierre-educa-nota { margin: 0; font-size: 13px; color: rgba(255, 255, 255, 0.72); }
+@media (max-width: 520px) {
+  .cierre-educa-accion, .cierre-educa-accion .boton-sol { width: 100%; }
+  .cierre-educa-accion .boton-sol { justify-content: center; min-height: 48px; }
+}
 .banda-marca .banda-subtitulo { color: rgba(255, 255, 255, 0.75); }
 .banda-marca .fuente, .banda-marca .fuente a { color: rgba(255, 255, 255, 0.72); }
 
@@ -1166,7 +1194,7 @@ html { scroll-behavior: smooth; }
 .foto-uni-credito {
   min-width: 0;
   margin: 0;
-  font-size: 11px;
+  font-size: 12px; /* el mínimo de las fuentes en toda la web */
   line-height: 1.4;
   color: var(--grafito-suave);
   overflow: hidden;
@@ -1396,7 +1424,9 @@ html { scroll-behavior: smooth; }
 .ficha-bloque { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--linea); }
 .ficha-intro { display: flex; align-items: center; flex-wrap: wrap; color: var(--grafito-suave); }
 
-.fuente { margin: 6px 0 0; font-size: 12px; color: var(--grafito-suave); }
+.fuente { max-width: 75ch; margin: 6px 0 0; font-size: 12px; color: var(--grafito-suave); }
+/* Sin palabras sueltas en la última línea de los párrafos de la ficha. */
+.ficha p { text-wrap: pretty; }
 
 /* Pares etiqueta → valor, alineados como un formulario */
 .datos { margin: 0; }
@@ -1528,7 +1558,8 @@ html { scroll-behavior: smooth; }
 .sal-cabecera span:nth-child(n + 3) { text-align: right; }
 .sal-fila { align-items: baseline; padding: 12px 0; border-bottom: 1px dashed var(--line); }
 .sal-puesto { font-weight: 800; color: var(--muted); }
-.sal-fila-primera .sal-puesto { color: #c98f00; }
+/* Dorado oscuro: el #c98f00 de antes daba 2.8:1 sobre blanco; este da 5.5:1 (AA). */
+.sal-fila-primera .sal-puesto { color: #8a6100; }
 .sal-nombre { font-weight: 700; }
 .sal-nombre mark { color: inherit; background: #fff4c7; border-radius: 3px; }
 .sal-nombre small { margin-left: 6px; font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; }
@@ -1579,7 +1610,7 @@ html { scroll-behavior: smooth; }
   border-radius: 999px;
 }
 .pestana {
-  min-height: 38px;
+  min-height: 44px; /* tamaño táctil mínimo */
   padding: 6px 16px;
   font: inherit;
   font-size: 14px;
@@ -1651,6 +1682,8 @@ html { scroll-behavior: smooth; }
 
   /* Cajas: cifras en 30px, etiquetas en 12.5px y "SAT promedio" abreviado. */
   .esencial-valor { font-size: 30px; }
+  /* "Sin dato" no es una cifra: no se agranda como las demás. */
+  .esencial-valor.esencial-vacio { font-size: 18px; }
   .esencial-etiqueta { font-size: 12.5px; }
   .solo-ancho { display: none; }
   .solo-movil { display: inline; }

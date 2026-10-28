@@ -65,7 +65,7 @@ const GRUPOS: Grupo[] = [
   {
     titulo: 'Admisión y SAT',
     filas: [
-      { etiqueta: 'Tasa de admisión', ayuda: glosarioCampos.ADM_RATE, numero: u => u.ADM_RATE, formato: 'porcentaje' },
+      { etiqueta: 'Tasa de admisión', numero: u => u.ADM_RATE, formato: 'porcentaje' },
       { etiqueta: 'Rango SAT (25–75%)', ayuda: glosarioCampos.SAT_RANGO, texto: rangoSAT },
       { etiqueta: 'SAT promedio', ayuda: glosarioCampos.SAT_AVG, numero: u => u.SAT_AVG, texto: u => u.SAT_AVG != null ? String(u.SAT_AVG) : null },
       { etiqueta: 'Política SAT', ayuda: glosarioCampos.ADMCON7, texto: u => formatPoliticaSAT(u.ADMCON7) },

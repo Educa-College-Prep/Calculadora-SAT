@@ -96,7 +96,7 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
           {total != null && (
             <div className="dato-fila costo-total">
               <span className="con-ayuda">Costo total anual
-                <InfoTooltip texto={glosarioCampos.COSTO_TOTAL_ANUAL} />
+                <InfoTooltip sobre="Costo total anual" texto={glosarioCampos.COSTO_TOTAL_ANUAL} />
               </span>
               <span className="numero">{cv?.estimado && '~'}{formatDinero(total)}</span>
             </div>
@@ -109,9 +109,10 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
         <div className="costos-columna costos-pagarias">
           {uni.IGRNT_P != null && (
             <div className="costos-beca">
-              <h3 className="subtitulo con-ayuda">Becas de la universidad
-                <InfoTooltip texto={glosarioCampos.BECAS_1ER_ANIO} />
-              </h3>
+              <div className="titulo-con-ayuda titulo-con-ayuda-chico">
+                <h3 className="subtitulo">Becas de la universidad</h3>
+                <InfoTooltip sobre="Becas de la universidad" texto={glosarioCampos.BECAS_1ER_ANIO} />
+              </div>
               <p>
                 <strong className="numero">{uni.IGRNT_P}%</strong> de los alumnos de 1er año la recibe
                 {uni.IGRNT_A != null && <>, con un promedio de <strong className="numero">{formatDinero(uni.IGRNT_A)}</strong> al año</>}.
@@ -136,7 +137,7 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
                 <span className="cifra-destacada-valor numero">{formatDinero(p.netoReal)}</span>
                 <span className="cifra-destacada-texto">
                   al año en promedio, después de becas y ayudas
-                  <InfoTooltip texto={glosarioCampos.NPT4_PUB} />
+                  <InfoTooltip sobre="el precio neto" texto={glosarioCampos.NPT4_PUB} />
                 </span>
                 <p className="fuente"><strong>Dato oficial</strong> de College Scorecard (Departamento de Educación de EE.UU.){anioNeto && `, año ${anioNeto}`}.</p>
               </div>
@@ -147,14 +148,14 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
                 <span className="cifra-destacada-valor numero">{cv?.estimado && '~'}{formatDinero(total)}</span>
                 <span className="cifra-destacada-texto">
                   al año, sin beca
-                  <InfoTooltip texto={glosarioCampos.COSTO_TOTAL_ANUAL} />
+                  <InfoTooltip sobre="Costo total anual" texto={glosarioCampos.COSTO_TOTAL_ANUAL} />
                 </span>
                 {aprox != null && aprox > 0 ? (
                   <>
                     <span className="costos-sin-beca">
                       Si recibes la beca promedio de {formatDinero(uni.IGRNT_A)}, bajaría hasta{' '}
                       <strong className="numero">~{formatDinero(aprox)}</strong> al año.
-                      <InfoTooltip texto={glosarioCampos.COSTO_APROX_BECA} />
+                      <InfoTooltip sobre="el costo con la beca promedio" texto={glosarioCampos.COSTO_APROX_BECA} />
                     </span>
                     <p className="fuente"><strong>Valor calculado</strong>, no oficial: costo total menos la beca promedio de la universidad (IPEDS).</p>
                   </>
@@ -167,7 +168,7 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
                 <span className="cifra-destacada-valor numero">~{formatDinero(aprox)}</span>
                 <span className="cifra-destacada-texto">
                   al año si recibes la beca promedio de {formatDinero(uni.IGRNT_A)}
-                  <InfoTooltip texto={glosarioCampos.COSTO_APROX_BECA} />
+                  <InfoTooltip sobre="el costo con la beca promedio" texto={glosarioCampos.COSTO_APROX_BECA} />
                 </span>
                 {/* La beca no está garantizada: también el escenario sin ella. */}
                 <span className="costos-sin-beca">Sin beca: <strong className="numero">{cv?.estimado && '~'}{formatDinero(total)}</strong> al año</span>
@@ -185,7 +186,7 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
           {p.netoPorIngreso.length > 0 && (
             <div className="ficha-bloque">
               <p className="con-ayuda"><strong>Precio neto según ingreso familiar</strong>
-                <InfoTooltip texto={glosarioCampos.NPT_INGRESO} />
+                <InfoTooltip sobre="Precio neto según ingreso familiar" texto={glosarioCampos.NPT_INGRESO} />
               </p>
               <MiniBarChart datos={p.netoPorIngreso} color="#2a3f8f" formato="dinero" pisoCero />
             </div>

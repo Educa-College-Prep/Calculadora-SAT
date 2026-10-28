@@ -2,7 +2,8 @@ import { useLayoutEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import logoEduca from '../assets/educa-logo.png';
 
-const CONTACTO = 'https://educacollegeprep.com/pe/contactanos/';
+/** Página de contacto de Educa: la usan la barra y el cierre de la ficha. */
+export const CONTACTO = 'https://educacollegeprep.com/pe/contactanos/';
 
 /** Lo escucha App: vuelve a la vista principal sin recargar (se conservan los filtros). */
 export const EVENTO_INICIO = 'college-finder:inicio';

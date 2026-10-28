@@ -41,5 +41,5 @@ export const glosarioCampos: Record<string, string> = {
 
   // Información de la universidad
   LOCALE: 'Dónde está el campus según el gobierno de EE.UU. (NCES): ciudad, suburbio (zona residencial junto a una ciudad), pueblo o zona rural, y qué tan grande o alejado es.',
-  GRADUACION: 'De los alumnos que entraron por primera vez y a tiempo completo, cuántos se graduaron en hasta 1.5 veces el tiempo normal: 6 años en una carrera de 4, o 3 años en una de 2. No cuenta a quienes se cambiaron de universidad.',
+  GRADUACION: 'De cada 100 alumnos que empezaron aquí su primer año (a tiempo completo), cuántos terminaron su carrera en esta misma universidad dentro de 6 años (3 años en las carreras de 2 años). Quienes se cambiaron a otra universidad no cuentan como graduados.',
 };

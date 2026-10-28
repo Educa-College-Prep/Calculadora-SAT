@@ -255,13 +255,16 @@ Seguros y cercanos: ovalados, con peso tipográfico alto y altura táctil (44px)
 - **Pestañas:** barra blanca pegada bajo la barra de Educa; pestañas en gris pizarra 600, la activa en tinta noche con un subrayado azul Educa de 4px con esquinas superiores redondeadas. Al bajar aparece el nombre corto de la universidad, que lleva de vuelta arriba.
 
 ### Hero de universidad
-La foto a todo el ancho (centrada, `object-fit: cover`) con dos degradados en un azul casi negro neutro `rgb(10, 13, 28)`: de abajo hacia arriba (88% → 0% al 75% de la altura) y uno suave desde la izquierda (35% → 0% al 55%). La mitad de arriba de la foto queda sin filtro. Sin foto libre: portada azul rayada como un formulario con las iniciales enormes al 12%. El crédito de la foto va abajo a la derecha, en 11px.
+La foto a todo el ancho (centrada, `object-fit: cover`) con dos degradados en un azul casi negro neutro `rgb(10, 13, 28)`: de abajo hacia arriba (88% → 0% al 75% de la altura) y uno suave desde la izquierda (35% → 0% al 55%). La mitad de arriba de la foto queda sin filtro. Sin foto libre: portada azul rayada como un formulario con las iniciales enormes al 12%. El crédito de la foto va abajo a la derecha, en 12px (el mínimo de las fuentes).
 
 ### Banda de marca (Experiencia Educa)
 Degradado marino → violeta a 135°, con un anillo amarillo al 8% que asoma por la esquina superior derecha. Etiquetas "CAMPUS TOUR" / "TESTIMONIO" en chips sol. El tour ocupa dos tercios de ancho y dos filas; los testimonios van al lado y debajo, de a tres.
 
+### Banda de cierre (siguiente paso con Educa)
+Marino liso (`#1c2c6e`), sin degradado: el degradado es solo de la banda de videos. Va en todas las fichas, entre Contacto y Similares. El título cambia según tu probabilidad (baja: curso SAT y consejería; media: la postulación; alta: lista equilibrada; sin puntaje o sin datos SAT: mensajes que no hablan de tu probabilidad). Un solo botón sol, "Habla con un consejero de Educa", a la página de contacto de Educa; en celular, a todo el ancho. Nunca promete una admisión ni un puntaje.
+
 ### Lista de salarios "punto a punto"
-Filas numeradas (el puesto 1 en dorado), con el nombre de la carrera, el crecimiento en verde o rojo, los graduados por año y los montos a 1 año (gris) y 4 años (negrita). Debajo, una línea con un punto hueco (1.er año) y uno lleno (4 años) unidos por un tramo azul suave, y una marca vertical con la mediana de la universidad. Escala común para todas las filas.
+Filas numeradas (el puesto 1 en dorado oscuro #8a6100, que pasa AA sobre blanco), con el nombre de la carrera, el crecimiento en verde o rojo, los graduados por año y los montos a 1 año (gris) y 4 años (negrita). Debajo, una línea con un punto hueco (1.er año) y uno lleno (4 años) unidos por un tramo azul suave, y una marca vertical con la mediana de la universidad. Escala común para todas las filas.
 
 ## Do's and Don'ts
 

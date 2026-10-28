@@ -16,6 +16,7 @@ import { UniversidadesSimilares } from './UniversidadesSimilares';
 import { posicionUSNews, nivelRanking, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
 import { TuProbabilidad } from './TuProbabilidad';
+import { CierreEduca } from './CierreEduca';
 import { rangoSAT } from '../utils/nivelSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
@@ -50,13 +51,13 @@ interface Props {
  * `corta` es la etiqueta abreviada para celular ("SAT promedio").
  */
 function Esencial({ etiqueta, corta, valor, ayuda, nivel }: {
-  etiqueta: string; corta?: string; valor: string | null; ayuda: string; nivel?: EtiquetaNivel | null;
+  etiqueta: string; corta?: string; valor: string | null; ayuda?: string; nivel?: EtiquetaNivel | null;
 }) {
   return (
     <div className="esencial">
       <dt className="esencial-etiqueta">
         {corta ? <><span className="solo-ancho">{etiqueta}</span><span className="solo-movil">{corta}</span></> : etiqueta}
-        <InfoTooltip texto={ayuda} />
+        {ayuda && <InfoTooltip sobre={etiqueta} texto={ayuda} />}
       </dt>
       <dd className={`esencial-valor numero${valor == null ? ' esencial-vacio' : ''}`}>{valor ?? 'Sin dato'}</dd>
       {nivel && (
@@ -64,6 +65,8 @@ function Esencial({ etiqueta, corta, valor, ayuda, nivel }: {
           {/* El nivel nunca se dice solo con el color: el texto siempre está. */}
           <span className={`punto-nivel punto-nivel-${nivel.nivel}`} title={nivel.explicacion}>
             <i aria-hidden="true" />{nivel.nombre}
+            {/* El title no llega con teclado ni con el dedo: el lector de pantalla oye la explicación. */}
+            <span className="visualmente-oculto">: {nivel.explicacion}</span>
           </span>
         </dd>
       )}
@@ -98,7 +101,11 @@ function Banda({ id, fondo, titulo, subtitulo, children }: {
 function Panel({ titulo, ayuda, children }: { titulo: string; ayuda?: string; children: ReactNode }) {
   return (
     <div className="ficha-panel">
-      <h3 className="ficha-panel-titulo con-ayuda">{titulo}{ayuda && <InfoTooltip texto={ayuda} />}</h3>
+      {/* La ayuda va junto al título, no dentro: así el título no se lee "… Más información". */}
+      <div className="titulo-con-ayuda">
+        <h3 className="ficha-panel-titulo">{titulo}</h3>
+        {ayuda && <InfoTooltip sobre={titulo} texto={ayuda} />}
+      </div>
       {children}
     </div>
   );
@@ -314,10 +321,10 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
       {/* RESUMEN: lo esencial en cinco casillas y "Sobre la universidad". */}
       <Banda id="resumen" fondo="gris">
         <dl className="esenciales" aria-label="Lo esencial">
-          <Esencial etiqueta="Tasa de admisión" valor={formatPorcentaje(uni.ADM_RATE)} ayuda={glosarioCampos.ADM_RATE}
+          <Esencial etiqueta="Tasa de admisión" valor={formatPorcentaje(uni.ADM_RATE)}
             nivel={etiquetaSelectividad(uni.ADM_RATE)} />
           <Esencial etiqueta="Puntaje SAT promedio" corta="SAT promedio" valor={uni.SAT_AVG != null ? String(uni.SAT_AVG) : null}
-            ayuda={glosarioCampos.SAT_AVG} nivel={etiquetaSAT(uni.SAT_AVG, uni.ADMCON7)} />
+            nivel={etiquetaSAT(uni.SAT_AVG, uni.ADMCON7)} />
           <Esencial etiqueta="Matrícula anual" valor={formatDinero(matricula)}
             ayuda={uni.TUITIONFEE_IN != null && uni.TUITIONFEE_OUT != null && uni.TUITIONFEE_IN !== uni.TUITIONFEE_OUT
               ? glosarioCampos.TUITIONFEE_OUT : glosarioCampos.TUITIONFEE_UNICA} />
@@ -360,17 +367,11 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
                       ? 'Esta universidad no toma en cuenta el SAT para admitir y no publica puntajes de sus admitidos.'
                       : 'Esta universidad no publica puntajes SAT de sus admitidos.'}
                   </p>}
-              {(uni.ADM_RATE != null || formatPoliticaSAT(uni.ADMCON7)) && (
+              {formatPoliticaSAT(uni.ADMCON7) && (
                 <dl className="datos ficha-bloque">
-                  {uni.ADM_RATE != null && (
-                    <div className="dato-fila">
-                      <dt>Tasa de admisión<InfoTooltip texto={glosarioCampos.ADM_RATE} /></dt>
-                      <dd className="numero">{formatPorcentaje(uni.ADM_RATE)}</dd>
-                    </div>
-                  )}
                   {formatPoliticaSAT(uni.ADMCON7) && (
                     <div className="dato-fila">
-                      <dt>Política SAT<InfoTooltip texto={glosarioCampos.ADMCON7} /></dt>
+                      <dt>Política SAT<InfoTooltip sobre="Política SAT" texto={glosarioCampos.ADMCON7} /></dt>
                       <dd>{formatPoliticaSAT(uni.ADMCON7)}</dd>
                     </div>
                   )}
@@ -381,7 +382,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
           {hayResto && (
             <div className="admision-resto">
               {uni.APPLCN != null && (
-                <Panel titulo="Postulantes, admitidos y matriculados" ayuda={glosarioCampos.POSTULANTES}>
+                <Panel titulo="Postulantes, admitidos y matriculados">
                   <DemografiaAdmision uni={uni} soloAdmision />
                 </Panel>
               )}
@@ -405,7 +406,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
             reinicia la búsqueda al pasar a otra universidad. */}
         {conSalarios && (
           <div className="panel ficha-seccion">
-            <h3 className="ficha-panel-titulo con-ayuda">Salarios de egresados<InfoTooltip texto={glosarioCampos.MD_EARN_4YR} /></h3>
+            <h3 className="ficha-panel-titulo">Salarios de egresados</h3>
             <SalarioPorCarrera key={uni.UNITID} uni={uni} carreras={salariosCarreras} />
           </div>
         )}
@@ -425,6 +426,9 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
       <Banda id="contacto" fondo="blanco" titulo="Contacto" subtitulo="Dónde está y cómo comunicarte con la universidad.">
         <ContactoUniversidad uni={uni} />
       </Banda>
+
+      {/* EL SIGUIENTE PASO con Educa, según tu probabilidad: lo último que se lee con atención. */}
+      <CierreEduca uni={uni} puntaje={puntajeSAT} nombre={nombreCorto} />
 
       {/* Al final, sin pestaña: para seguir explorando. */}
       {similares.length > 0 && (
