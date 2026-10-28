@@ -541,6 +541,10 @@ export default function App() {
           onVerMiLista={abrirMiLista}
           universidades={universidades}
           onSeleccionar={seleccionarUniversidad}
+          puntajeSAT={puntajeTotal}
+          // Desde la ficha solo se escribe el total: como en la portada, el total manda y las
+          // secciones se borran.
+          onCambiarPuntajeSAT={total => { setPuntajeMath(0); setPuntajeLectura(0); setPuntajeSoloTotal(total); }}
         />
       );
     }
