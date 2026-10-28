@@ -813,7 +813,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 /* Foco visible: azul sobre fondos claros, amarillo sobre los oscuros. */
 .ficha a:focus-visible, .ficha button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 .ficha .hero a:focus-visible, .ficha .hero button:focus-visible,
-.ficha .banda-marca a:focus-visible, .ficha .bloque-sol a:focus-visible { outline-color: var(--sun); }
+.ficha .banda-marca a:focus-visible, .ficha .bloque-sol a:focus-visible,
+.ficha .banda-contacto a:focus-visible { outline-color: var(--sun); }
 
 /* Botones de la ficha: principal amarillo, secundario navy y enlace con borde. */
 .boton-sol, .boton-marino {
@@ -1113,6 +1114,27 @@ html { scroll-behavior: smooth; }
   pointer-events: none;
 }
 .banda-marca .in { position: relative; }
+
+/* CIERRE CON EDUCA: marino liso (la banda en degradado es solo la de los videos). El texto a
+   la izquierda y el botón sol a la derecha; en celular, uno debajo del otro. En esta parte de
+   la página no hay otro amarillo a la vista (Un Solo Sol). */
+.banda-contacto { color: #fff; background: var(--navy); }
+.cierre-educa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 48px;
+}
+.cierre-educa-texto { flex: 1 1 420px; max-width: 62ch; }
+.cierre-educa .banda-titulo { color: #fff; text-wrap: balance; }
+.cierre-educa-texto p { margin: 12px 0 0; font-size: 17px; color: rgba(255, 255, 255, 0.85); }
+.cierre-educa-accion { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.cierre-educa-nota { margin: 0; font-size: 13px; color: rgba(255, 255, 255, 0.72); }
+@media (max-width: 520px) {
+  .cierre-educa-accion, .cierre-educa-accion .boton-sol { width: 100%; }
+  .cierre-educa-accion .boton-sol { justify-content: center; min-height: 48px; }
+}
 .banda-marca .banda-subtitulo { color: rgba(255, 255, 255, 0.75); }
 .banda-marca .fuente, .banda-marca .fuente a { color: rgba(255, 255, 255, 0.72); }
 

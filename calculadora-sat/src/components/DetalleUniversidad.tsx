@@ -16,6 +16,7 @@ import { UniversidadesSimilares } from './UniversidadesSimilares';
 import { posicionUSNews, nivelRanking, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
 import { TuProbabilidad } from './TuProbabilidad';
+import { CierreEduca } from './CierreEduca';
 import { rangoSAT } from '../utils/nivelSAT';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
@@ -425,6 +426,9 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
       <Banda id="contacto" fondo="blanco" titulo="Contacto" subtitulo="Dónde está y cómo comunicarte con la universidad.">
         <ContactoUniversidad uni={uni} />
       </Banda>
+
+      {/* EL SIGUIENTE PASO con Educa, según tu probabilidad: lo último que se lee con atención. */}
+      <CierreEduca uni={uni} puntaje={puntajeSAT} nombre={nombreCorto} />
 
       {/* Al final, sin pestaña: para seguir explorando. */}
       {similares.length > 0 && (

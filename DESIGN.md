@@ -260,6 +260,9 @@ La foto a todo el ancho (centrada, `object-fit: cover`) con dos degradados en un
 ### Banda de marca (Experiencia Educa)
 Degradado marino → violeta a 135°, con un anillo amarillo al 8% que asoma por la esquina superior derecha. Etiquetas "CAMPUS TOUR" / "TESTIMONIO" en chips sol. El tour ocupa dos tercios de ancho y dos filas; los testimonios van al lado y debajo, de a tres.
 
+### Banda de cierre (siguiente paso con Educa)
+Marino liso (`#1c2c6e`), sin degradado: el degradado es solo de la banda de videos. Va en todas las fichas, entre Contacto y Similares. El título cambia según tu probabilidad (baja: curso SAT y consejería; media: la postulación; alta: lista equilibrada; sin puntaje o sin datos SAT: mensajes que no hablan de tu probabilidad). Un solo botón sol, "Habla con un consejero de Educa", a la página de contacto de Educa; en celular, a todo el ancho. Nunca promete una admisión ni un puntaje.
+
 ### Lista de salarios "punto a punto"
 Filas numeradas (el puesto 1 en dorado oscuro #8a6100, que pasa AA sobre blanco), con el nombre de la carrera, el crecimiento en verde o rojo, los graduados por año y los montos a 1 año (gris) y 4 años (negrita). Debajo, una línea con un punto hueco (1.er año) y uno lleno (4 años) unidos por un tramo azul suave, y una marca vertical con la mediana de la universidad. Escala común para todas las filas.
 
