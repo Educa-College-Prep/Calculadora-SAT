@@ -33,7 +33,7 @@ export function CostoVida({ uni }: { uni: Universidad }) {
       <div>
         <div className="dato-fila">
           <span className="con-ayuda">Costo de vida
-            <InfoTooltip texto={glosarioCampos.COSTO_VIDA} />
+            <InfoTooltip sobre="Costo de vida" texto={glosarioCampos.COSTO_VIDA} />
           </span>
           <span className="numero"><strong>{formatDinero(costoVida.valor)}</strong></span>
         </div>
@@ -53,7 +53,7 @@ export function CostoVida({ uni }: { uni: Universidad }) {
   return (
     <div className="dato-fila">
       <span className="con-ayuda">Costo de vida <span className="ayuda" style={{ margin: '0 0 0 4px' }}>(aprox.)</span>
-        <InfoTooltip texto={glosarioCampos.COSTO_VIDA_ESTIMADO} />
+        <InfoTooltip sobre="Costo de vida aproximado" texto={glosarioCampos.COSTO_VIDA_ESTIMADO} />
       </span>
       <span className="numero"><strong>~{formatDinero(costoVida.valor)}</strong></span>
     </div>

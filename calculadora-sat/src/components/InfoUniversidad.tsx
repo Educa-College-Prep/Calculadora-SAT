@@ -88,31 +88,31 @@ export function SobreUniversidad({ uni }: { uni: Universidad }) {
       <dl className="datos sobre-datos">
         {uni.LOCALE && (
           <div className="dato-fila">
-            <dt>Entorno<InfoTooltip texto={glosarioCampos.LOCALE} /></dt>
+            <dt>Entorno<InfoTooltip sobre="Entorno" texto={glosarioCampos.LOCALE} /></dt>
             <dd>{uni.LOCALE}</dd>
           </div>
         )}
         {uni.UGDS != null && (
           <div className="dato-fila">
-            <dt>Alumnos de pregrado<InfoTooltip texto={glosarioCampos.UGDS} /></dt>
+            <dt>Alumnos de pregrado<InfoTooltip sobre="Alumnos de pregrado" texto={glosarioCampos.UGDS} /></dt>
             <dd className="numero">{uni.UGDS.toLocaleString('en-US')}</dd>
           </div>
         )}
         {uni.UGDS_HISP != null && (
           <div className="dato-fila">
-            <dt>Hispanos<InfoTooltip texto={glosarioCampos.UGDS_HISP} /></dt>
+            <dt>Hispanos<InfoTooltip sobre="Hispanos" texto={glosarioCampos.UGDS_HISP} /></dt>
             <dd className="numero">{formatPorcentaje(uni.UGDS_HISP)}</dd>
           </div>
         )}
         {uni.STUFACR != null && (
           <div className="dato-fila">
-            <dt>Alumnos por profesor<InfoTooltip texto={glosarioCampos.STUFACR} /></dt>
+            <dt>Alumnos por profesor<InfoTooltip sobre="Alumnos por profesor" texto={glosarioCampos.STUFACR} /></dt>
             <dd className="numero">{uni.STUFACR}:1</dd>
           </div>
         )}
         {grad && (
           <div className="dato-fila">
-            <dt>Tasa de graduación<InfoTooltip texto={glosarioCampos.GRADUACION} /></dt>
+            <dt>Tasa de graduación<InfoTooltip sobre="Tasa de graduación" texto={glosarioCampos.GRADUACION} /></dt>
             <dd className="numero">{formatPorcentaje(grad.tasa)} <span className="dato-nota">en {grad.anios} años</span></dd>
           </div>
         )}

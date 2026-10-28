@@ -56,7 +56,7 @@ function Esencial({ etiqueta, corta, valor, ayuda, nivel }: {
     <div className="esencial">
       <dt className="esencial-etiqueta">
         {corta ? <><span className="solo-ancho">{etiqueta}</span><span className="solo-movil">{corta}</span></> : etiqueta}
-        <InfoTooltip texto={ayuda} />
+        <InfoTooltip sobre={etiqueta} texto={ayuda} />
       </dt>
       <dd className={`esencial-valor numero${valor == null ? ' esencial-vacio' : ''}`}>{valor ?? 'Sin dato'}</dd>
       {nivel && (
@@ -64,6 +64,8 @@ function Esencial({ etiqueta, corta, valor, ayuda, nivel }: {
           {/* El nivel nunca se dice solo con el color: el texto siempre está. */}
           <span className={`punto-nivel punto-nivel-${nivel.nivel}`} title={nivel.explicacion}>
             <i aria-hidden="true" />{nivel.nombre}
+            {/* El title no llega con teclado ni con el dedo: el lector de pantalla oye la explicación. */}
+            <span className="visualmente-oculto">: {nivel.explicacion}</span>
           </span>
         </dd>
       )}
@@ -98,7 +100,11 @@ function Banda({ id, fondo, titulo, subtitulo, children }: {
 function Panel({ titulo, ayuda, children }: { titulo: string; ayuda?: string; children: ReactNode }) {
   return (
     <div className="ficha-panel">
-      <h3 className="ficha-panel-titulo con-ayuda">{titulo}{ayuda && <InfoTooltip texto={ayuda} />}</h3>
+      {/* La ayuda va junto al título, no dentro: así el título no se lee "… Más información". */}
+      <div className="titulo-con-ayuda">
+        <h3 className="ficha-panel-titulo">{titulo}</h3>
+        {ayuda && <InfoTooltip sobre={titulo} texto={ayuda} />}
+      </div>
       {children}
     </div>
   );
@@ -364,13 +370,13 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
                 <dl className="datos ficha-bloque">
                   {uni.ADM_RATE != null && (
                     <div className="dato-fila">
-                      <dt>Tasa de admisión<InfoTooltip texto={glosarioCampos.ADM_RATE} /></dt>
+                      <dt>Tasa de admisión<InfoTooltip sobre="Tasa de admisión" texto={glosarioCampos.ADM_RATE} /></dt>
                       <dd className="numero">{formatPorcentaje(uni.ADM_RATE)}</dd>
                     </div>
                   )}
                   {formatPoliticaSAT(uni.ADMCON7) && (
                     <div className="dato-fila">
-                      <dt>Política SAT<InfoTooltip texto={glosarioCampos.ADMCON7} /></dt>
+                      <dt>Política SAT<InfoTooltip sobre="Política SAT" texto={glosarioCampos.ADMCON7} /></dt>
                       <dd>{formatPoliticaSAT(uni.ADMCON7)}</dd>
                     </div>
                   )}
@@ -405,7 +411,10 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
             reinicia la búsqueda al pasar a otra universidad. */}
         {conSalarios && (
           <div className="panel ficha-seccion">
-            <h3 className="ficha-panel-titulo con-ayuda">Salarios de egresados<InfoTooltip texto={glosarioCampos.MD_EARN_4YR} /></h3>
+            <div className="titulo-con-ayuda">
+              <h3 className="ficha-panel-titulo">Salarios de egresados</h3>
+              <InfoTooltip sobre="Salarios de egresados" texto={glosarioCampos.MD_EARN_4YR} />
+            </div>
             <SalarioPorCarrera key={uni.UNITID} uni={uni} carreras={salariosCarreras} />
           </div>
         )}

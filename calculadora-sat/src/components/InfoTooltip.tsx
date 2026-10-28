@@ -2,6 +2,9 @@ import { useId, useLayoutEffect, useRef, useState } from 'react';
 
 interface Props {
   texto: string;
+  /** De qué es la ayuda ("Tasa de admisión"): el lector de pantalla dice "Más información
+   *  sobre Tasa de admisión" y no 25 veces el mismo "Más información". */
+  sobre?: string;
 }
 
 const MARGEN = 12;
@@ -11,7 +14,7 @@ const MARGEN = 12;
  * Se abre con el mouse encima, con el foco del teclado o con un toque (móvil),
  * y se cierra con Escape. Si el globo se saldría de la pantalla, se corre hacia adentro.
  */
-export function InfoTooltip({ texto }: Props) {
+export function InfoTooltip({ texto, sobre }: Props) {
   const [visible, setVisible] = useState(false);
   const [fijado, setFijado] = useState(false);
   const globoRef = useRef<HTMLSpanElement>(null);
@@ -43,7 +46,7 @@ export function InfoTooltip({ texto }: Props) {
       <button
         type="button"
         className="ayuda-boton"
-        aria-label="Más información"
+        aria-label={sobre ? `Más información sobre ${sobre}` : 'Más información'}
         aria-describedby={abierto ? id : undefined}
         aria-expanded={abierto}
         onClick={(e) => {

@@ -59,7 +59,7 @@ export function RangosSAT({ uni, tuPuntaje = 0 }: { uni: Universidad; tuPuntaje?
         <>
           <p className="con-ayuda" style={{ marginBottom: '10px' }}>
             <strong>Rango SAT de los admitidos (25–75%)</strong>
-            <InfoTooltip texto={glosarioCampos.SAT_RANGO} />
+            <InfoTooltip sobre="Rango SAT de los admitidos" texto={glosarioCampos.SAT_RANGO} />
           </p>
 
           {rangos.map((r) => (
@@ -149,7 +149,7 @@ export function RangosSAT({ uni, tuPuntaje = 0 }: { uni: Universidad; tuPuntaje?
       {uni.SAT_AVG != null && (
         <div className="dato-fila" style={{ marginTop: rangos.length > 0 ? '6px' : 0 }}>
           <span className="con-ayuda" style={{ color: 'var(--grafito-suave)' }}>SAT promedio
-            <InfoTooltip texto={glosarioCampos.SAT_AVG} />
+            <InfoTooltip sobre="SAT promedio" texto={glosarioCampos.SAT_AVG} />
           </span>
           <strong className="numero">{uni.SAT_AVG}</strong>
         </div>
