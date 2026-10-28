@@ -1004,9 +1004,6 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .hero-acciones .boton-guardar-texto.boton-guardar-activo svg { color: var(--navy); }
 .hero-acciones .boton-guardar-texto.boton-guardar-activo { background: #fff; border-color: #fff; }
 .hero-acciones .boton-guardar-texto.boton-guardar-activo:hover:not(:disabled) { color: var(--navy); background: var(--brand-soft); border-color: #fff; }
-.ficha .barra-flotante .boton-guardar-texto.boton-guardar-activo,
-.ficha .barra-flotante .boton-guardar-texto.boton-guardar-activo svg { color: #fff; }
-.ficha .barra-flotante .boton-guardar-texto.boton-guardar-activo { background: var(--navy); border-color: var(--navy); }
 .hero .foto-uni-credito {
   position: absolute;
   right: 12px;
@@ -1045,6 +1042,21 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 .pestanas-nombre:hover { color: var(--brand); }
 .pestanas-ficha.pegada .pestanas-nombre { display: block; }
+/* Guardar en la barra pegada: el estado de Mi lista siempre a la vista al bajar. */
+.pestanas-guardar { display: none; flex: none; margin-left: auto; }
+.pestanas-ficha.pegada .pestanas-guardar { display: block; }
+/* Ovalado con borde (sin guardar) o marino lleno (guardada), también al pasar el mouse:
+   el estado se lee de un vistazo y el texto nunca queda claro sobre claro. */
+.pestanas-guardar .boton-guardar-texto {
+  min-height: 40px;
+  color: var(--navy);
+  background: #fff;
+  border: 1.5px solid var(--line);
+}
+.pestanas-guardar .boton-guardar-texto:hover { background: var(--brand-soft); border-color: var(--brand); }
+.pestanas-guardar .boton-guardar-texto.boton-guardar-activo,
+.pestanas-guardar .boton-guardar-texto.boton-guardar-activo:hover { color: #fff; background: var(--navy); border-color: var(--navy); }
+.pestanas-guardar .boton-guardar-activo:hover { filter: brightness(1.15); }
 .pestanas-lista { display: flex; gap: 4px; min-width: 0; align-self: stretch; }
 .pestanas-lista a {
   position: relative;
@@ -1679,6 +1691,11 @@ html { scroll-behavior: smooth; }
   }
   .pestanas-lista::-webkit-scrollbar { display: none; }
   .pestanas-lista a { scroll-snap-align: center; }
+  /* La estrella queda fija a la derecha, fuera de lo que se desliza; solo el ícono (el
+     lector de pantalla oye "Guardar … en Mi lista"). */
+  .pestanas-guardar { margin-right: 12px; }
+  .pestanas-guardar .boton-guardar-texto { width: 44px; height: 44px; padding: 0; justify-content: center; }
+  .pestanas-guardar .boton-guardar-texto span { display: none; }
 
   /* Cajas: cifras en 30px, etiquetas en 12.5px y "SAT promedio" abreviado. */
   .esencial-valor { font-size: 30px; }
@@ -2138,7 +2155,7 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
    Celular: ficha más compacta
    ========================================================= */
 @media (max-width: 520px) {
-  /* Barra flotante ("Guardar" y "Comparar"): abajo, donde llega el pulgar, y en una sola
+  /* Barra flotante ("Comparar"): abajo, donde llega el pulgar, y en una sola
      línea. Arriba se apilaba en dos filas y tapaba las cajas. Se esconde hacia abajo. */
   .barra-flotante,
   .ficha .barra-flotante {

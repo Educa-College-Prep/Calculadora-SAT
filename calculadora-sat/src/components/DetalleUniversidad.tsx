@@ -227,20 +227,17 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
     }
   }, [activa]);
 
-  // "Guardar" y "Comparar" flotan al subir por la ficha (debajo de las pestañas), pero no
-  // mientras se ven los del hero (estarían repetidos).
+  // "Guardar" vive en el hero y, al bajar, en la barra de pestañas pegada: así siempre se ve
+  // si la universidad está en Mi lista. "Comparar" flota al subir (debajo de las pestañas),
+  // pero no mientras se ven los botones del hero (estaría repetido).
   const accionesRef = useRef<HTMLDivElement>(null);
   const accionesALaVista = useALaVista(accionesRef);
   const subiendo = useSubiendo();
-  const acciones = (
-    <>
-      <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} conTexto />
-      {cantidadMiLista > 0 && (
-        <button type="button" className="boton" onClick={onVerMiLista}>
-          Comparar Mi lista ({cantidadMiLista})
-        </button>
-      )}
-    </>
+  const guardar = <BotonGuardar guardada={guardada} nombre={uni.INSTNM} onAlternar={() => onAlternarGuardada(uni)} conTexto />;
+  const comparar = cantidadMiLista > 0 && (
+    <button type="button" className="boton" onClick={onVerMiLista}>
+      Comparar Mi lista ({cantidadMiLista})
+    </button>
   );
 
   return (
@@ -257,7 +254,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
           <span aria-current="page">{uni.INSTNM}</span>
         </div>
       </nav>
-      <BarraFlotante visible={subiendo && !accionesALaVista}>{acciones}</BarraFlotante>
+      <BarraFlotante visible={subiendo && !accionesALaVista && cantidadMiLista > 0}>{comparar}</BarraFlotante>
 
       {/* HERO: la foto a todo el ancho es la protagonista. Solo la franja de abajo, donde va el
           texto, se oscurece con un degradado neutro que no tiñe la foto. */}
@@ -291,7 +288,8 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
           </p>
           <div className="hero-acciones" ref={accionesRef}>
             {videos?.tour && <a className="boton-sol" href="#experiencia" onClick={e => irASeccion(e, 'experiencia')}>▶ Ver campus tour</a>}
-            {acciones}
+            {guardar}
+            {comparar}
           </div>
         </div>
         <CreditoFoto uni={uni} />
@@ -315,6 +313,9 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
               </a>
             ))}
           </div>
+          {/* Aparece con la barra pegada (el CSS lo oculta mientras se ve el hero, y así
+              tampoco recibe el foco). En celular, solo la estrella. */}
+          <div className="pestanas-guardar">{guardar}</div>
         </div>
       </nav>
 
