@@ -72,6 +72,15 @@ export const MapaGeo = memo(function MapaGeo({ datosMapaGeoEstados, universidade
 
   return (
     <div className="panel panel-mapa">
+      <div className="panel-cabecera">
+        <h2 className="titulo-seccion">{esNacional ? 'Universidades por estado' : `Universidades en ${nombreEstado}`}</h2>
+        <p className="ayuda">
+          {esNacional
+            ? 'Elige un estado para ver sus condados y ciudades.'
+            : 'Toca el estado de nuevo para volver a todo el país.'}
+        </p>
+      </div>
+
       <div className="panel-cuerpo">
         {datosMapaGeoEstados.length > 1 ? (
           <div className="mapa-nacional">

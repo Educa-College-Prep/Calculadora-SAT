@@ -655,7 +655,7 @@ export default function App() {
           </section>
 
           {universidadesFiltradas.length > 0 && (
-            <section className="banda banda-gris" aria-label="Dónde están">
+            <section className="banda banda-gris" aria-label="Universidades por estado">
               <div className="in">
                 <section className="tablero">
                   {!angosto && (

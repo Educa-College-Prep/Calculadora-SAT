@@ -2324,6 +2324,7 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
 /* Capa del mapa en celular: mapa a todo el ancho, lista de estados y "Cerrar" al pie. */
 .capa-mapa-titulo { margin: 4px 0 0; font-size: 20px; font-weight: 800; }
 .capa-mapa .panel-mapa { background: none; border: 0; }
+.capa-mapa .panel-mapa > .panel-cabecera { display: none; }
 .capa-mapa .panel-mapa > .panel-cuerpo { padding: 0; }
 .capa-mapa-subtitulo { margin: 4px 0 0; font-size: 15px; font-weight: 700; color: var(--tinta-fuerte); }
 .capa-estados { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
