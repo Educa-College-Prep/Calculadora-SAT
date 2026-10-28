@@ -10,6 +10,8 @@ import { tipoControl } from './utils/tipoControl';
 import { useValorEstable } from './utils/useValorEstable';
 import { useMedia } from './utils/useMedia';
 import { calcularCostoVida } from './utils/costos';
+import { leerFiltrosDeURL, escribirFiltrosEnURL, PRECIO_MAXIMO_SLIDER } from './utils/filtrosURL';
+import type { FiltrosURL } from './utils/filtrosURL';
 import { posicionUSNews } from './data/rankingUSNews';
 import { useMiLista, claveUniversidad } from './utils/useMiLista';
 import type { TipoControl } from './utils/tipoControl';
@@ -44,35 +46,74 @@ function aNumero(valor: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** Tope del deslizador de matrícula. En ese valor el filtro se considera inactivo. */
-const PRECIO_MAXIMO_SLIDER = 100000;
-
 export default function App() {
   const [universidades, setUniversidades] = useState<Universidad[]>([]);
   const [universidadSeleccionada, setUniversidadSeleccionada] = useState<Universidad | null>(null);
 
-  const [busquedaNombre, setBusquedaNombre] = useState<string>('');
+  // Los filtros se leen de la URL una sola vez, al abrir: así se pueden compartir, guardar en
+  // marcadores y sobreviven a una recarga. Lo que no venga en la URL queda por defecto.
+  const [inicial] = useState(() => leerFiltrosDeURL(window.location.search));
+
+  const [busquedaNombre, setBusquedaNombre] = useState<string>(inicial.busqueda);
   const [mostrarSugerencias, setMostrarSugerencias] = useState<boolean>(false);
 
-  const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>('todos');
-  const [ciudadSeleccionada, setCiudadSeleccionada] = useState<string>('todas');
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>(inicial.estado);
+  const [ciudadSeleccionada, setCiudadSeleccionada] = useState<string>(inicial.ciudad);
 
-  const [puntajeMath, setPuntajeMath] = useState<number>(0);
-  const [puntajeLectura, setPuntajeLectura] = useState<number>(0);
+  const [puntajeMath, setPuntajeMath] = useState<number>(inicial.puntajeMath);
+  const [puntajeLectura, setPuntajeLectura] = useState<number>(inicial.puntajeLectura);
   /** Total escrito directamente, para quien no recuerda sus dos secciones (0 = vacío). */
-  const [puntajeSoloTotal, setPuntajeSoloTotal] = useState<number>(0);
+  const [puntajeSoloTotal, setPuntajeSoloTotal] = useState<number>(inicial.puntajeSoloTotal);
 
-  const [exigirSAT, setExigirSAT] = useState<string>('todos');
+  const [exigirSAT, setExigirSAT] = useState<string>(inicial.exigirSAT);
   /** "Tus posibilidades de entrar": niveles marcados (vacío = todos); solo con puntaje SAT. */
-  const [nivelesSAT, setNivelesSAT] = useState<Nivel[]>([]);
-  const [tiposUniversidad, setTiposUniversidad] = useState<TipoControl[]>([]);
-  const [precioMaximo, setPrecioMaximo] = useState<number>(PRECIO_MAXIMO_SLIDER);
+  const [nivelesSAT, setNivelesSAT] = useState<Nivel[]>(inicial.niveles);
+  const [tiposUniversidad, setTiposUniversidad] = useState<TipoControl[]>(inicial.tipos);
+  const [precioMaximo, setPrecioMaximo] = useState<number>(inicial.precio);
 
   const miLista = useMiLista();
   const [viendoMiLista, setViendoMiLista] = useState(false);
 
-  const [ordenarPor, setOrdenarPor] = useState<string>('ninguno');
-  const [ordenDireccion, setOrdenDireccion] = useState<'asc' | 'desc'>('asc');
+  const [ordenarPor, setOrdenarPor] = useState<string>(inicial.ordenarPor);
+  const [ordenDireccion, setOrdenDireccion] = useState<'asc' | 'desc'>(inicial.ordenDireccion);
+
+  /** Vuelca unos filtros de la URL en los controles: se usa al volver con "atrás". */
+  const aplicarFiltrosURL = useCallback((f: FiltrosURL) => {
+    setBusquedaNombre(f.busqueda);
+    setEstadoSeleccionado(f.estado);
+    setCiudadSeleccionada(f.ciudad);
+    setPuntajeMath(f.puntajeMath);
+    setPuntajeLectura(f.puntajeLectura);
+    setPuntajeSoloTotal(f.puntajeSoloTotal);
+    setExigirSAT(f.exigirSAT);
+    setNivelesSAT(f.niveles);
+    setTiposUniversidad(f.tipos);
+    setPrecioMaximo(f.precio);
+    setOrdenarPor(f.ordenarPor);
+    setOrdenDireccion(f.ordenDireccion);
+  }, []);
+
+  // La URL es el registro de los filtros: se reescribe al cambiar alguno, sin crear entradas
+  // de historial. Con una pausa corta, para no escribir en cada tecla del buscador ni en cada
+  // paso del deslizador de costo.
+  useEffect(() => {
+    const espera = setTimeout(() => escribirFiltrosEnURL({
+      busqueda: busquedaNombre,
+      estado: estadoSeleccionado,
+      ciudad: ciudadSeleccionada,
+      puntajeMath,
+      puntajeLectura,
+      puntajeSoloTotal,
+      exigirSAT,
+      niveles: nivelesSAT,
+      tipos: tiposUniversidad,
+      precio: precioMaximo,
+      ordenarPor,
+      ordenDireccion,
+    }), 300);
+    return () => clearTimeout(espera);
+  }, [busquedaNombre, estadoSeleccionado, ciudadSeleccionada, puntajeMath, puntajeLectura,
+      puntajeSoloTotal, exigirSAT, nivelesSAT, tiposUniversidad, precioMaximo, ordenarPor, ordenDireccion]);
 
   // El texto que se usa para filtrar va "un paso atrás" del que se ve en el input.
   // Así el tecleo nunca se congela aunque el filtrado de 4300 registros tarde.
@@ -127,6 +168,18 @@ export default function App() {
     )).sort(),
     [universidades, estadoSeleccionado]
   );
+
+  // Un estado o una ciudad que vengan en la URL y no existan se limpian recién cuando llega
+  // la data: antes de eso la lista está vacía y no hay con qué comprobar.
+  useEffect(() => {
+    if (universidades.length === 0) return;
+    if (estadoSeleccionado !== 'todos' && !estadosUnicos.includes(estadoSeleccionado)) {
+      setEstadoSeleccionado('todos');
+      setCiudadSeleccionada('todas');
+    } else if (ciudadSeleccionada !== 'todas' && !ciudadesUnicas.includes(ciudadSeleccionada)) {
+      setCiudadSeleccionada('todas');
+    }
+  }, [universidades, estadosUnicos, ciudadesUnicas, estadoSeleccionado, ciudadSeleccionada]);
 
   // El total sale de las dos secciones o, si no las hay, del total escrito a mano. Con una
   // sola sección no hay total (ni filtro SAT): no se puede adivinar la otra.
@@ -485,6 +538,8 @@ export default function App() {
 
   useEffect(() => {
     const alNavegar = (e: PopStateEvent) => {
+      // Los filtros también viajan en la URL: al volver atrás se reaplican tal como estaban.
+      aplicarFiltrosURL(leerFiltrosDeURL(window.location.search));
       const id = e.state?.detalleId;
       if (id != null) {
         const uni = universidades.find(u => u._id === id);
@@ -504,7 +559,7 @@ export default function App() {
     };
     window.addEventListener('popstate', alNavegar);
     return () => window.removeEventListener('popstate', alNavegar);
-  }, [universidades]);
+  }, [universidades, aplicarFiltrosURL]);
 
   // El logo y "College Finder" de la barra llevan a la vista principal (con los filtros
   // como estaban). Desde una ficha o Mi lista es una entrada nueva: "atrás" vuelve ahí.
