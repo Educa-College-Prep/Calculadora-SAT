@@ -1280,6 +1280,89 @@ html { scroll-behavior: smooth; }
     0 0 12px 2px color-mix(in srgb, var(--c) 45%, transparent);
 }
 
+/* "Tu probabilidad": la respuesta a "¿me alcanza mi SAT?" antes de las casillas. Sin caja ni
+   sombra (Plano por defecto): la jerarquía la dan el tamaño y el color del nivel, los mismos
+   de las etiquetas de la lista (azul alta, violeta media, gris baja). */
+.tu-prob {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 40px;
+  margin: 0 0 clamp(24px, 3vw, 32px);
+}
+.tu-prob-alta { --c: #2a3f8f; }
+.tu-prob-intermedia { --c: #4a3a86; }
+.tu-prob-baja { --c: #4a5470; }
+.tu-prob-texto { flex: 1 1 420px; max-width: 62ch; }
+.tu-prob-con { margin: 0; font-size: 15px; font-weight: 600; color: var(--muted); }
+.tu-prob-con strong { color: var(--ink); }
+.tu-prob-titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 0 8px;
+  font-size: clamp(28px, 3.2vw, 40px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--c, var(--ink));
+}
+.tu-prob-titulo .barras-nivel { width: 30px; height: 26px; }
+.tu-prob-detalle { margin: 0; font-size: 16px; }
+.tu-prob-acciones { display: flex; flex-wrap: wrap; gap: 0 24px; }
+.tu-prob-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.tu-prob-enlace:hover { color: var(--navy); }
+/* Sin puntaje: la pregunta a la izquierda y el campo a la derecha (debajo en celular). */
+.tu-prob-pregunta { align-items: center; }
+.tu-prob-pregunta .tu-prob-titulo { font-size: clamp(22px, 2.4vw, 28px); }
+.tu-prob-campo { display: flex; align-items: center; gap: 4px 20px; flex: 0 1 340px; flex-wrap: wrap; }
+.tu-prob-campo .total-sat { flex: 1 1 220px; margin-top: 0; background: var(--surface); }
+.tu-prob-campo .total-sat-listo { background: var(--tinta-fondo); }
+.tu-prob-campo .casilla-error { flex-basis: 100%; margin: 0; }
+.tu-prob-campo .casilla-error:empty { display: none; }
+.tu-prob-sin-rango { max-width: 62ch; margin: 0 0 24px; color: var(--muted); }
+/* En celular los enlaces van debajo del texto, pegados a él. */
+@media (max-width: 520px) {
+  .tu-prob { gap: 4px; }
+}
+
+/* Tu puntaje en la barra Total de "Rango SAT de los admitidos". */
+.rango-tu {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  background: var(--navy);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 3px rgba(17, 29, 63, 0.35);
+}
+.rango-tu-texto { font-weight: 700; color: var(--navy); white-space: nowrap; }
+.rango-tu-punto {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 4px;
+  vertical-align: 0;
+  background: var(--navy);
+  border-radius: 50%;
+}
+
 .ficha-seccion { padding: clamp(20px, 2.5vw, 28px); }
 .ficha-bloque { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--linea); }
 .ficha-intro { display: flex; align-items: center; flex-wrap: wrap; color: var(--grafito-suave); }

@@ -274,11 +274,15 @@ function InputSeccionSAT({ id, etiqueta, valor, setValor, onUsarComoTotal }: {
 /**
  * Total del SAT. Con las dos secciones se calcula solo; sin ellas se puede escribir directo,
  * para quien solo recuerda su total. Escribir aquí borra las secciones: el total manda.
+ * También lo usa la ficha ("Tu probabilidad"), con su propio `id` y etiqueta.
  */
-function InputTotalSAT({ total, setSoloTotal, onEscribir }: {
+export function InputTotalSAT({ total, setSoloTotal, onEscribir, id = 'sat-total', etiqueta = 'Total', autoFocus = false }: {
   total: number;
   setSoloTotal: (v: number) => void;
   onEscribir: () => void;
+  id?: string;
+  etiqueta?: string;
+  autoFocus?: boolean;
 }) {
   const [texto, setTexto] = useState(total ? String(total) : '');
   const [salio, setSalio] = useState(false);
@@ -308,9 +312,10 @@ function InputTotalSAT({ total, setSoloTotal, onEscribir }: {
   return (
     <>
       <div className={`total-sat${total > 0 ? ' total-sat-listo' : ''}${mostrarProblema ? ' total-sat-error' : ''}`}>
-        <label htmlFor="sat-total">Total</label>
+        <label htmlFor={id}>{etiqueta}</label>
         <input
-          id="sat-total"
+          id={id}
+          autoFocus={autoFocus}
           type="text"
           inputMode="numeric"
           autoComplete="off"
@@ -321,11 +326,11 @@ function InputTotalSAT({ total, setSoloTotal, onEscribir }: {
           onBlur={() => { setEditando(false); confirmar(); }}
           onKeyDown={(e) => { if (e.key === 'Enter') confirmar(); }}
           aria-invalid={!!mostrarProblema}
-          aria-describedby={mostrarProblema ? 'sat-total-problema' : undefined}
+          aria-describedby={mostrarProblema ? `${id}-problema` : undefined}
         />
         <span className="total-sat-escala">/ 1600</span>
       </div>
-      <p id="sat-total-problema" className="casilla-error" aria-live="polite">{mostrarProblema ? problema : ''}</p>
+      <p id={`${id}-problema`} className="casilla-error" aria-live="polite">{mostrarProblema ? problema : ''}</p>
     </>
   );
 }

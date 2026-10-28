@@ -15,6 +15,7 @@ import { FotoUniversidad, CreditoFoto } from './FotoUniversidad';
 import { UniversidadesSimilares } from './UniversidadesSimilares';
 import { posicionUSNews, nivelRanking, NOMBRE_LISTA, FUENTE_USNEWS, EDICION_USNEWS } from '../data/rankingUSNews';
 import { RangosSAT } from './RangosSAT';
+import { TuProbabilidad } from './TuProbabilidad';
 import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
 import { SobreUniversidad, ContactoUniversidad } from './InfoUniversidad';
@@ -36,6 +37,10 @@ interface Props {
   /** Todas las universidades, para buscar las similares. */
   universidades: Universidad[];
   onSeleccionar: (uni: Universidad) => void;
+  /** Tu SAT total, el mismo de la portada (0 = sin puntaje). */
+  puntajeSAT: number;
+  /** Escribir el puntaje desde la ficha lo cambia en toda la web (también en la lista). */
+  onCambiarPuntajeSAT: (total: number) => void;
 }
 
 /**
@@ -171,7 +176,7 @@ function irASeccion(e: MouseEvent<HTMLAnchorElement>, id: string) {
 const claseControl = (control: string | null) =>
   control === 'Pública' ? 'marca marca-publica' : 'marca marca-privada';
 
-export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista, universidades, onSeleccionar }: Props) {
+export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada, cantidadMiLista, onVerMiLista, universidades, onSeleccionar, puntajeSAT, onCambiarPuntajeSAT }: Props) {
   const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;
   // Lo que cuesta un año para alguien de fuera del estado (el público de esta web): matrícula + vida.
   const costoVida = calcularCostoVida(uni);
@@ -300,8 +305,11 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
         </div>
       </nav>
 
-      {/* RESUMEN: lo esencial en cinco casillas y "Sobre la universidad". */}
+      {/* RESUMEN: primero tu probabilidad de entrar (lo que viniste a saber), luego lo esencial
+          en cinco casillas y "Sobre la universidad". */}
       <Banda id="resumen" fondo="gris">
+        <TuProbabilidad key={uni._id} uni={uni} puntaje={puntajeSAT} onCambiarPuntaje={onCambiarPuntajeSAT}
+          onVerAdmision={e => irASeccion(e, 'admision')} />
         <dl className="esenciales" aria-label="Lo esencial">
           <Esencial etiqueta="Tasa de admisión" valor={formatPorcentaje(uni.ADM_RATE)} ayuda={glosarioCampos.ADM_RATE}
             nivel={etiquetaSelectividad(uni.ADM_RATE)} />
@@ -345,7 +353,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
               )}
             </dl>
             {(uni.SAT_AVG || uni.SATVR25 || uni.SATMT25)
-              ? <div className="ficha-bloque"><RangosSAT uni={uni} /></div>
+              ? <div className="ficha-bloque"><RangosSAT uni={uni} tuPuntaje={puntajeSAT} /></div>
               : <p className="ayuda">Esta universidad no publica puntajes SAT de sus admitidos.</p>}
           </Panel>
           {conFechas && (

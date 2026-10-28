@@ -23,8 +23,11 @@ const COLOR_BANDA = 'var(--tinta)';
  *
  * College Scorecard no publica percentiles del TOTAL, así que se aproxima
  * sumando las dos secciones (ver glosarioCampos.SAT_TOTAL).
+ *
+ * `tuPuntaje` (tu SAT total, 0 = sin puntaje) se marca con un círculo marino en la barra
+ * Total: así se ve de un vistazo dónde quedas frente a los admitidos.
  */
-export function RangosSAT({ uni }: { uni: Universidad }) {
+export function RangosSAT({ uni, tuPuntaje = 0 }: { uni: Universidad; tuPuntaje?: number }) {
   const rangos: Rango[] = [];
 
   if (uni.SATVR25 != null && uni.SATVR75 != null) {
@@ -68,6 +71,9 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>
                   <strong>{r.p25} – {r.p75}</strong>
                   {r.p50 != null && <span style={{ color: 'var(--grafito-suave)' }}> · mediana {r.p50}</span>}
+                  {r.label === 'Total' && tuPuntaje > 0 && (
+                    <span className="rango-tu-texto"> · <i className="rango-tu-punto" aria-hidden="true" />tú {tuPuntaje}</span>
+                  )}
                 </span>
               </div>
 
@@ -125,6 +131,11 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
                     }}
                   />
                 )}
+                {/* Tu puntaje, sobre la barra Total (dentro de la escala de 400 a 1600). */}
+                {r.label === 'Total' && tuPuntaje > 0 && (
+                  <span className="rango-tu" aria-hidden="true"
+                    style={{ left: pos(Math.min(Math.max(tuPuntaje, r.min), r.max), r) }} />
+                )}
               </div>
 
               {/* Escala con todos los valores intermedios */}
@@ -148,6 +159,7 @@ export function RangosSAT({ uni }: { uni: Universidad }) {
           {total && (
             <p style={{ fontSize: '12px', lineHeight: 1.4, color: 'var(--grafito-suave)', margin: '4px 0 0 0' }}>
               La mitad central de los admitidos sacó aproximadamente entre <strong>{total.p25}</strong> y <strong>{total.p75}</strong> en total.
+              {tuPuntaje > 0 && <> Tú sacaste <strong>{tuPuntaje}</strong>.</>}
             </p>
           )}
         </>
