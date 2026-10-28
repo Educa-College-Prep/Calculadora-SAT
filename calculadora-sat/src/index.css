@@ -659,7 +659,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   border-radius: 999px;
 }
 .marca-publica { color: var(--tinta-fuerte); background: var(--tinta-fondo); border-color: var(--tinta-suave); }
-.marca-privada { color: var(--boligrafo); background: var(--boligrafo-fondo); border-color: #b5ded7; }
+.marca-privada { color: #256a5c; background: var(--boligrafo-fondo); border-color: #b5ded7; } /* 5.2:1: el verde de la marca no llegaba a 4.5:1 sobre su fondo */
 /* Datos faltantes para los filtros activos. */
 .marca-aviso { color: var(--alerta); background: var(--alerta-fondo); border-color: var(--alerta-borde); }
 .marca-sat { color: var(--grafito); background: var(--hoja); border-color: var(--grafito); }
@@ -671,7 +671,10 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   background: var(--grafito);
 }
 
-.fila-datos { display: grid; grid-template-columns: 84px 112px 84px; gap: 8px; text-align: right; }
+.fila-datos { display: grid; grid-template-columns: 84px 112px 96px; grid-auto-columns: 104px; grid-auto-flow: column; gap: 8px; text-align: right; }
+/* El dato por el que se ordena: resaltado, para que se vea por qué la fila va aquí. */
+.dato-orden .dato-valor { color: var(--tinta-fuerte); }
+.dato-orden .dato-etiqueta { font-weight: 700; color: var(--tinta); }
 .dato { display: flex; flex-direction: column; }
 .dato-valor { font-size: 16px; font-weight: 700; white-space: nowrap; }
 .dato-etiqueta { font-size: 12px; color: var(--grafito-suave); }
@@ -690,7 +693,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 
 @media (max-width: 720px) {
   .fila-boton { grid-template-columns: minmax(0, 1fr); padding: 14px 16px; }
-  .fila-datos { grid-template-columns: repeat(3, auto); justify-content: start; column-gap: 24px; text-align: left; }
+  .fila-datos { display: flex; flex-wrap: wrap; gap: 6px 24px; text-align: left; }
   .paginacion { padding: 14px 16px; }
   .paginacion .boton { flex: 1 1 auto; }
   .por-pagina { margin-left: 0; width: 100%; justify-content: space-between; }
@@ -723,7 +726,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   transition: background-color 0.12s ease, color 0.12s ease;
 }
 /* Área táctil más grande que el círculo visible */
-.ayuda-boton::after { content: ''; position: absolute; inset: -10px; }
+.ayuda-boton::after { content: ''; position: absolute; inset: -12px; } /* área táctil de 44px */
 .ayuda-boton:hover,
 .ayuda-boton[aria-expanded="true"] { color: var(--hoja); background: var(--tinta); }
 
@@ -1640,6 +1643,9 @@ html { scroll-behavior: smooth; }
   text-underline-offset: 3px;
 }
 .boton-limpiar-enlace:hover { background: none; color: var(--tinta); }
+/* Área táctil de 44px sin mover el texto de la línea. */
+.boton-limpiar-enlace { position: relative; }
+.boton-limpiar-enlace::after { content: ''; position: absolute; inset: -12px -6px; }
 
 /* Casillas cuadradas: selección múltiple en "Tipo de universidad". */
 .burbuja-casilla input { border-radius: 5px; }
@@ -2035,4 +2041,146 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
   .contacto a { font-size: 15px; }
   .video-titulo { font-size: 15px; }
   .bloque-sol p { font-size: 15px; }
+}
+
+/* =========================================================
+   Portada: respuesta en tres cifras, lista equilibrada, capa del mapa y detalles táctiles.
+   ========================================================= */
+
+/* "Con tu SAT de 1250 tienes: 405 · 394 · 65". Cada cifra filtra la lista a ese grupo. */
+.reparto { display: flex; flex-wrap: wrap; gap: 10px; flex-basis: 100%; margin-top: 6px; }
+.reparto-nivel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 128px;
+  min-height: 64px;
+  padding: 10px 16px;
+  font: inherit;
+  text-align: left;
+  color: var(--tinta-fuerte);
+  background: var(--hoja);
+  border: 1.5px solid var(--linea);
+  border-radius: var(--radio);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.reparto-nivel:hover { border-color: var(--tinta); }
+.reparto-nivel[aria-pressed="true"] { background: var(--tinta-fondo); border-color: var(--tinta); }
+.reparto-cifra { font-size: clamp(26px, 3vw, 36px); font-weight: 800; line-height: 1; }
+.reparto-etiqueta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--grafito-suave); }
+.reparto-intermedia .reparto-cifra { color: #4a3a86; }
+.reparto-baja .reparto-cifra { color: var(--grafito-suave); }
+@media (max-width: 600px) {
+  .reparto { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .reparto-nivel { min-width: 0; padding: 10px 12px; }
+  .reparto-prob { display: none; }
+}
+
+/* Aviso informativo (no es un error): niebla con borde suave. */
+.nota-info {
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--grafito);
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-chico);
+  text-wrap: pretty;
+}
+
+/* "Recomendado": qué hace, debajo del selector. */
+.orden-explicacion { max-width: 320px; }
+
+/* "Guardar" bajo la estrella mientras Mi lista está vacía. */
+.boton-guardar:not(.boton-guardar-texto) { gap: 3px; align-content: center; }
+.boton-guardar-etiqueta { font-size: 11px; font-weight: 700; line-height: 1; }
+
+/* Tu lista equilibrada: un título por grupo (alta, media, baja). */
+.top-grupo + .top-grupo { margin-top: 14px; }
+.top-grupo-titulo { margin: 0 0 4px; font-size: inherit; }
+
+/* Capa del mapa en celular: mapa a todo el ancho, lista de estados y "Cerrar" al pie. */
+.capa-mapa-titulo { margin: 4px 0 0; font-size: 20px; font-weight: 800; }
+.capa-mapa .panel-mapa { background: none; border: 0; }
+.capa-mapa .panel-mapa > .panel-cabecera { display: none; }
+.capa-mapa .panel-mapa > .panel-cuerpo { padding: 0; }
+.capa-mapa-subtitulo { margin: 4px 0 0; font-size: 15px; font-weight: 700; color: var(--tinta-fuerte); }
+.capa-estados { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.capa-estado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--grafito);
+  background: var(--hoja);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+}
+.capa-estado .numero { font-weight: 500; color: var(--grafito-suave); }
+.capa-estado[aria-pressed="true"] { background: var(--tinta-fondo); border-color: var(--tinta); }
+.capa-mapa-cerrar { position: sticky; bottom: 0; flex: none; min-height: 48px; margin-top: 4px; box-shadow: 0 -8px 16px var(--papel); }
+
+/* Celular: objetivos táctiles de al menos 44px y espacio para el botón fijo "Ver N". */
+@media (max-width: 960px) {
+  #root { padding-bottom: 96px; }
+  .boton-limpiar { min-height: 44px; }
+  .total-sat input { min-height: 44px; }
+  .total-sat { padding-block: 0; }
+}
+
+/* =========================================================
+   Portada en bandas a todo el ancho, como la ficha. Usa los tokens de la ficha
+   (--bg, --surface…) con los valores de la portada.
+   ========================================================= */
+#root:has(> .portada) { max-width: none; padding: 0; }
+#root:has(> .portada) > :not(.portada) {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 48px);
+}
+.portada { --bg: var(--papel); --surface: var(--hoja); --muted: var(--grafito-suave); }
+.portada .banda { padding-block: clamp(28px, 4vw, 48px); scroll-margin-top: 0; }
+.portada .banda-blanco + .banda-blanco { padding-top: 0; }
+
+/* Banda 1: la pregunta. Arriba el título y el buscador; abajo tu puntaje y la respuesta. */
+.portada-pregunta .cabecera { margin-bottom: 28px; }
+.pregunta-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: 24px 48px;
+  align-items: start;
+}
+.pregunta-puntaje {
+  min-width: 0;
+  margin: 0;
+  padding: 20px;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+}
+.pregunta-cuerpo .resultado { align-self: center; }
+
+/* El título del recuadro adentro, no montado sobre el borde (lo que hace un <legend>). */
+.pregunta-puntaje > legend { float: left; width: 100%; margin-bottom: 12px; }
+.pregunta-puntaje > legend + * { clear: both; }
+
+/* Banda 2: el mapa con más protagonismo y tu lista al lado (en pantallas angostas, uno debajo del otro). */
+@media (min-width: 1181px) {
+  .portada-3 .tablero { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+}
+
+@media (max-width: 960px) {
+  .pregunta-cuerpo { grid-template-columns: minmax(0, 1fr); }
+  .portada { padding-bottom: 96px; }
 }
