@@ -67,13 +67,13 @@ export function DemografiaAdmision({ uni, soloAdmision = false }: { uni: Univers
         <dl className="datos">
           {uni.UGDS != null && (
             <div className="dato-fila">
-              <dt>Alumnos de pregrado<InfoTooltip sobre="Alumnos de pregrado" texto={glosarioCampos.UGDS} /></dt>
+              <dt>Alumnos de pregrado</dt>
               <dd className="numero">{uni.UGDS.toLocaleString()}</dd>
             </div>
           )}
           {uni.UGDS_HISP != null && (
             <div className="dato-fila">
-              <dt>Hispanos<InfoTooltip sobre="Hispanos" texto={glosarioCampos.UGDS_HISP} /></dt>
+              <dt>Hispanos</dt>
               <dd className="numero">{formatPorcentaje(uni.UGDS_HISP)}</dd>
             </div>
           )}
@@ -91,7 +91,6 @@ export function DemografiaAdmision({ uni, soloAdmision = false }: { uni: Univers
           {!soloAdmision && (
             <p className="con-ayuda">
               <strong>Postulantes, admitidos y matriculados</strong>
-              <InfoTooltip sobre="Postulantes, admitidos y matriculados" texto={glosarioCampos.POSTULANTES} />
             </p>
           )}
           <div className="tabla-envoltura">
