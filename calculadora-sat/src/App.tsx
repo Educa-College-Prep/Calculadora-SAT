@@ -20,6 +20,7 @@ import { ListaUniversidades } from './components/ListaUniversidades';
 import { ResumenEstado } from './components/ResumenEstado';
 import { DetalleUniversidad } from './components/DetalleUniversidad';
 import { ComparadorUniversidades } from './components/ComparadorUniversidades';
+import type { AvisoLista } from './components/ComparadorUniversidades';
 import { alcanzable, clasificar } from './utils/nivelSAT';
 import type { Nivel } from './utils/nivelSAT';
 import { NIVELES } from './utils/nivelSAT';
@@ -86,6 +87,10 @@ export default function App() {
   );
   const sugerencias = useMemo(() => resultadoBusqueda?.ordenadas.slice(0, 8) ?? [], [resultadoBusqueda]);
 
+  // Lo que se hace apenas llegan los datos: sumar las universidades de un enlace compartido
+  // (se define más abajo, junto a Mi lista).
+  const alCargarDatos = useRef<(cargadas: Universidad[]) => void>(() => {});
+
   useEffect(() => {
     // Un solo archivo con College Scorecard + IPEDS, unidos por UNITID. Lo genera
     // scripts/actualizar_datos.py (y cada semana el workflow actualizar-datos).
@@ -93,7 +98,7 @@ export default function App() {
       .then(r => r.json())
       .then((data: Universidad[]) => {
         // Se asigna un id estable una sola vez, al cargar.
-        setUniversidades(data.map((uni, indice) => {
+        const cargadas: Universidad[] = data.map((uni, indice) => {
           const ranking = posicionUSNews(uni);
           // El mismo "Costo anual total" de la ficha: lo que de verdad paga una familia al año.
           const matricula = uni.TUITIONFEE_OUT ?? uni.TUITIONFEE_IN ?? null;
@@ -108,7 +113,9 @@ export default function App() {
           COSTO_ANUAL_ESTIMADO: vida?.estimado ?? false,
           _id: indice,
           };
-        }));
+        });
+        setUniversidades(cargadas);
+        alCargarDatos.current(cargadas);
       })
       .catch(error => console.error("Error cargando la data:", error));
   }, []);
@@ -477,6 +484,32 @@ export default function App() {
     return miLista.claves.map(c => porClave.get(c)).filter((u): u is Universidad => u != null);
   }, [universidades, miLista.claves]);
 
+  // Un enlace compartido desde Mi lista (?lista=166683,170976, por UNITID): sus universidades se
+  // suman a la lista de quien lo abre y se abre Mi lista, con un aviso para deshacerlo. El
+  // parámetro se borra de la dirección, para que al recargar no se vuelvan a sumar.
+  // Se arma en cada render (con la lista de ese momento) y la llama la carga de los datos, una vez.
+  const [avisoEnlace, setAvisoEnlace] = useState<AvisoLista | null>(null);
+  useEffect(() => {
+    alCargarDatos.current = (cargadas: Universidad[]) => {
+      const parametro = new URLSearchParams(window.location.search).get('lista');
+      if (!parametro) return;
+      window.history.replaceState(null, '', import.meta.env.BASE_URL);
+      const porId = new Map(cargadas.map(u => [u.UNITID, u]));
+      // En el orden del enlace: así se ven como las ordenó quien las compartió.
+      const delEnlace = parametro.split(',').map(id => porId.get(Number(id))).filter((u): u is Universidad => u != null).map(claveUniversidad);
+      if (delEnlace.length === 0) return;
+      const nuevas = delEnlace.filter(c => !miLista.guardadas.has(c)).length;
+      setAvisoEnlace({
+        texto: nuevas === 0 ? 'Las universidades del enlace ya estaban en tu lista.'
+          : `Sumamos ${nuevas} ${nuevas === 1 ? 'universidad' : 'universidades'} del enlace que te compartieron.`,
+        antes: nuevas > 0 ? miLista.claves : null,
+        id: -1,
+      });
+      miLista.agregarVarias(delEnlace);
+      abrirMiLista();
+    };
+  });
+
   // El botón "Volver" de la página hace lo mismo que el "atrás" del navegador.
   const volverDelDetalle = useCallback(() => {
     if (window.history.state?.detalleId != null) window.history.back();
@@ -554,10 +587,19 @@ export default function App() {
       return (
         <ComparadorUniversidades
           universidades={universidadesGuardadas}
+          claves={miLista.claves}
+          guardadas={miLista.guardadas}
+          indiceBusqueda={indiceBusqueda}
+          puntajeSAT={puntajeTotal}
+          onCambiarPuntajeSAT={total => { setPuntajeMath(0); setPuntajeLectura(0); setPuntajeSoloTotal(total); }}
           onSeleccionar={seleccionarUniversidad}
+          onAgregar={miLista.alternar}
           onQuitar={miLista.quitar}
           onVaciar={miLista.vaciar}
+          onRestaurar={miLista.restaurar}
           onVolver={volverDeMiLista}
+          avisoInicial={avisoEnlace}
+          onAvisoInicialVisto={() => setAvisoEnlace(null)}
         />
       );
     }

@@ -14,9 +14,10 @@ function iniciales(nombre: string): string {
 /**
  * Fondo del banner de la ficha: la foto de la universidad. Si no tiene foto libre
  * (o no carga), una portada en tinta azul con sus iniciales: ninguna ficha queda vacía.
- * Ocupa todo su contenedor; el texto va encima.
+ * Ocupa todo su contenedor; el texto va encima. `miniatura`: la versión chica de las
+ * columnas de Mi lista (pide la foto más liviana y sin apuro).
  */
-export function FotoUniversidad({ uni }: { uni: Universidad }) {
+export function FotoUniversidad({ uni, miniatura = false }: { uni: Universidad; miniatura?: boolean }) {
   const foto = useFoto(uni);
   // Estado por archivo: al pasar a otra universidad se reinicia solo.
   const [cargada, setCargada] = useState<string | null>(null);
@@ -39,11 +40,13 @@ export function FotoUniversidad({ uni }: { uni: Universidad }) {
       <img
         src={urlFoto(foto, 1280)}
         srcSet={`${urlFoto(foto, 640)} 640w, ${urlFoto(foto, 1280)} 1280w, ${urlFoto(foto, 1920)} 1920w`}
-        sizes="(max-width: 1320px) 100vw, 1280px"
-        alt={`Foto de ${uni.INSTNM}`}
+        sizes={miniatura ? '320px' : '(max-width: 1320px) 100vw, 1280px'}
+        alt={miniatura ? '' : `Foto de ${uni.INSTNM}`}
         decoding="async"
-        // Es lo primero que se ve en la ficha: que el navegador la pida antes que lo demás.
-        fetchPriority="high"
+        // En la ficha es lo primero que se ve: que el navegador la pida antes que lo demás.
+        // En Mi lista es decoración junto al nombre (por eso sin alt) y puede esperar.
+        fetchPriority={miniatura ? 'auto' : 'high'}
+        loading={miniatura ? 'lazy' : undefined}
         onLoad={() => setCargada(foto.f)}
         onError={() => setFallida(foto.f)}
       />

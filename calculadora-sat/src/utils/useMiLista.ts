@@ -63,7 +63,15 @@ export function useMiLista() {
 
   const vaciar = useCallback(() => actualizar(() => []), [actualizar]);
 
+  /** Vuelve la lista a como estaba (el "Deshacer" de Mi lista). */
+  const restaurar = useCallback((anteriores: string[]) => actualizar(() => anteriores), [actualizar]);
+
+  /** Agrega las que falten, al final y sin repetir (un enlace compartido). */
+  const agregarVarias = useCallback((nuevas: string[]) => {
+    actualizar(previas => [...previas, ...nuevas.filter(c => !previas.includes(c))]);
+  }, [actualizar]);
+
   const guardadas = useMemo(() => new Set(claves), [claves]);
 
-  return { claves, guardadas, alternar, quitar, vaciar };
+  return { claves, guardadas, alternar, quitar, vaciar, restaurar, agregarVarias };
 }
