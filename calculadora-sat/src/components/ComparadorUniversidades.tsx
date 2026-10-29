@@ -364,16 +364,17 @@ export function ComparadorUniversidades({
   const compartir = async () => {
     const ids = ordenadas.map(u => u.UNITID).filter((id): id is number => id != null);
     const url = `${window.location.origin}${import.meta.env.BASE_URL}?lista=${ids.join(',')}`;
-    // Siempre se copia: en la computadora es lo que se espera (Safari y Chrome en Mac también
-    // tienen menú de compartir, y antes lo abrían en vez de copiar).
-    try {
-      await navigator.clipboard.writeText(url);
-      avisar('Copiamos el enlace de tu lista. Pégalo en WhatsApp, en un correo o donde quieras.');
-    } catch {
-      window.prompt('Copia el enlace de tu lista:', url);
-    }
-    // En el celular, además, el menú de compartir del teléfono (WhatsApp, correo…).
-    if (window.matchMedia('(pointer: coarse)').matches && navigator.share) {
+    // Siempre se copia el enlace y, si el navegador tiene menú de compartir (Safari y Chrome en
+    // Mac, celulares), además se abre, con sus integraciones (WhatsApp, correo, AirDrop…).
+    // Las dos cosas se piden juntas, sin esperar una a la otra: el navegador solo abre el menú
+    // justo después del clic, y si se espera a que termine de copiar, Safari lo bloquea.
+    const hayMenu = typeof navigator.share === 'function';
+    navigator.clipboard.writeText(url).then(
+      () => avisar('Copiamos el enlace de tu lista. Pégalo en WhatsApp, en un correo o donde quieras.'),
+      // Sin portapapeles (algunos navegadores lo bloquean) y sin menú: que lo copie a mano.
+      () => { if (!hayMenu) window.prompt('Copia el enlace de tu lista:', url); },
+    );
+    if (hayMenu) {
       try {
         await navigator.share({ title: 'Mi lista de universidades', text: 'Mira las universidades que estoy comparando en College Finder de Educa:', url });
       } catch { /* la persona cerró el menú: el enlace ya quedó copiado */ }
@@ -435,7 +436,7 @@ export function ComparadorUniversidades({
             {n > 0 && (
               <div className="mi-lista-acciones">
                 {/* Ícono + una palabra: solo el ícono no lo reconoce todo el mundo. */}
-                <button type="button" className="boton-enlace" onClick={compartir} title="Copia el enlace de tu lista">
+                <button type="button" className="boton-enlace" onClick={compartir} title="Copia el enlace de tu lista y ábrelo para compartir">
                   <IconoCompartir />Compartir
                 </button>
                 {/* No descarga directo: abre la ventana de imprimir, donde se elige "Guardar como PDF". */}
