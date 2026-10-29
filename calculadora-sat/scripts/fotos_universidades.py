@@ -96,12 +96,28 @@ NO_CAMBIAR: set[str] = {
 # por ejemplo, es "University of Chicago" pero no es el campus que se quiere mostrar).
 ELEGIR_A_MANO: dict[str, str] = {
     'University of Chicago|Chicago|IL': 'University_of_Chicago,_Harper_Library.jpg',
-    'Yale University|New Haven|CT': 'Edward_S._Harkness_Memorial_Hall.jpg',
-    'Carnegie Mellon University|Pittsburgh|PA': 'Carnegie_Mellon_University_Legacy_Plaza.jpg',
     'Georgia Institute of Technology-Main Campus|Atlanta|GA': 'Tech_Tower_lawn.jpg',
     'University of California-Irvine|Irvine|CA': 'Engineering_Tower_and_Computer_Science_Building.jpg',
     'Wake Forest University|Winston-Salem|NC': 'Scales_Fine_Arts_Center.jpg',
-    'Lehigh University|Bethlehem|PA': 'Lehigh_Fountain.jpg',
+    # Revisión a mano de la corrida del 28/10/2026 (revision-fotos.md).
+    'Carnegie Mellon University|Pittsburgh|PA': 'Carnegie_Mellon_University_as_seen_from_the_Cathedral_of_Learning.jpg',
+    'Centralia College|Centralia|WA': 'Centralia_College_Panorama.jpg',
+    'College of the Redwoods|Eureka|CA': 'College_of_the_Redwoods_North_Entry.JPG',
+    'Glendale Community College|Glendale|CA': 'Glendale_Community_College,_California.jpg',
+    'Lehigh University|Bethlehem|PA': 'Lehigh_University_Rauch.jpg',
+    'Trinity College|Hartford|CT': 'Trinity_College_Jessee_Miller_Field,_Hartford_CT.jpg',
+    'Yale University|New Haven|CT': 'Yale_University_Old_Campus_04.JPG',
+    'Princeton University|Princeton|NJ': 'Center_Courtyard_of_East_Pyne_Building_Princeton_University_2024.jpg',
+    # En la misma revisión se prefirió la foto que tenían antes: la nueva era un dormitorio,
+    # una postal antigua o un rincón menos reconocible. Se fijan aquí (y no en NO_CAMBIAR)
+    # porque el JSON de partida ya trae la foto nueva.
+    'Augusta University|Augusta|GA': 'Georgia_Regents_University,_University_Hall.jpg',
+    'Bentley University|Waltham|MA': 'Bentley_College_Library.jpg',
+    'City College of San Francisco|San Francisco|CA': 'City_College_of_San_Francisco_at_Valencia.jpg',
+    'Hollins University|Roanoke|VA': 'Cocke_building,_Hollins_University.jpg',
+    "Saint Michael's College|Colchester|VT": "Aerial_shot_of_Saint_Michael's_College.jpg",
+    'Virginia State University|Petersburg|VA': 'Library_VSU_2006.jpg',
+    'Westmoreland County Community College|Youngwood|PA': 'Westmoreland_County_Community_College_pavilion.jpg',
 }
 
 # Un banner ocupa hasta 1280 px de ancho (1920 en pantallas grandes): por debajo de 1000 se
