@@ -8,6 +8,7 @@ import { CostoVida } from './CostoVida';
 import { MiniBarChart } from './MiniBarChart';
 import { Pestanas } from './Pestanas';
 import { useFuentesDatos } from '../utils/fuentesDatos';
+import { usePerfil } from '../utils/perfil';
 
 type PerfilId = 'in' | 'out' | 'us' | 'intl';
 
@@ -36,7 +37,8 @@ function porIngreso(uni: Universidad, suf: 'PUB' | 'PRIV') {
  * El gobierno de EE.UU. solo publica el "después de becas" para residentes del estado
  * (públicas) o para todos (privadas). Para otros estados e internacionales ese dato no
  * existe: se muestra un aproximado = costo total − beca típica de la universidad.
- * Por defecto se abre "Internacional" (el público de esta web).
+ * Se abre en el perfil que el estudiante eligió en Mi lista ("Vivo en EE. UU." y su estado);
+ * si no eligió ninguno, en "Internacional" (el público de esta web).
  */
 export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
   const cv = calcularCostoVida(uni);
@@ -63,7 +65,12 @@ export function CostosFinanciamiento({ uni }: { uni: Universidad }) {
         { id: 'intl', label: 'Internacional', matricula: matUS, netoReal: null, netoPorIngreso: [], nota: notaIntl },
       ];
 
-  const [activo, setActivo] = useState<PerfilId>('intl');
+  const [perfilElegido] = usePerfil();
+  const [activo, setActivo] = useState<PerfilId>(() => {
+    if (perfilElegido.tipo === 'internacional') return 'intl';
+    if (!hayDistincionEstado) return 'us';
+    return perfilElegido.estado === uni.STABBR ? 'in' : 'out';
+  });
   const p = perfiles.find((x) => x.id === activo) ?? perfiles[0];
 
   const total = p.matricula != null && cv != null ? p.matricula + cv.valor : null;

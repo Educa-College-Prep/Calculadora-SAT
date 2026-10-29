@@ -759,13 +759,14 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 /* La ficha usa todo el ancho de la pantalla: cada sección es una banda de borde a borde, con
    el contenido centrado en .in (máx. 1280px). Solo en esta vista #root deja su ancho máximo.
    Su paleta (azul Educa, navy, violeta, amarillo) vale solo dentro de la ficha. */
-#root:has(> .ficha) { max-width: none; padding: 0; }
-#root:has(> .ficha) > :not(.ficha) {
+#root:has(> .ficha, > .mi-lista) { max-width: none; padding: 0; }
+#root:has(> .ficha, > .mi-lista) > :not(.ficha, .mi-lista) {
   max-width: 1280px;
   margin-inline: auto;
   padding-inline: clamp(16px, 4vw, 48px);
 }
-.ficha {
+/* Mi lista usa las mismas variables que la ficha. */
+.ficha, .mi-lista {
   --bg: #f2f3f8;
   --surface: #ffffff;
   --ink: #1b2a57;
@@ -851,10 +852,12 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .ficha .barra-flotante { top: calc(var(--alto-barra, 0px) + var(--alto-pestanas) + 10px); }
 
 /* Foco visible: azul sobre fondos claros, amarillo sobre los oscuros. */
-.ficha a:focus-visible, .ficha button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.ficha a:focus-visible, .ficha button:focus-visible,
+.mi-lista a:focus-visible, .mi-lista button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 .ficha .hero a:focus-visible, .ficha .hero button:focus-visible,
 .ficha .banda-marca a:focus-visible, .ficha .bloque-sol a:focus-visible,
-.ficha .banda-contacto a:focus-visible { outline-color: var(--sun); }
+.ficha .banda-contacto a:focus-visible,
+.mi-lista .banda-contacto a:focus-visible, .mi-lista .aviso-lista button:focus-visible { outline-color: var(--sun); }
 
 /* Botones de la ficha: principal amarillo, secundario navy y enlace con borde. */
 .boton-sol, .boton-marino {
@@ -1913,81 +1916,7 @@ html { scroll-behavior: smooth; }
   border-radius: 999px;
 }
 
-.comparar { display: flex; flex-direction: column; gap: 20px; }
-.comparar-cabecera {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--grafito);
-}
-.comparar-titulo {
-  font-size: clamp(30px, 5vw, 52px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
-}
-.comparar-vacio p { margin-top: 16px; font-size: 16px; }
-
-.comparar-envoltura { overflow-x: auto; }
-.comparar-tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
-.comparar-tabla th, .comparar-tabla td { padding: 10px 14px; text-align: left; vertical-align: top; }
-.comparar-tabla td { min-width: 170px; border-left: 1px solid var(--linea); }
-.comparar-tabla tbody th[scope="row"] { font-weight: 500; color: var(--grafito-suave); white-space: nowrap; }
-.comparar-tabla tbody tr + tr { border-top: 1px dashed var(--linea); }
-/* La columna de los nombres de dato queda fija al desplazar hacia el costado. */
-.comparar-tabla th[scope="row"], .comparar-esquina {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  background: var(--hoja);
-  box-shadow: 1px 0 0 var(--linea);
-}
-.comparar-uni { min-width: 170px; border-left: 1px solid var(--linea); border-bottom: 1.5px solid var(--grafito); }
-.comparar-nombre {
-  display: block;
-  padding: 0;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.25;
-  text-align: left;
-  color: var(--tinta-fuerte);
-  background: none;
-  border: 0;
-  cursor: pointer;
-  text-decoration: underline;
-  text-decoration-color: var(--tinta-suave);
-  text-underline-offset: 3px;
-}
-.comparar-nombre:hover { text-decoration-color: currentColor; }
-.comparar-lugar { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--grafito-suave); }
-.comparar-quitar {
-  margin-top: 8px;
-  padding: 0;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--error);
-  background: none;
-  border: 0;
-  cursor: pointer;
-}
-.comparar-quitar:hover { text-decoration: underline; }
-.comparar-grupo th {
-  padding-top: 18px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--tinta-fuerte);
-  background: var(--hoja);
-}
-.comparar-mejor { font-weight: 700; background: linear-gradient(transparent 12%, #fff3a6 12%, #fff3a6 88%, transparent 88%); }
-.comparar-sin-dato { color: var(--grafito-suave); }
-.comparar-sub { display: block; font-size: 12px; color: var(--grafito-suave); font-weight: 400; }
+/* El comparador (vista Mi lista) tiene su bloque al final del archivo. */
 
 /* Universidades similares (al final de la ficha) */
 /* Columnas según el ancho disponible: 4, 2 o 1, siempre divisores de 4 (sin huecos). */
@@ -2052,14 +1981,6 @@ html { scroll-behavior: smooth; }
   border-top: 1px dashed var(--linea);
 }
 
-/* En el celular, la columna fija de nombres de dato es angosta para dejar sitio a las universidades. */
-@media (max-width: 600px) {
-  .comparar-tabla { font-size: 13px; }
-  .comparar-tabla th, .comparar-tabla td { padding: 8px 10px; }
-  .comparar-tabla tbody th[scope="row"] { min-width: 108px; max-width: 120px; white-space: normal; font-size: 12px; }
-  .comparar-tabla td, .comparar-uni { min-width: 140px; }
-  .comparar-nombre { font-size: 14px; }
-}
 
 /* ---------- Probabilidad alta / intermedia / baja ----------
    Familia del resaltador ("lo que encaja contigo"): más intenso cuanto más alta la probabilidad.
@@ -2402,4 +2323,334 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
 @media (max-width: 960px) {
   .pregunta-cuerpo { grid-template-columns: minmax(0, 1fr); }
   .portada { padding-bottom: 96px; }
+}
+
+/* =========================================================
+   Mi lista (comparador): la misma cara que la ficha. Migas de pan, una banda blanca con el
+   título y el resumen en casillas, una banda gris con la tabla en un panel blanco y, al
+   final, el cierre marino con Educa (el único amarillo de la vista).
+   ========================================================= */
+.mi-lista { color: var(--ink); background: var(--bg); font-size: 16px; line-height: 1.55; }
+.mi-lista .panel { background: var(--surface); border-color: var(--line); }
+.mi-lista-titulo-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+}
+.mi-lista-titulo { font-size: clamp(36px, 5vw, 56px); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+.mi-lista-titulo-fila .banda-subtitulo { max-width: 62ch; margin-top: 10px; }
+.mi-lista-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Agregar desde aquí: el buscador de la portada, con su propio texto. */
+.mi-lista-agregar { max-width: 520px; margin-top: 28px; }
+.mi-lista-agregar .buscador-etiqueta { font-size: 14px; font-weight: 700; color: var(--brand); }
+.mi-lista-agregar .sugerencias { left: 0; width: 100%; }
+
+/* Lista vacía: cómo se llena, y el camino de vuelta a explorar. */
+.mi-lista-vacia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+  margin-top: 28px;
+  padding: 24px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+.mi-lista-vacia p { flex: 1 1 360px; max-width: 62ch; margin: 0; }
+
+/* Resumen: tres casillas como las de la ficha (posibilidades, costo y salario de la lista). */
+.esenciales-lista { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 28px 0 0; }
+/* Rangos ("$19,639 – $95,350"): un poco más chicos que la cifra sola de la ficha, para que quepan. */
+.esenciales-lista .esencial-valor { font-size: clamp(24px, 2.3vw, 34px); }
+.esencial-nota { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: var(--muted); }
+.esencial-nota strong { color: var(--ink); }
+.resumen-niveles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
+.resumen-nivel { display: inline-flex; align-items: center; gap: 8px; }
+.resumen-nivel b { font-weight: 700; line-height: 1; }
+.resumen-nivel .marca { font-size: 13px; }
+.resumen-puntaje { font-size: 16px; font-weight: 400; letter-spacing: 0; }
+.resumen-puntaje .total-sat { width: 100%; max-width: 280px; margin-top: 0; background: var(--surface); }
+.resumen-puntaje .total-sat label { white-space: nowrap; }
+.resumen-puntaje .total-sat-listo { background: var(--brand-soft); }
+.resumen-puntaje .casilla-error:empty { display: none; }
+
+/* Perfil (de dónde eres) y orden: encima de la tabla, porque cambian lo que muestra. */
+.mi-lista-controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-bottom: 20px;
+}
+.perfil { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.perfil-titulo, .mi-lista-orden > span { font-size: 14px; font-weight: 700; color: var(--ink); }
+/* Dos opciones ovaladas, la elegida en marino. El radio real queda encima, invisible: así se
+   maneja con el teclado y el lector de pantalla como cualquier radio. */
+.segmento { display: inline-flex; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; }
+.segmento label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.segmento label:hover { color: var(--ink); }
+.segmento label.activo { color: #fff; background: var(--navy); }
+.segmento input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.segmento label:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+.perfil-estado { display: inline-flex; align-items: center; gap: 4px; }
+.perfil-estado select, .mi-lista-orden select { width: auto; min-height: 44px; border-radius: 999px; padding-inline: 16px; }
+.mi-lista-orden { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+
+/* La tabla. Bordes separados (no colapsados): con la columna de datos fija al correr la tabla
+   de lado, los bordes colapsados se quedan atrás. */
+/* position: relative hace que los textos ocultos (para el lector de pantalla, con position:
+   absolute) queden dentro de la caja que se desplaza; si no, se salían de la página y en el
+   celular la achicaban como si fuera más ancha. */
+.comparar-envoltura { position: relative; overflow-x: auto; overscroll-behavior-x: contain; }
+.comparar-tabla { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; }
+.comparar-tabla th, .comparar-tabla td { padding: 12px 16px; text-align: left; vertical-align: top; }
+.comparar-tabla td { min-width: 184px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.comparar-tabla tbody th[scope="row"] {
+  min-width: 200px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  border-top: 1px solid var(--line);
+}
+/* La columna de los nombres de dato queda fija al desplazar hacia el costado. */
+.comparar-tabla th[scope="row"], .comparar-esquina {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: 1px 0 0 var(--line);
+}
+
+/* Encabezado de cada universidad: foto, nombre (abre la ficha), lugar y chips. */
+.comparar-uni { min-width: 184px; padding: 16px 16px 18px; font-weight: 400; border-left: 1px solid var(--line); }
+.comparar-foto {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 14px;
+  overflow: hidden;
+  background: var(--navy);
+  border-radius: 12px;
+}
+.comparar-foto .foto-uni-portada { padding: 8px 12px; }
+.comparar-foto .foto-uni-iniciales { font-size: 48px; }
+/* Quitar: en la esquina de la foto, lejos del nombre. Se ve de 32px y se toca en 44px. */
+.comparar-quitar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.94);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px -2px rgba(10, 13, 28, 0.45);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.comparar-quitar::after { content: ''; position: absolute; inset: -6px; }
+.comparar-quitar:hover { color: #fff; background: var(--error); }
+.comparar-nombre {
+  display: block;
+  margin: -6px 0;
+  padding: 6px 0;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--tinta-suave);
+  text-underline-offset: 4px;
+}
+.comparar-nombre:hover { color: var(--brand); text-decoration-color: currentColor; }
+.comparar-lugar { display: block; margin-top: 4px; font-size: 13px; color: var(--muted); }
+.comparar-uni .marcas { margin-top: 10px; }
+
+/* Títulos de grupo: el texto pegado a la izquierda, para que no se pierda al correr la tabla. */
+.comparar-grupo th { padding: 28px 16px 10px; background: var(--surface); }
+.comparar-grupo th > span { position: sticky; left: 16px; font-size: 16px; font-weight: 800; color: var(--ink); }
+
+/* "Lo esencial": las cifras que más pesan, en grande. */
+.comparar-destacado td { font-size: 19px; font-weight: 700; color: var(--ink); }
+.comparar-destacado th[scope="row"] { font-size: 15px; color: var(--ink); }
+.comparar-destacado .marca { font-size: 13px; }
+.comparar-tabla td.comparar-ancho { font-size: 15px; font-weight: 400; color: var(--muted); }
+/* El texto a lo ancho no se estira más allá de lo que se ve sin correr la tabla. */
+.comparar-ancho > span { display: block; max-width: 60ch; }
+/* El "?" sigue al texto en la misma línea, aunque la etiqueta ocupe dos. */
+.comparar-tabla th[scope="row"] .con-ayuda { display: inline; }
+.comparar-tabla th[scope="row"] .ayuda-tooltip { display: inline-flex; vertical-align: -4px; }
+
+/* La mejor de la fila: fondo azul suave y una insignia marino con su visto bueno. */
+.comparar-tabla td.comparar-mejor { color: var(--navy); font-weight: 700; background: var(--brand-soft); }
+.comparar-insignia {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  margin-top: 6px;
+  padding: 2px 10px 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #fff;
+  background: var(--navy);
+  border-radius: 999px;
+}
+.comparar-sin-dato { font-size: 14px; font-weight: 400; color: var(--muted); }
+.comparar-sub { display: block; margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--muted); }
+.mi-lista .comparar-envoltura + .fuente { margin-top: 12px; }
+
+/* Los nombres, pegados arriba al bajar por la tabla (la posición la calcula el componente). */
+.comparar-pegada {
+  position: fixed;
+  top: var(--alto-barra, 0px);
+  z-index: 15;
+  height: 48px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 8px 20px -10px rgba(17, 29, 63, 0.35);
+}
+.comparar-pegada-fila { display: flex; height: 100%; }
+.comparar-pegada-celda, .comparar-pegada-esquina {
+  flex: none;
+  padding: 0 16px;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 48px;
+  color: var(--ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.comparar-pegada-celda + .comparar-pegada-celda { border-left: 1px solid var(--line); }
+.comparar-pegada-esquina { position: absolute; top: 0; bottom: 0; left: 0; color: var(--muted); background: var(--surface); box-shadow: 1px 0 0 var(--line); }
+
+/* Aviso arriba ("Quitaste Yale · Deshacer"): marino, debajo de la barra de Educa. */
+.aviso-lista-zona {
+  position: fixed;
+  top: calc(var(--alto-barra, 0px) + 12px);
+  left: 50%;
+  z-index: 30;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  transform: translateX(-50%);
+}
+.aviso-lista {
+  display: flex;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 6px 6px 6px 20px;
+  font-size: 15px;
+  color: #fff;
+  background: var(--navy);
+  border-radius: 999px;
+  box-shadow: 0 12px 30px -12px rgba(17, 29, 63, 0.6);
+  animation: aviso-entra 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes aviso-entra { from { opacity: 0; transform: translateY(-8px); } }
+.aviso-lista-deshacer, .aviso-lista-cerrar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 16px;
+  font: inherit;
+  font-weight: 800;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.aviso-lista-deshacer { color: var(--navy); background: #fff; }
+.aviso-lista-cerrar { padding: 0; color: rgba(255, 255, 255, 0.8); background: none; }
+.aviso-lista-cerrar:hover { color: #fff; background: rgba(255, 255, 255, 0.12); }
+@media (prefers-reduced-motion: reduce) {
+  .aviso-lista { animation: none; }
+}
+
+@media (max-width: 860px) {
+  .esenciales-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .comparar-tabla { font-size: 14px; }
+  .comparar-tabla th, .comparar-tabla td { padding: 10px 12px; }
+  /* La columna fija de nombres de dato, angosta, para dejar sitio a las universidades. */
+  .comparar-tabla tbody th[scope="row"] { min-width: 112px; max-width: 124px; font-size: 13px; white-space: normal; }
+  .comparar-destacado th[scope="row"] { font-size: 13px; }
+  .comparar-tabla td, .comparar-uni { min-width: 156px; }
+  .comparar-destacado td { font-size: 16px; }
+  .comparar-nombre { font-size: 15px; }
+  .comparar-grupo th > span { left: 12px; font-size: 15px; }
+  .comparar-pegada-celda, .comparar-pegada-esquina { padding: 0 12px; font-size: 13px; }
+  .mi-lista-agregar { max-width: none; }
+  .comparar-ancho > span { max-width: calc(100vw - 200px); }
+  /* El aviso, de borde a borde (con margen): centrado con max-content se salía de la pantalla. */
+  .aviso-lista-zona { left: 16px; right: 16px; width: auto; max-width: none; transform: none; }
+  .aviso-lista { justify-content: space-between; }
+}
+@media (max-width: 520px) {
+  /* Casillas una debajo de otra. */
+  .esenciales-lista { grid-template-columns: minmax(0, 1fr); }
+  .esenciales-lista .esencial:first-child { border-radius: var(--radio-casilla) var(--radio-casilla) 0 0; }
+  .esenciales-lista .esencial:nth-child(2) { border-radius: 0; }
+  .esenciales-lista .esencial:last-child { grid-column: auto; border-radius: 0 0 var(--radio-casilla) var(--radio-casilla); }
+  .mi-lista-acciones { width: 100%; }
+  .mi-lista-acciones .boton-enlace { flex: 1 1 auto; justify-content: center; }
+  .mi-lista-controles { align-items: stretch; }
+  .perfil, .mi-lista-orden { width: 100%; }
+  .segmento { width: 100%; }
+  .segmento label { flex: 1 1 0; justify-content: center; padding: 0 10px; font-size: 13px; text-align: center; }
+  .perfil-estado { width: 100%; }
+  .perfil-estado select, .mi-lista-orden select { flex: 1 1 auto; min-width: 0; }
+  .aviso-lista { border-radius: 18px; font-size: 14px; }
+}
+
+/* Imprimir o guardar en PDF: solo la lista y la tabla entera, sin botones ni lo que flota. */
+@media print {
+  @page { size: landscape; margin: 12mm; }
+  #barra, .migas, .mi-lista-acciones, .mi-lista-agregar, .mi-lista-controles, .aviso-lista-zona,
+  .comparar-pegada, .comparar-quitar, .comparar-foto, .mi-lista .banda-contacto, .mi-lista .ayuda-tooltip,
+  .resumen-puntaje { display: none !important; }
+  body, .mi-lista, .mi-lista .banda-gris { background: #fff; }
+  .mi-lista .banda { padding-block: 8px; }
+  .mi-lista .in { padding-inline: 0; }
+  .comparar-envoltura { overflow: visible; border: 0; }
+  .comparar-tabla { font-size: 11px; }
+  .comparar-tabla th, .comparar-tabla td { min-width: 0; padding: 6px 8px; }
+  .comparar-tabla th[scope="row"], .comparar-esquina, .comparar-grupo th > span { position: static; box-shadow: none; }
+  .comparar-destacado td { font-size: 13px; }
+  .comparar-tabla tr { break-inside: avoid; }
+  .comparar-tabla td.comparar-mejor, .comparar-insignia, .esenciales { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .esenciales { box-shadow: none; }
 }
