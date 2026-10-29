@@ -141,7 +141,7 @@ Cada universidad se presenta como el lugar al que el estudiante quiere llegar: l
 
 La página se organiza en **bandas** a todo el ancho que alternan gris niebla y blanco, con el contenido centrado (máximo 1280px). Hay una sola banda de marca, en degradado marino a violeta, reservada para la experiencia Educa (campus tour y testimonios), y un solo bloque amarillo por página para la acción principal. Los controles son ovalados y generosos, fáciles de tocar en el celular, que es donde entra la mayoría.
 
-Este es el sistema oficial. Hoy lo usa la ficha de universidad; la vista principal y Mi lista todavía usan el sistema anterior ("Hoja de respuestas": azul tinta `#1b5fa8`, grafito `#26292b`, papel `#f2f5f9`, resaltador `#ffe14d`) y deben migrar a este.
+Este es el sistema oficial y lo usan las tres vistas: la portada, la ficha de universidad y Mi lista. Las variables CSS conservan los nombres del sistema anterior ("Hoja de respuestas": `--tinta`, `--grafito`, `--papel`, `--resaltador`), pero sus valores ya son los de este; los colores viejos (`#1b5fa8`, `#26292b`, `#f2f5f9`, `#ffe14d`) no se usan más.
 
 **Key Characteristics:**
 - Foto del campus como protagonista, con un degradado neutro solo en la franja inferior donde va el texto.
@@ -262,6 +262,16 @@ Degradado marino → violeta a 135°, con un anillo amarillo al 8% que asoma por
 
 ### Banda de cierre (siguiente paso con Educa)
 Marino liso (`#1c2c6e`), sin degradado: el degradado es solo de la banda de videos. Va en todas las fichas, entre Contacto y Similares. El título cambia según tu probabilidad (baja: curso SAT y consejería; media: la postulación; alta: lista equilibrada; sin puntaje o sin datos SAT: mensajes que no hablan de tu probabilidad). Un solo botón sol, "Habla con un consejero de Educa", a la página de contacto de Educa; en celular, a todo el ancho. Nunca promete una admisión ni un puntaje.
+
+### Mi lista (comparador)
+Las mismas piezas que la ficha: migas de pan "← Resultados / Mi lista", una banda blanca con el título, el buscador "Agrega una universidad" y tres casillas de resumen (tus posibilidades contadas por nivel, el rango del costo anual y el del salario a 4 años), una banda gris con la tabla en un panel blanco y la banda de cierre marino al final (el único amarillo de la vista).
+- **Columnas:** foto miniatura 16:9 con radio 12px (o la portada rayada con iniciales), el botón "×" para quitar en su esquina (32px a la vista, 44px al tacto), el nombre en 17px/700 (abre la ficha), el lugar y los chips de ranking y tipo.
+- **Filas:** "Lo esencial" primero y en cifras de 19px/700 (posibilidades, tasa de admisión, costo anual total, salario); el resto en 15px. Bordes sólidos de 1px en línea, sin rayas punteadas.
+- **La mejor de la fila:** fondo azul Educa suave (`#e8ecf8`), cifra en marino y una insignia marino "✓ Mejor" (el texto oculto agrega "de tu lista"). Nunca en amarillo. En costos, un college de 2 años no compite con universidades de 4.
+- **Perfil de costos:** control ovalado de dos opciones (la elegida en marino) y, si vive en EE. UU., el estado. Cambia la matrícula (del estado o de fuera del estado) y muestra el precio neto solo a quien puede recibirlo.
+- **Al bajar:** una franja blanca con los nombres queda pegada bajo la barra de Educa y se corre de lado junto con la tabla; los títulos de grupo quedan pegados a la izquierda.
+- **Avisos:** píldora marino arriba, debajo de la barra de Educa ("Quitaste Yale de tu lista." + "Deshacer" en blanco), 8 segundos.
+- **Imprimir:** solo el título, el resumen y la tabla, en horizontal.
 
 ### Lista de salarios "punto a punto"
 Filas numeradas (el puesto 1 en dorado oscuro #8a6100, que pasa AA sobre blanco), con el nombre de la carrera, el crecimiento en verde o rojo, los graduados por año y los montos a 1 año (gris) y 4 años (negrita). Debajo, una línea con un punto hueco (1.er año) y uno lleno (4 años) unidos por un tramo azul suave, y una marca vertical con la mediana de la universidad. Escala común para todas las filas.
