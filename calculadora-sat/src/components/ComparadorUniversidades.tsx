@@ -224,6 +224,17 @@ const IconoMejor = () => (
   </svg>
 );
 
+/** Íconos de las acciones de Mi lista: el mismo trazo redondeado que los demás de la web. */
+const Icono = ({ children }: { children: ReactNode }) => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    {children}
+  </svg>
+);
+const IconoCompartir = () => <Icono><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" /><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" /></Icono>;
+const IconoDescargar = () => <Icono><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></Icono>;
+const IconoVaciar = () => <Icono><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></Icono>;
+
 /**
  * Los nombres de las universidades, pegados arriba al bajar por la tabla. La tabla se
  * desplaza de lado dentro de su caja, y eso impide que su propio encabezado quede pegado
@@ -353,18 +364,20 @@ export function ComparadorUniversidades({
   const compartir = async () => {
     const ids = ordenadas.map(u => u.UNITID).filter((id): id is number => id != null);
     const url = `${window.location.origin}${import.meta.env.BASE_URL}?lista=${ids.join(',')}`;
-    // En el celular abre el menú de compartir del teléfono (WhatsApp, correo…).
-    if (navigator.share) {
+    // Siempre se copia el enlace y, si el navegador tiene menú de compartir (Safari y Chrome en
+    // Mac, celulares), además se abre, con sus integraciones (WhatsApp, correo, AirDrop…).
+    // Las dos cosas se piden juntas, sin esperar una a la otra: el navegador solo abre el menú
+    // justo después del clic, y si se espera a que termine de copiar, Safari lo bloquea.
+    const hayMenu = typeof navigator.share === 'function';
+    navigator.clipboard.writeText(url).then(
+      () => avisar('Copiamos el enlace de tu lista. Pégalo en WhatsApp, en un correo o donde quieras.'),
+      // Sin portapapeles (algunos navegadores lo bloquean) y sin menú: que lo copie a mano.
+      () => { if (!hayMenu) window.prompt('Copia el enlace de tu lista:', url); },
+    );
+    if (hayMenu) {
       try {
         await navigator.share({ title: 'Mi lista de universidades', text: 'Mira las universidades que estoy comparando en College Finder de Educa:', url });
-      } catch { /* la persona cerró el menú: no pasa nada */ }
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      avisar('Copiamos el enlace de tu lista. Pégalo en WhatsApp, en un correo o donde quieras.');
-    } catch {
-      window.prompt('Copia el enlace de tu lista:', url);
+      } catch { /* la persona cerró el menú: el enlace ya quedó copiado */ }
     }
   };
 
@@ -422,9 +435,18 @@ export function ComparadorUniversidades({
             </div>
             {n > 0 && (
               <div className="mi-lista-acciones">
-                <button type="button" className="boton-enlace" onClick={compartir}>Compartir</button>
-                <button type="button" className="boton-enlace" onClick={() => window.print()}>Imprimir o guardar PDF</button>
-                <button type="button" className="boton-enlace" onClick={vaciar}>Vaciar lista</button>
+                {/* Ícono + una palabra: solo el ícono no lo reconoce todo el mundo. */}
+                <button type="button" className="boton-enlace" onClick={compartir} title="Copia el enlace de tu lista y ábrelo para compartir">
+                  <IconoCompartir />Compartir
+                </button>
+                {/* No descarga directo: abre la ventana de imprimir, donde se elige "Guardar como PDF". */}
+                <button type="button" className="boton-enlace" onClick={() => window.print()} title="Guardar en PDF o imprimir"
+                  aria-label="Guardar en PDF o imprimir">
+                  <IconoDescargar />PDF
+                </button>
+                <button type="button" className="boton-enlace" onClick={vaciar}>
+                  <IconoVaciar />Vaciar
+                </button>
               </div>
             )}
           </div>
