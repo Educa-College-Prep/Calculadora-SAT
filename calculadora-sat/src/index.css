@@ -2341,6 +2341,7 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
 .mi-lista-titulo { font-size: clamp(36px, 5vw, 56px); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
 .mi-lista-titulo-fila .banda-subtitulo { max-width: 62ch; margin-top: 10px; }
 .mi-lista-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.mi-lista-acciones .boton-enlace { gap: 6px; }
 
 /* Agregar desde aquí: el buscador de la portada, con su propio texto. */
 .mi-lista-agregar { max-width: 520px; margin-top: 28px; }
