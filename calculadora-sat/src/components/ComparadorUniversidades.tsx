@@ -78,9 +78,9 @@ type Orden = 'guardado' | 'probabilidad' | 'costo' | 'admision';
 
 const ORDENES: { id: Orden; texto: string }[] = [
   { id: 'guardado', texto: 'Como las guardaste' },
-  { id: 'probabilidad', texto: 'Probabilidad de entrar (alta primero)' },
+  { id: 'probabilidad', texto: 'Probabilidad (alta primero)' },
   { id: 'costo', texto: 'Costo anual (menor primero)' },
-  { id: 'admision', texto: 'Tasa de admisión (mayor primero)' },
+  { id: 'admision', texto: 'Admisión (mayor primero)' },
 ];
 
 /** Estados para elegir dónde vives, por nombre (sin los territorios chicos del Pacífico). */

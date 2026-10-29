@@ -791,7 +791,6 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   padding-left: max(clamp(16px, 4vw, 48px), env(safe-area-inset-left, 0px));
   padding-right: max(clamp(16px, 4vw, 48px), env(safe-area-inset-right, 0px));
 }
-.ficha-volver { align-self: flex-start; }
 
 /* Migas de pan, entre la cabecera de Educa y el hero: "← Resultados / Brown University". */
 .migas { font-size: 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
