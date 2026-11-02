@@ -206,6 +206,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   color: var(--tinta-fuerte);
 }
 .resultado-texto { font-size: 17px; font-weight: 600; }
+.resultado-ayuda { flex-basis: 100%; font-size: 14px; font-weight: 600; color: var(--tinta-fuerte); }
 .resultado-nota { flex-basis: 100%; font-size: 13px; color: var(--grafito-suave); }
 
 .tablero {
@@ -2186,7 +2187,8 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
    Portada: respuesta en tres cifras, lista equilibrada, capa del mapa y detalles táctiles.
    ========================================================= */
 
-/* "Con tu SAT de 1250 tienes: 405 · 394 · 65". Cada cifra filtra la lista a ese grupo. */
+/* "405 · 394 · 65" universidades. Cada cifra filtra la lista a ese grupo. Más chica que el puntaje
+   de al lado, para que no se lea como otro puntaje. */
 .reparto { display: flex; flex-wrap: wrap; gap: 10px; flex-basis: 100%; margin-top: 6px; }
 .reparto-nivel {
   display: flex;
@@ -2207,14 +2209,14 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
 }
 .reparto-nivel:hover { border-color: var(--tinta); }
 .reparto-nivel[aria-pressed="true"] { background: var(--tinta-fondo); border-color: var(--tinta); }
-.reparto-cifra { font-size: clamp(26px, 3vw, 36px); font-weight: 800; line-height: 1; }
+.reparto-cifra { font-size: clamp(22px, 2.2vw, 26px); font-weight: 700; line-height: 1.2; }
 .reparto-etiqueta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--grafito-suave); }
 .reparto-intermedia .reparto-cifra { color: #4a3a86; }
 .reparto-baja .reparto-cifra { color: var(--grafito-suave); }
+/* En celular, una fila por grupo: "probabilidad media" no cabe en tres columnas angostas. */
 @media (max-width: 600px) {
-  .reparto { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .reparto-nivel { min-width: 0; padding: 10px 12px; }
-  .reparto-prob { display: none; }
+  .reparto { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .reparto-nivel { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; min-height: 52px; padding: 8px 14px; }
 }
 
 /* Aviso informativo (no es un error): niebla con borde suave. */
@@ -2274,6 +2276,8 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
 @media (max-width: 960px) {
   #root { padding-bottom: 96px; }
   .boton-limpiar { min-height: 44px; }
+  /* El enlace ya tiene su área táctil en ::after; con alto propio separaba las líneas de la nota. */
+  .boton-limpiar-enlace { min-height: 0; }
   .total-sat input { min-height: 44px; }
   .total-sat { padding-block: 0; }
 }

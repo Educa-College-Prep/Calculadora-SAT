@@ -161,7 +161,7 @@ export default function App() {
    * filtro activo distingue tres casos: cumple (se queda), no cumple (se descarta)
    * y no se puede saber (se queda, pero marcada y ordenada al final).
    */
-  const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId, conteoNiveles, conteoPolitica } = useMemo(() => {
+  const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId, conteoNiveles, sinCalcular, conteoPolitica } = useMemo(() => {
     const { estado, ciudad, tipos, precio, politica, sat } = filtros;
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
     const filtroSATActivo = sat > 0;
@@ -228,13 +228,17 @@ export default function App() {
     if (!filtroSATActivo) {
       return {
         universidadesFiltradas: lista, universidadesSinUbicacion: sinUbicacion, faltantesPorId: faltantes,
-        conteoNiveles: null, conteoPolitica: contarPolitica(sinFiltroPolitica),
+        conteoNiveles: null, sinCalcular: 0, conteoPolitica: contarPolitica(sinFiltroPolitica),
       };
     }
     const conteo: Record<Nivel, number> = { 'Probabilidad alta': 0, 'Probabilidad media': 0, 'Probabilidad baja': 0 };
+    // Las que quedan en la lista sin nivel: no publican puntajes SAT o solo publican el promedio,
+    // que no alcanza para compararte. Se cuentan aparte para que la portada explique el total.
+    let sinCalcular = 0;
     for (const uni of lista) {
       const n = clasificar(uni, sat);
       if (n) conteo[n]++;
+      else sinCalcular++;
     }
     // Con niveles marcados quedan solo los de esos niveles (las sin rango SAT no se pueden clasificar).
     const delNivel = (uni: Universidad) => {
@@ -247,15 +251,10 @@ export default function App() {
       universidadesSinUbicacion: sinUbicacion.filter(delNivel),
       faltantesPorId: faltantes,
       conteoNiveles: conteo,
+      sinCalcular,
       conteoPolitica: contarPolitica(sinFiltroPolitica.filter(delNivel)),
     };
   }, [universidades, resultadoBusqueda, filtros]);
-
-  // Las que no publican puntajes SAT (con tu puntaje puesto): las mismas del aviso de la lista.
-  const sinSAT = useMemo(
-    () => [...faltantesPorId.values()].filter(f => f.includes('Sin datos SAT')).length,
-    [faltantesPorId]
-  );
 
   // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
   // estado+ciudad cuentan como uno cada uno).
@@ -430,6 +429,7 @@ export default function App() {
   // (llenando el puntaje o los filtros), lleva a ella y dice cuántas hay. Se esconde cuando ya
   // se ve el contador de resultados, que dice lo mismo (y si no, lo taparía).
   const listaRef = useRef<HTMLDivElement>(null);
+  const bandaMapaRef = useRef<HTMLElement>(null);
   const [listaAbajo, setListaAbajo] = useState(true);
   const [contadorALaVista, setContadorALaVista] = useState(false);
   useEffect(() => {
@@ -607,6 +607,24 @@ export default function App() {
     // Lo que se muestra junto a los resultados va con los filtros ya aplicados (diferidos).
     const hayFiltrosUbicacion = filtros.estado !== 'todos';
 
+    const totalConNivel = conteoNiveles ? NIVELES.reduce((suma, n) => suma + conteoNiveles[n.nivel], 0) : 0;
+    const enLugar = hayFiltrosUbicacion
+      ? ` en ${NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado}${filtros.ciudad !== 'todas' ? `, ${filtros.ciudad}` : ''}`
+      : '';
+    // Marcar un grupo lleva a ver qué trae, empezando por el mapa y tu lista equilibrada. Quitarlo
+    // no mueve la página. Un grupo vacío se queda sin esa banda: ahí se va a la lista, que lo explica.
+    const elegirNivel = (nivel: Nivel) => {
+      if (nivelesSAT.includes(nivel)) {
+        setNivelesSAT(nivelesSAT.filter(x => x !== nivel));
+        return;
+      }
+      setNivelesSAT([...nivelesSAT, nivel]);
+      const hayUniversidades = (conteoNiveles?.[nivel] ?? 0) > 0;
+      requestAnimationFrame(() => {
+        ((hayUniversidades ? bandaMapaRef.current : null) ?? listaRef.current)?.scrollIntoView({ block: 'start' });
+      });
+    };
+
     return (
       <>
         {/* PORTADA EN TRES BANDAS a todo el ancho, como la ficha: (1) la pregunta, con tu puntaje
@@ -641,27 +659,33 @@ export default function App() {
                 </fieldset>
                 <div className="resultado" aria-live="polite" ref={resultadoRef}>
                   {conteoNiveles ? (
-                    // Con puntaje, la respuesta al título: cuántas de cada probabilidad. Cada cifra
-                    // suma su grupo al filtro y otro toque lo quita; se pueden marcar varias, como
-                    // en el filtro lateral.
+                    // Con puntaje, la respuesta al título: cuántas universidades hay de cada probabilidad.
+                    // La frase dice "universidades" para que las cifras no se lean como un puntaje.
+                    // Cada cifra suma su grupo al filtro y otro toque lo quita; se pueden marcar
+                    // varias, como en el filtro lateral.
                     <>
-                      <span className="resultado-texto">Con tu SAT de <strong className="numero">{filtros.sat}</strong>, tu probabilidad de entrar es:</span>
-                      <span className="reparto">
-                        {NIVELES.map(n => {
-                          const marcado = nivelesSAT.includes(n.nivel);
-                          return (
-                            <button key={n.nivel} type="button" className={`reparto-nivel reparto-${n.clase}`} aria-pressed={marcado}
-                              onClick={() => setNivelesSAT(marcado ? nivelesSAT.filter(x => x !== n.nivel) : [...nivelesSAT, n.nivel])} title={n.explicacion}>
-                              <span className="reparto-cifra numero">{conteoNiveles[n.nivel].toLocaleString()}</span>
-                              <span className="reparto-etiqueta">
-                                <BarrasNivel barras={n.barras} />
-                                {/* En celular solo "alta / media / baja": el título ya dice "probabilidad". */}
-                                <span className="reparto-prob">probabilidad </span>{n.nivel.replace('Probabilidad ', '')}
-                              </span>
-                            </button>
-                          );
-                        })}
+                      <span className="resultado-texto">
+                        {totalConNivel > 0
+                          ? <>Con tu SAT de <strong className="numero">{filtros.sat}</strong>, encontramos <strong className="numero">{totalConNivel.toLocaleString()}</strong> {totalConNivel === 1 ? 'universidad' : 'universidades'} para ti{enLugar}:</>
+                          : <>Con tu SAT de <strong className="numero">{filtros.sat}</strong>, no pudimos calcular tu probabilidad en ninguna universidad{enLugar}.</>}
                       </span>
+                      {totalConNivel > 0 && (
+                        <>
+                          <span className="reparto">
+                            {NIVELES.map(n => (
+                              <button key={n.nivel} type="button" className={`reparto-nivel reparto-${n.clase}`} aria-pressed={nivelesSAT.includes(n.nivel)}
+                                onClick={() => elegirNivel(n.nivel)} title={n.explicacion}>
+                                <span className="reparto-cifra numero">{conteoNiveles[n.nivel].toLocaleString()}</span>
+                                <span className="reparto-etiqueta">
+                                  <BarrasNivel barras={n.barras} />
+                                  {n.nivel.toLowerCase()}
+                                </span>
+                              </button>
+                            ))}
+                          </span>
+                          <span className="resultado-ayuda">Elige un grupo para ver esas universidades.</span>
+                        </>
+                      )}
                     </>
                   ) : (
                     <>
@@ -673,13 +697,16 @@ export default function App() {
                   )}
                   <span className="resultado-nota">
                     {[
-                      conteoNiveles && sinSAT > 0 ? `y ${sinSAT.toLocaleString()} que no publican puntajes SAT` : null,
+                      totalConNivel > 0 && sinCalcular > 0
+                        ? (sinCalcular === 1
+                          ? 'Otra no publica datos suficientes para calcular tu probabilidad'
+                          : `Otras ${sinCalcular.toLocaleString()} no publican datos suficientes para calcular tu probabilidad`)
+                        : null,
                       conteoNiveles && nivelesSAT.length > 0 && nivelesSAT.length < 3
                         ? `mostrando ${universidadesFiltradas.length.toLocaleString()} en la lista` : null,
-                      `de ${universidades.length.toLocaleString()} en la base de datos`,
-                      hayFiltrosUbicacion
-                        ? `en ${NOMBRES_ESTADOS[filtros.estado] ?? filtros.estado}${filtros.ciudad !== 'todas' ? `, ${filtros.ciudad}` : ''}`
-                        : null,
+                      // Con puntaje, el lugar ya va en la frase de arriba.
+                      conteoNiveles ? null : `de ${universidades.length.toLocaleString()} en la base de datos`,
+                      !conteoNiveles && enLugar ? enLugar.trim() : null,
                     ].filter(Boolean).join(' · ')}
                     {filtrosActivos.length > 0 && (
                       <>
@@ -697,7 +724,7 @@ export default function App() {
           </section>
 
           {universidadesFiltradas.length > 0 && (
-            <section className="banda banda-gris" aria-label="Universidades por estado">
+            <section ref={bandaMapaRef} className="banda banda-gris" aria-label="Universidades por estado">
               <div className="in">
                 <section className="tablero">
                   {!angosto && (
