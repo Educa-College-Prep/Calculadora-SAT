@@ -660,7 +660,7 @@ export default function App() {
                 <div className="resultado" aria-live="polite" ref={resultadoRef}>
                   {conteoNiveles ? (
                     // Con puntaje, la respuesta al título: cuántas universidades hay de cada probabilidad.
-                    // La palabra "universidades" va en cada cifra para que no se lea como un puntaje.
+                    // La frase dice "universidades" para que las cifras no se lean como un puntaje.
                     // Cada cifra suma su grupo al filtro y otro toque lo quita; se pueden marcar
                     // varias, como en el filtro lateral.
                     <>
@@ -675,10 +675,7 @@ export default function App() {
                             {NIVELES.map(n => (
                               <button key={n.nivel} type="button" className={`reparto-nivel reparto-${n.clase}`} aria-pressed={nivelesSAT.includes(n.nivel)}
                                 onClick={() => elegirNivel(n.nivel)} title={n.explicacion}>
-                                <span className="reparto-cantidad">
-                                  <span className="reparto-cifra numero">{conteoNiveles[n.nivel].toLocaleString()}</span>
-                                  {' '}{conteoNiveles[n.nivel] === 1 ? 'universidad' : 'universidades'}
-                                </span>
+                                <span className="reparto-cifra numero">{conteoNiveles[n.nivel].toLocaleString()}</span>
                                 <span className="reparto-etiqueta">
                                   <BarrasNivel barras={n.barras} />
                                   {n.nivel.toLowerCase()}
