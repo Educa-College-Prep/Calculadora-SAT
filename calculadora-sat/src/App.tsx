@@ -156,10 +156,17 @@ export default function App() {
           };
         });
         setUniversidades(cargadas);
+        // Un estado o una ciudad que vengan en la URL y no existan se limpian recién aquí: antes
+        // de tener los datos no hay con qué comprobar.
+        const estadoValido = inicial.estado === 'todos' || cargadas.some(u => u.STABBR === inicial.estado);
+        const ciudadValida = estadoValido && (inicial.ciudad === 'todas' || cargadas.some(u =>
+          u.CITY === inicial.ciudad && (inicial.estado === 'todos' || u.STABBR === inicial.estado)));
+        if (!estadoValido) setEstadoSeleccionado('todos');
+        if (!ciudadValida) setCiudadSeleccionada('todas');
         alCargarDatos.current(cargadas);
       })
       .catch(error => console.error("Error cargando la data:", error));
-  }, []);
+  }, [inicial]);
 
   const estadosUnicos = useMemo(
     () => Array.from(new Set(universidades.map(u => u.STABBR).filter(Boolean))).sort(),
@@ -175,18 +182,6 @@ export default function App() {
     )).sort(),
     [universidades, estadoSeleccionado]
   );
-
-  // Un estado o una ciudad que vengan en la URL y no existan se limpian recién cuando llega
-  // la data: antes de eso la lista está vacía y no hay con qué comprobar.
-  useEffect(() => {
-    if (universidades.length === 0) return;
-    if (estadoSeleccionado !== 'todos' && !estadosUnicos.includes(estadoSeleccionado)) {
-      setEstadoSeleccionado('todos');
-      setCiudadSeleccionada('todas');
-    } else if (ciudadSeleccionada !== 'todas' && !ciudadesUnicas.includes(ciudadSeleccionada)) {
-      setCiudadSeleccionada('todas');
-    }
-  }, [universidades, estadosUnicos, ciudadesUnicas, estadoSeleccionado, ciudadSeleccionada]);
 
   // El total sale de las dos secciones o, si no las hay, del total escrito a mano. Con una
   // sola sección no hay total (ni filtro SAT): no se puede adivinar la otra.

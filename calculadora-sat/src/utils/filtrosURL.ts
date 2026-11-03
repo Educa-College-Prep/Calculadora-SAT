@@ -120,7 +120,9 @@ export function leerFiltrosDeURL(search: string): FiltrosURL {
     puntajeLectura: lectura,
     puntajeSoloTotal: mate > 0 && lectura > 0 ? 0 : total,
     exigirSAT: OPCIONES_POLITICA.includes(politica) ? politica : FILTROS_URL_VACIOS.exigirSAT,
-    niveles: listaDeNiveles(p.get('nivel')),
+    // Los niveles solo tienen sentido con un puntaje: sin él ninguna universidad se puede
+    // clasificar y la lista quedaría vacía.
+    niveles: (mate > 0 && lectura > 0) || total > 0 ? listaDeNiveles(p.get('nivel')) : [],
     tipos: listaDeTipos(p.get('tipo')),
     precio: enRango(p.get('precio'), 0, PRECIO_MAXIMO_SLIDER) ?? PRECIO_MAXIMO_SLIDER,
     ordenarPor: (orden && URL_A_ORDEN.get(orden)) ?? FILTROS_URL_VACIOS.ordenarPor,
@@ -149,6 +151,11 @@ export function urlDeFiltros(f: FiltrosURL): string {
     // La dirección siempre acompaña al orden: sin ella no se sabe si es "más barato primero".
     p.set('dir', f.ordenDireccion);
   }
+
+  // ?lista= no es un filtro: es un enlace de Mi lista que App lee y borra cuando llegan los datos.
+  // Si esta escritura se lo llevara antes, el enlace se perdería cuando los datos tardan.
+  const lista = new URLSearchParams(window.location.search).get('lista');
+  if (lista) p.set('lista', lista);
 
   const buscar = p.toString();
   const { pathname, hash } = window.location;
