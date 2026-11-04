@@ -3,8 +3,8 @@ import type { Universidad } from '../types';
 import { formatNivel, formatDinero, formatPorcentaje, chipPoliticaSAT } from '../utils/formatters';
 import { BotonGuardar } from './BotonGuardar';
 import { claveUniversidad } from '../utils/useMiLista';
-import { posicionUSNews, textoPuesto, NOMBRE_LISTA, FUENTE_USNEWS, nivelRanking } from '../data/rankingUSNews';
-import { clasificar, rangoSAT } from '../utils/nivelSAT';
+import { posicionUSNews, textoPuesto, ayudaPuesto, nivelRanking } from '../data/rankingUSNews';
+import { alcanzable, clasificar, rangoSAT } from '../utils/nivelSAT';
 import type { Nivel } from '../utils/nivelSAT';
 import { EtiquetaNivel } from './EtiquetaNivel';
 
@@ -13,7 +13,9 @@ interface Props {
   universidadesOrdenadas: Universidad[];
   /** id -> motivos por los que no se pudo evaluar con los filtros activos */
   faltantesPorId: Map<number, string[]>;
-  totalUniversidades: number;
+  /** Las que piden bastante más que el puntaje y por eso no están en los resultados. */
+  muyPorEncima: Universidad[];
+  onVerMuyPorEncima: () => void;
   ordenarPor: string;
   setOrdenarPor: (v: string) => void;
   ordenDireccion: 'asc' | 'desc';
@@ -53,6 +55,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
   guardada,
   onAlternarGuardada,
   nivel,
+  pideMasQue,
   ordenarPor,
   guardarConTexto,
 }: {
@@ -62,6 +65,8 @@ const FilaUniversidad = memo(function FilaUniversidad({
   guardada: boolean;
   onAlternarGuardada: (uni: Universidad) => void;
   nivel: Nivel | null;
+  /** Con "Verlas": el puntaje que queda bastante por debajo de esta universidad, en vez de un nivel. */
+  pideMasQue: number | null;
   /** El criterio de "Ordenar por": su dato se resalta (o se agrega) para que se vea por qué va aquí. */
   ordenarPor: string;
   /** "Guardar" con texto mientras Mi lista está vacía: así se entiende qué hace la estrella. */
@@ -83,9 +88,11 @@ const FilaUniversidad = memo(function FilaUniversidad({
           <span className="fila-lugar">{uni.CITY}, {uni.STABBR}</span>
           <span className="marcas">
             {nivel && <EtiquetaNivel nivel={nivel} />}
+            {pideMasQue != null && <span className="marca">Pide bastante más que {pideMasQue}</span>}
             {ranking && (
-              <span className={`marca marca-ranking marca-ranking-${nivelRanking(ranking.puesto)}`} title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
+              <span className={`marca marca-ranking marca-ranking-${nivelRanking(ranking.puesto)} marca-con-ayuda`} data-ayuda={ayudaPuesto(ranking)}>
                 {textoPuesto(ranking)}
+                <span className="visualmente-oculto"> ({ayudaPuesto(ranking)})</span>
               </span>
             )}
             {uni.CONTROL && <span className={claseControl(uni.CONTROL)}>{uni.CONTROL}</span>}
@@ -165,7 +172,8 @@ export function ListaUniversidades({
   universidadesFiltradas,
   universidadesOrdenadas,
   faltantesPorId,
-  totalUniversidades,
+  muyPorEncima,
+  onVerMuyPorEncima,
   ordenarPor,
   setOrdenarPor,
   ordenDireccion,
@@ -207,7 +215,7 @@ export function ListaUniversidades({
           <p className="ayuda">
             {universidadesOrdenadas.length > 0
               ? `Mostrando ${primerResultado}–${ultimoResultado} de ${universidadesOrdenadas.length.toLocaleString()}. Toca una universidad para ver su ficha.`
-              : `Ninguna de las ${totalUniversidades.toLocaleString()} universidades encaja todavía.`}
+              : 'Sin resultados con estos filtros.'}
           </p>
         </div>
 
@@ -249,8 +257,8 @@ export function ListaUniversidades({
       {faltantesPorId.size > 0 && (
         <p className="nota-info lista-aviso">
           {[...faltantesPorId.values()].every(f => f.length === 1 && f[0] === 'Sin datos SAT')
-            ? `${faltantesPorId.size.toLocaleString('en-US')} no publican puntajes SAT: muchas no lo piden y deciden por tus notas, ensayos y actividades. Están al final de la lista, marcadas.`
-            : `${faltantesPorId.size.toLocaleString('en-US')} no tienen alguno de los datos que piden tus filtros. Están al final de la lista, marcadas.`}
+            ? `${faltantesPorId.size.toLocaleString('en-US')} no publican puntajes SAT: muchas no lo piden y deciden por tus notas, ensayos y actividades. Están al final de los resultados, marcadas.`
+            : `${faltantesPorId.size.toLocaleString('en-US')} no tienen alguno de los datos que piden tus filtros. Están al final de los resultados, marcadas.`}
         </p>
       )}
 
@@ -265,7 +273,8 @@ export function ListaUniversidades({
                 onSeleccionar={onSeleccionar}
                 guardada={guardadas.has(claveUniversidad(uni))}
                 onAlternarGuardada={onAlternarGuardada}
-                nivel={puntajeSAT > 0 ? clasificar(uni, puntajeSAT) : null}
+                nivel={puntajeSAT > 0 && alcanzable(uni, puntajeSAT) !== false ? clasificar(uni, puntajeSAT) : null}
+                pideMasQue={puntajeSAT > 0 && alcanzable(uni, puntajeSAT) === false ? puntajeSAT : null}
                 ordenarPor={ordenarPor}
                 guardarConTexto={guardadas.size === 0}
               />
@@ -299,8 +308,18 @@ export function ListaUniversidades({
         </>
       ) : (
         <div className="panel-cuerpo">
-          {/* El vacío nombra la causa: si hay búsqueda, casi siempre es ella. */}
-          {busqueda.trim() ? (
+          {/* El vacío nombra la causa: primero si lo que se busca existe y pide mucho más; si no,
+              si hay búsqueda, casi siempre es ella. */}
+          {muyPorEncima.length > 0 ? (
+            <p className="vacio">
+              {muyPorEncima.length === 1
+                ? `${muyPorEncima[0].INSTNM} pide bastante más que ${puntajeSAT}.`
+                : `Las ${muyPorEncima.length.toLocaleString()} piden bastante más que ${puntajeSAT}.`}{' '}
+              {muyPorEncima.length === 1
+                ? <button type="button" className="boton" onClick={() => onSeleccionar(muyPorEncima[0])}>Ver su ficha</button>
+                : <button type="button" className="boton" onClick={onVerMuyPorEncima}>Verlas</button>}
+            </p>
+          ) : busqueda.trim() ? (
             <p className="vacio">
               Ninguna universidad coincide con “{busqueda.trim()}” y tus filtros.{' '}
               <button type="button" className="boton" onClick={onBorrarBusqueda}>Borrar la búsqueda</button>

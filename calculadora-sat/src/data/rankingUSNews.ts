@@ -161,6 +161,16 @@ export function posicionUSNews(uni: Pick<Universidad, 'INSTNM' | 'STABBR'>): Pos
  * Texto corto para insignias: "#7 Nacional" o "#3 LAC". Los empates no se marcan: si dos
  * universidades muestran el mismo número, ya se entiende que comparten el puesto.
  */
+/** Qué significa la sigla del chip ("#34 LAC"): muchos estudiantes no conocen estas categorías. */
+const AYUDA_LISTA: Record<ListaUSNews, string> = {
+  'nacional': 'Universidad nacional: ofrece pregrado, posgrado e investigación.',
+  'liberal-arts': 'Liberal arts college: universidad pequeña centrada en el pregrado.',
+};
+
+export function ayudaPuesto(p: PosicionUSNews): string {
+  return `${AYUDA_LISTA[p.lista]} Ranking U.S. News ${EDICION_USNEWS}.`;
+}
+
 export function textoPuesto(p: PosicionUSNews): string {
   return `#${p.puesto} ${SIGLA_LISTA[p.lista]}`;
 }
