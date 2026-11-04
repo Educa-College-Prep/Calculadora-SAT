@@ -447,50 +447,56 @@ export function ComparadorUniversidades({
       {n > 0 && (
         <section className="banda banda-gris" aria-label="Comparación">
           <div className="in">
-            {/* Puntaje, perfil y orden: cambian lo que muestra la tabla, por eso van justo encima de ella. */}
+            {/* Puntaje, perfil y orden: cambian lo que muestra la tabla, por eso van justo encima de ella.
+                Cada control lleva su etiqueta arriba, como los campos de la hoja de filtros. */}
             <div className="mi-lista-controles">
               {/* El puntaje sigue haciendo falta para la fila de posibilidades de la tabla. */}
-              <div className="mi-lista-puntaje">
-                {puntajeSAT > 0 && !cambiandoPuntaje ? (
-                  <>
-                    <span>Tu SAT <strong className="numero">{puntajeSAT}</strong></span>
-                    <button type="button" className="esencial-enlace" onClick={() => setCambiandoPuntaje(true)} aria-label="Cambiar mi puntaje SAT">Cambiar</button>
-                  </>
-                ) : (
-                  <>
-                    <InputTotalSAT id="sat-total-lista" etiqueta="Tu SAT" total={0} autoFocus={cambiandoPuntaje}
-                      onEscribir={() => {}} setSoloTotal={v => { if (v > 0) { onCambiarPuntajeSAT(v); setCambiandoPuntaje(false); } }} />
-                    {cambiandoPuntaje && <button type="button" className="esencial-enlace" onClick={() => setCambiandoPuntaje(false)}>Cancelar</button>}
-                  </>
-                )}
-              </div>
-              <div className="perfil">
-                <span id="perfil-titulo" className="perfil-titulo">Calcular costos para</span>
-                <div className="segmento" role="radiogroup" aria-labelledby="perfil-titulo">
-                  <label className={perfil.tipo === 'internacional' ? 'activo' : undefined}>
-                    <input type="radio" name="perfil" checked={perfil.tipo === 'internacional'}
-                      onChange={() => setPerfil({ tipo: 'internacional' })} />
-                    Estudiante internacional
-                  </label>
-                  <label className={perfil.tipo === 'eeuu' ? 'activo' : undefined}>
-                    <input type="radio" name="perfil" checked={perfil.tipo === 'eeuu'}
-                      onChange={() => setPerfil({ tipo: 'eeuu', estado: perfil.tipo === 'eeuu' ? perfil.estado : null })} />
-                    Vivo en EE. UU.
-                  </label>
+              <div className="mi-lista-control mi-lista-control-puntaje">
+                <span className="mi-lista-control-etiqueta">Tu SAT</span>
+                <div className="mi-lista-puntaje">
+                  {puntajeSAT > 0 && !cambiandoPuntaje ? (
+                    <div className="total-sat total-sat-listo mi-lista-puntaje-listo">
+                      <strong className="numero mi-lista-puntaje-valor">{puntajeSAT}</strong>
+                      <button type="button" className="mi-lista-puntaje-cambiar" onClick={() => setCambiandoPuntaje(true)} aria-label="Cambiar mi puntaje SAT">Cambiar</button>
+                    </div>
+                  ) : (
+                    <>
+                      <InputTotalSAT id="sat-total-lista" etiqueta="Tu SAT" total={0} autoFocus={cambiandoPuntaje}
+                        onEscribir={() => {}} setSoloTotal={v => { if (v > 0) { onCambiarPuntajeSAT(v); setCambiandoPuntaje(false); } }} />
+                      {cambiandoPuntaje && <button type="button" className="mi-lista-puntaje-cambiar" onClick={() => setCambiandoPuntaje(false)}>Cancelar</button>}
+                    </>
+                  )}
                 </div>
-                {perfil.tipo === 'eeuu' && (
-                  <span className="perfil-estado">
-                    <label htmlFor="perfil-estado" className="visualmente-oculto">Estado donde vives</label>
-                    <select id="perfil-estado" value={perfil.estado ?? ''} onChange={e => setPerfil({ tipo: 'eeuu', estado: e.target.value || null })}>
-                      <option value="">Elige tu estado</option>
-                      {ESTADOS.map(([sigla, nombre]) => <option key={sigla} value={sigla}>{nombre}</option>)}
-                    </select>
-                    <InfoTooltip sobre="Vivo en EE. UU." texto={AYUDA_RESIDENTE} />
-                  </span>
-                )}
               </div>
-              <label className="mi-lista-orden">
-                <span>Ordenar por</span>
+              <div className="mi-lista-control mi-lista-control-perfil">
+                <span id="perfil-titulo" className="mi-lista-control-etiqueta">Calcular costos para</span>
+                <div className="perfil">
+                  <div className="segmento" role="radiogroup" aria-labelledby="perfil-titulo">
+                    <label className={perfil.tipo === 'internacional' ? 'activo' : undefined}>
+                      <input type="radio" name="perfil" checked={perfil.tipo === 'internacional'}
+                        onChange={() => setPerfil({ tipo: 'internacional' })} />
+                      Estudiante internacional
+                    </label>
+                    <label className={perfil.tipo === 'eeuu' ? 'activo' : undefined}>
+                      <input type="radio" name="perfil" checked={perfil.tipo === 'eeuu'}
+                        onChange={() => setPerfil({ tipo: 'eeuu', estado: perfil.tipo === 'eeuu' ? perfil.estado : null })} />
+                      Vivo en EE. UU.
+                    </label>
+                  </div>
+                  {perfil.tipo === 'eeuu' && (
+                    <span className="perfil-estado">
+                      <label htmlFor="perfil-estado" className="visualmente-oculto">Estado donde vives</label>
+                      <select id="perfil-estado" value={perfil.estado ?? ''} onChange={e => setPerfil({ tipo: 'eeuu', estado: e.target.value || null })}>
+                        <option value="">Elige tu estado</option>
+                        {ESTADOS.map(([sigla, nombre]) => <option key={sigla} value={sigla}>{nombre}</option>)}
+                      </select>
+                      <InfoTooltip sobre="Vivo en EE. UU." texto={AYUDA_RESIDENTE} />
+                    </span>
+                  )}
+                </div>
+              </div>
+              <label className="mi-lista-control mi-lista-orden">
+                <span className="mi-lista-control-etiqueta">Ordenar por</span>
                 <select value={orden} onChange={e => setOrden(e.target.value as Orden)}>
                   {ORDENES.map(o => (
                     <option key={o.id} value={o.id} disabled={o.id === 'probabilidad' && puntajeSAT === 0}>{o.texto}</option>
