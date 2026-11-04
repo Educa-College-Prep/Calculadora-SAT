@@ -2458,12 +2458,8 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .mi-lista-vacia p { flex: 1 1 360px; max-width: 62ch; margin: 0; }
 
 /* Resumen: tres casillas como las de la ficha (posibilidades, costo y salario de la lista). */
-.esenciales-lista { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 28px 0 0; }
 /* Rangos ("$19,639 – $95,350"): un poco más chicos que la cifra sola de la ficha, para que quepan. */
-.esenciales-lista .esencial-valor { font-size: clamp(24px, 2.3vw, 34px); }
-.esencial-nota { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: var(--muted); }
-.esencial-nota strong { color: var(--ink); }
-/* Enlace dentro de la nota: en la misma línea del texto, con el área de toque ampliada hacia afuera. */
+/* Enlace en línea con su texto, con el área de toque ampliada hacia afuera. */
 .esencial-enlace {
   position: relative;
   padding: 0;
@@ -2477,15 +2473,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   cursor: pointer;
 }
 .esencial-enlace::after { content: ''; position: absolute; inset: -14px -10px; }
-.resumen-niveles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
-.resumen-nivel { display: inline-flex; align-items: center; gap: 8px; }
-.resumen-nivel b { font-weight: 700; line-height: 1; }
-.resumen-nivel .marca { font-size: 13px; }
-.resumen-puntaje { font-size: 16px; font-weight: 400; letter-spacing: 0; }
-.resumen-puntaje .total-sat { width: 100%; max-width: 280px; margin-top: 0; background: var(--surface); }
-.resumen-puntaje .total-sat label { white-space: nowrap; }
-.resumen-puntaje .total-sat-listo { background: var(--brand-soft); }
-.resumen-puntaje .casilla-error:empty { display: none; }
 
 /* Perfil (de dónde eres) y orden: encima de la tabla, porque cambian lo que muestra. */
 .mi-lista-controles {
@@ -2720,7 +2707,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 }
 
 @media (max-width: 860px) {
-  .esenciales-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
   .comparar-tabla { --ancho-dato: 124px; --ancho-uni: 156px; font-size: 14px; }
@@ -2741,10 +2727,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 }
 @media (max-width: 520px) {
   /* Casillas una debajo de otra. */
-  .esenciales-lista { grid-template-columns: minmax(0, 1fr); }
-  .esenciales-lista .esencial:first-child { border-radius: var(--radio-casilla) var(--radio-casilla) 0 0; }
-  .esenciales-lista .esencial:nth-child(2) { border-radius: 0; }
-  .esenciales-lista .esencial:last-child { grid-column: auto; border-radius: 0 0 var(--radio-casilla) var(--radio-casilla); }
   .mi-lista-acciones { width: 100%; }
   .mi-lista-acciones .boton-enlace { flex: 1 1 auto; justify-content: center; }
   .mi-lista-controles { align-items: stretch; }
@@ -2761,7 +2743,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   @page { size: landscape; margin: 12mm; }
   #barra, .migas, .mi-lista-acciones, .mi-lista-agregar, .mi-lista-controles, .aviso-lista-zona,
   .comparar-pegada, .comparar-quitar, .comparar-foto, .mi-lista .banda-contacto, .mi-lista .ayuda-tooltip,
-  .resumen-puntaje { display: none !important; }
   body, .mi-lista, .mi-lista .banda-gris { background: #fff; }
   .mi-lista .banda { padding-block: 8px; }
   .mi-lista .in { padding-inline: 0; }
@@ -2774,3 +2755,11 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .comparar-tabla td.comparar-mejor, .comparar-insignia, .esenciales { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .esenciales { box-shadow: none; }
 }
+
+/* Mi lista: el puntaje va con los demás controles de la tabla. */
+.mi-lista-puntaje { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 14px; font-weight: 600; }
+.mi-lista-puntaje .total-sat { width: 190px; min-height: 44px; margin: 0; padding: 0 12px; align-items: center; background: var(--surface); }
+.mi-lista-puntaje .total-sat label { white-space: nowrap; }
+.mi-lista-puntaje .total-sat input { height: 40px; font-size: 18px; }
+.mi-lista-puntaje .casilla-error { flex-basis: 100%; margin: 0; }
+.mi-lista-puntaje .casilla-error:empty { display: none; }
