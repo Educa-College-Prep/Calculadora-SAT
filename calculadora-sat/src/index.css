@@ -94,10 +94,11 @@ select {
   transition: border-color 0.15s ease;
 }
 input:hover, select:hover { border-color: var(--tinta-suave); }
+/* El anillo va en tinta: en el tono suave de antes casi no se distinguía del fondo. */
 input:focus, select:focus {
   outline: none;
   border-color: var(--tinta);
-  box-shadow: 0 0 0 3px var(--tinta-fondo);
+  box-shadow: 0 0 0 2px var(--tinta);
 }
 select:disabled { color: var(--grafito-suave); background: var(--papel); cursor: not-allowed; }
 
@@ -207,6 +208,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 }
 .resultado-texto { font-size: 17px; font-weight: 600; }
 .resultado-ayuda { flex-basis: 100%; font-size: 14px; font-weight: 600; color: var(--tinta-fuerte); }
+.resultado-encima { flex-basis: 100%; font-size: 14px; color: var(--tinta-fuerte); }
 .resultado-nota { flex-basis: 100%; font-size: 13px; color: var(--grafito-suave); }
 
 .tablero {
@@ -317,11 +319,15 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   gap: 22px;
 }
 
-/* Acompaña al scroll. Si la hoja es más alta que la pantalla, --hoja-tope
-   es negativo (lo calcula Filtros.tsx): baja con la página hasta mostrar
-   su final y ahí se queda, así nunca queda una parte sin verse. */
+/* Acompaña al scroll, debajo de las barras fijas. Si la hoja es más alta que la
+   pantalla (--hoja-alto lo publica Filtros.tsx), el tope queda negativo: baja con
+   la página hasta mostrar su final y ahí se queda, así nunca queda una parte sin verse. */
 @media (min-width: 961px) {
-  .hoja { position: sticky; top: var(--hoja-tope, 16px); }
+  .hoja {
+    --barras: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px));
+    position: sticky;
+    top: calc(var(--barras) + min(16px, 100vh - var(--barras) - var(--hoja-alto, 0px) - 16px));
+  }
 }
 
 .hoja-cabecera { padding-bottom: 14px; border-bottom: 1.5px solid var(--tinta-suave); }
@@ -2040,7 +2046,7 @@ html { scroll-behavior: smooth; }
 /* Fija arriba al bajar. Es #barra (no el header) el que se pega: está directo en <body>. */
 #barra { position: sticky; top: 0; z-index: 1100; }
 /* Lo que se desplaza hasta un punto de la página se detiene debajo de la barra. */
-html { scroll-padding-top: var(--alto-barra, 0px); }
+html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px)); }
 .barra-educa {
   font-family: var(--fuente-educa);
   background: #fff;
@@ -2207,12 +2213,90 @@ html { scroll-padding-top: var(--alto-barra, 0px); }
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
-.reparto-nivel:hover { border-color: var(--tinta); }
+.reparto-nivel:hover:not(:disabled) { border-color: var(--tinta); }
+/* Un grupo con 0 no lleva a ningún lado: no se puede elegir. */
+.reparto-nivel:disabled, .barra-nivel:disabled { opacity: 0.55; cursor: not-allowed; }
 .reparto-nivel[aria-pressed="true"] { background: var(--tinta-fondo); border-color: var(--tinta); }
 .reparto-cifra { font-size: clamp(22px, 2.2vw, 26px); font-weight: 700; line-height: 1.2; }
 .reparto-etiqueta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--grafito-suave); }
 .reparto-intermedia .reparto-cifra { color: #4a3a86; }
 .reparto-baja .reparto-cifra { color: var(--grafito-suave); }
+
+/* Las tres cajas en pequeño, fijas bajo la barra de Educa cuando las grandes salen de pantalla.
+   Por encima de los mapas de Leaflet y por debajo de la barra de Educa. */
+.barra-niveles {
+  position: fixed;
+  top: var(--alto-barra, 0px);
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  height: var(--alto-niveles, 56px);
+  background: var(--hoja);
+  box-shadow: 0 1px 0 var(--linea), 0 8px 16px -12px rgba(17, 29, 63, 0.35);
+  animation: barra-niveles-entra 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes barra-niveles-entra { from { opacity: 0; transform: translateY(-8px); } }
+@media (prefers-reduced-motion: reduce) { .barra-niveles { animation: none; } }
+.barra-niveles-in { display: flex; align-items: center; gap: 8px; height: 100%; }
+.barra-niveles-sat { margin-right: 4px; font-size: 14px; color: var(--grafito-suave); white-space: nowrap; }
+.barra-niveles-sat strong { color: var(--tinta-fuerte); }
+.barra-nivel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 40px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--grafito-suave);
+  background: var(--hoja);
+  border: 1.5px solid var(--linea);
+  border-radius: 999px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.barra-nivel strong { font-size: 15px; font-weight: 700; color: var(--tinta-fuerte); }
+.barra-nivel:hover:not(:disabled) { border-color: var(--tinta); }
+.barra-nivel[aria-pressed="true"] { background: var(--tinta-fondo); border-color: var(--tinta); }
+@media (max-width: 420px) {
+  .barra-niveles-in { gap: 6px; }
+  .barra-niveles-sat { display: none; }
+  .barra-nivel { flex: 1; justify-content: center; padding: 0 6px; }
+}
+/* El aviso de "Deshacer" tiene que quedar sobre la barra compacta. */
+.aviso-filtros { z-index: 1060; --navy: var(--tinta-fuerte); }
+
+/* El chip de ranking se explica rápido al pasar el mouse: el title del navegador tarda demasiado. */
+.marca-con-ayuda { position: relative; }
+@media (hover: hover) {
+  .marca-con-ayuda::after {
+    content: attr(data-ayuda);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    z-index: 20;
+    width: max-content;
+    max-width: 260px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: left;
+    white-space: normal;
+    color: #fff;
+    background: var(--tinta-fuerte);
+    border-radius: 10px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out, visibility 0s linear 0.12s;
+  }
+  .marca-con-ayuda:hover::after,
+  :focus-visible .marca-con-ayuda::after { opacity: 1; visibility: visible; transition-delay: 0.15s; }
+  .top-motivo.marca-con-ayuda::after { left: auto; right: 0; }
+}
 /* En celular, una fila por grupo: "probabilidad media" no cabe en tres columnas angostas. */
 @media (max-width: 600px) {
   .reparto { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
