@@ -2453,7 +2453,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 
 /* Agregar desde aquí: el buscador de la portada, con su propio texto. */
 .mi-lista-agregar { max-width: 520px; margin-top: 28px; }
-.mi-lista-agregar .buscador-etiqueta { font-size: 14px; font-weight: 700; color: var(--brand); }
+.mi-lista-agregar .buscador-etiqueta { font-size: 13px; font-weight: 600; color: var(--grafito-suave); }
 .mi-lista-agregar .sugerencias { left: 0; width: 100%; }
 
 /* Lista vacía: cómo se llena, y el camino de vuelta a explorar. */
@@ -2471,32 +2471,35 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .mi-lista-vacia p { flex: 1 1 360px; max-width: 62ch; margin: 0; }
 
 /* Resumen: tres casillas como las de la ficha (posibilidades, costo y salario de la lista). */
-.esenciales-lista { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 28px 0 0; }
 /* Rangos ("$19,639 – $95,350"): un poco más chicos que la cifra sola de la ficha, para que quepan. */
-.esenciales-lista .esencial-valor { font-size: clamp(24px, 2.3vw, 34px); }
-.esencial-nota { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: var(--muted); }
-.esencial-nota strong { color: var(--ink); }
-.resumen-niveles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
-.resumen-nivel { display: inline-flex; align-items: center; gap: 8px; }
-.resumen-nivel b { font-weight: 700; line-height: 1; }
-.resumen-nivel .marca { font-size: 13px; }
-.resumen-puntaje { font-size: 16px; font-weight: 400; letter-spacing: 0; }
-.resumen-puntaje .total-sat { width: 100%; max-width: 280px; margin-top: 0; background: var(--surface); }
-.resumen-puntaje .total-sat label { white-space: nowrap; }
-.resumen-puntaje .total-sat-listo { background: var(--brand-soft); }
-.resumen-puntaje .casilla-error:empty { display: none; }
+/* Enlace en línea con su texto, con el área de toque ampliada hacia afuera. */
+.esencial-enlace {
+  position: relative;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--educa);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.esencial-enlace::after { content: ''; position: absolute; inset: -14px -10px; }
 
-/* Perfil (de dónde eres) y orden: encima de la tabla, porque cambian lo que muestra. */
+/* Perfil (de dónde eres) y orden: encima de la tabla, porque cambian lo que muestra.
+   Cada control lleva su etiqueta arriba y la fila se alinea por abajo. */
 .mi-lista-controles {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-end;
   gap: 16px 24px;
   margin-bottom: 20px;
 }
+.mi-lista-control { display: flex; flex-direction: column; gap: 6px; }
+.mi-lista-control-puntaje { flex: 0 0 auto; }
+.mi-lista-control-etiqueta { font-size: 13px; font-weight: 600; color: var(--grafito-suave); }
 .perfil { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
-.perfil-titulo, .mi-lista-orden > span { font-size: 14px; font-weight: 700; color: var(--ink); }
 /* Dos opciones ovaladas, la elegida en marino. El radio real queda encima, invisible: así se
    maneja con el teclado y el lector de pantalla como cualquier radio. */
 .segmento { display: inline-flex; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; }
@@ -2519,7 +2522,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .segmento label:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
 .perfil-estado { display: inline-flex; align-items: center; gap: 4px; }
 .perfil-estado select, .mi-lista-orden select { width: auto; min-height: 44px; border-radius: 999px; padding-inline: 16px; }
-.mi-lista-orden { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.mi-lista-orden { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 
 /* La tabla. Bordes separados (no colapsados): con la columna de datos fija al correr la tabla
    de lado, los bordes colapsados se quedan atrás. */
@@ -2527,7 +2530,17 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
    absolute) queden dentro de la caja que se desplaza; si no, se salían de la página y en el
    celular la achicaban como si fuera más ancha. */
 .comparar-envoltura { position: relative; overflow-x: auto; overscroll-behavior-x: contain; }
-.comparar-tabla { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; }
+.comparar-tabla {
+  --ancho-dato: 232px;
+  --ancho-uni: 184px;
+  table-layout: fixed;
+  width: 100%;
+  min-width: calc(var(--ancho-dato) + var(--universidades) * var(--ancho-uni));
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 15px;
+}
+.comparar-tabla .comparar-esquina { width: var(--ancho-dato); }
 .comparar-tabla th, .comparar-tabla td { padding: 12px 16px; text-align: left; vertical-align: top; }
 .comparar-tabla td { min-width: 184px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
 .comparar-tabla tbody th[scope="row"] {
@@ -2535,7 +2548,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   font-size: 14px;
   font-weight: 600;
   color: var(--muted);
-  white-space: nowrap;
   border-top: 1px solid var(--line);
 }
 /* La columna de los nombres de dato queda fija al desplazar hacia el costado. */
@@ -2551,6 +2563,8 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .comparar-uni { min-width: 184px; padding: 16px 16px 18px; font-weight: 400; border-left: 1px solid var(--line); }
 .comparar-foto {
   position: relative;
+  /* Con una o dos universidades la columna es muy ancha: la foto no crece con ella. */
+  max-width: 320px;
   aspect-ratio: 16 / 9;
   margin-bottom: 14px;
   overflow: hidden;
@@ -2708,10 +2722,9 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 }
 
 @media (max-width: 860px) {
-  .esenciales-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
-  .comparar-tabla { font-size: 14px; }
+  .comparar-tabla { --ancho-dato: 124px; --ancho-uni: 156px; font-size: 14px; }
   .comparar-tabla th, .comparar-tabla td { padding: 10px 12px; }
   /* La columna fija de nombres de dato, angosta, para dejar sitio a las universidades. */
   .comparar-tabla tbody th[scope="row"] { min-width: 112px; max-width: 124px; font-size: 13px; white-space: normal; }
@@ -2729,13 +2742,8 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 }
 @media (max-width: 520px) {
   /* Casillas una debajo de otra. */
-  .esenciales-lista { grid-template-columns: minmax(0, 1fr); }
-  .esenciales-lista .esencial:first-child { border-radius: var(--radio-casilla) var(--radio-casilla) 0 0; }
-  .esenciales-lista .esencial:nth-child(2) { border-radius: 0; }
-  .esenciales-lista .esencial:last-child { grid-column: auto; border-radius: 0 0 var(--radio-casilla) var(--radio-casilla); }
   .mi-lista-acciones { width: 100%; }
   .mi-lista-acciones .boton-enlace { flex: 1 1 auto; justify-content: center; }
-  .mi-lista-controles { align-items: stretch; }
   .perfil, .mi-lista-orden { width: 100%; }
   .segmento { width: 100%; }
   .segmento label { flex: 1 1 0; justify-content: center; padding: 0 10px; font-size: 13px; text-align: center; }
@@ -2749,18 +2757,136 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   @page { size: landscape; margin: 12mm; }
   #barra, .migas, .mi-lista-acciones, .mi-lista-agregar, .mi-lista-controles, .aviso-lista-zona,
   .comparar-pegada, .comparar-quitar, .comparar-foto, .mi-lista .banda-contacto, .mi-lista .ayuda-tooltip,
-  .resumen-puntaje { display: none !important; }
   body, .mi-lista, .mi-lista .banda-gris { background: #fff; }
+  /* Los controles no se imprimen: el PDF es la lista con sus datos. */
+  .mi-lista .mi-lista-controles { display: none; }
   .mi-lista .banda { padding-block: 8px; }
   .mi-lista .in { padding-inline: 0; }
   .comparar-envoltura { overflow: visible; border: 0; }
-  .comparar-tabla { font-size: 11px; }
+  .comparar-tabla { min-width: 0; font-size: 11px; }
   .comparar-tabla th, .comparar-tabla td { min-width: 0; padding: 6px 8px; }
   .comparar-tabla th[scope="row"], .comparar-esquina, .comparar-grupo th > span { position: static; box-shadow: none; }
   .comparar-destacado td { font-size: 13px; }
   .comparar-tabla tr { break-inside: avoid; }
   .comparar-tabla td.comparar-mejor, .comparar-insignia, .esenciales { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .esenciales { box-shadow: none; }
+}
+
+/* Mi lista: el puntaje va con los demás controles de la tabla, en una píldora blanca. */
+.mi-lista-puntaje { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* La píldora, de la misma altura que el selector de perfil. */
+.mi-lista-puntaje .total-sat {
+  width: auto;
+  min-height: 50px;
+  margin: 0;
+  padding: 0 8px 0 16px;
+  gap: 10px;
+  align-items: center;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+}
+.mi-lista-puntaje .total-sat:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+.mi-lista-puntaje .total-sat.total-sat-error,
+.mi-lista-puntaje .total-sat.total-sat-error:focus-within { border-color: var(--error); }
+/* "Tu SAT" ya va arriba, como en los demás controles: la etiqueta de adentro solo la lee el lector. */
+.mi-lista-puntaje .total-sat label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.mi-lista-puntaje .total-sat input { width: 4.5ch; height: 40px; margin-left: 0; padding: 0; font-size: 18px; font-weight: 700; text-align: left; }
+.mi-lista-puntaje .total-sat .total-sat-escala { flex: none; white-space: nowrap; }
+/* El aviso va debajo de la píldora; "Cancelar" sigue a su lado, no después del aviso. */
+.mi-lista-puntaje .casilla-error { order: 2; flex-basis: 100%; width: 0; min-width: 100%; margin: 0; }
+.mi-lista-puntaje .casilla-error:empty { display: none; }
+
+/* Con puntaje: el número en grande y "Cambiar" como botoncito ovalado. */
+.mi-lista-puntaje-listo { justify-content: space-between; min-width: 150px; }
+.mi-lista-puntaje-valor { font-size: 18px; font-variant-numeric: tabular-nums; }
+.mi-lista-puntaje-cambiar {
+  flex: none;
+  order: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.mi-lista-puntaje-cambiar:hover { color: var(--navy); background: #dbe2f5; }
+
+/* Mi lista: lo importante es la tabla. Título, buscador y controles ocupan lo justo para que se vea sin bajar. */
+.mi-lista > .banda:not(.banda-contacto) { padding-block: clamp(16px, 2vw, 24px); }
+.mi-lista-titulo-fila { align-items: center; }
+.mi-lista-titulo { font-size: clamp(28px, 3.2vw, 40px); }
+.mi-lista-titulo-fila .banda-subtitulo { margin-top: 4px; font-size: 15px; }
+.mi-lista-agregar { margin-top: 12px; }
+.mi-lista-controles { gap: 10px 20px; margin-bottom: 12px; }
+.comparar-foto { max-width: 200px; margin-bottom: 10px; }
+.comparar-uni { padding-block: 12px 14px; }
+
+/* Cuando la barra no cabe, pasa a dos líneas parejas: Tu SAT y Ordenar por arriba, el perfil
+   a todo el ancho debajo. Nunca queda "Ordenar por" solo en una línea. Con el selector de
+   estado el perfil ocupa más, así que la barra se parte antes (hasta 1180px); sin él, los
+   tres controles caben en una fila hasta 940px. */
+@media (max-width: 940px) {
+  .mi-lista-controles {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "puntaje orden" "perfil perfil";
+    align-items: start;
+    gap: 10px 12px;
+  }
+  .mi-lista-control-puntaje { grid-area: puntaje; }
+  .mi-lista-control-perfil { grid-area: perfil; }
+  .mi-lista-orden { grid-area: orden; }
+  .mi-lista-puntaje, .mi-lista-puntaje .total-sat, .mi-lista-orden select { width: 100%; }
+  .mi-lista-puntaje .total-sat { max-width: 300px; }
+}
+@media (min-width: 941px) and (max-width: 1180px) {
+  .mi-lista-controles:has(.perfil-estado) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "puntaje orden" "perfil perfil";
+    align-items: start;
+    gap: 10px 12px;
+  }
+  .mi-lista-controles:has(.perfil-estado) .mi-lista-control-puntaje { grid-area: puntaje; }
+  .mi-lista-controles:has(.perfil-estado) .mi-lista-control-perfil { grid-area: perfil; }
+  .mi-lista-controles:has(.perfil-estado) .mi-lista-orden { grid-area: orden; }
+  .mi-lista-controles:has(.perfil-estado) .mi-lista-puntaje,
+  .mi-lista-controles:has(.perfil-estado) .mi-lista-puntaje .total-sat,
+  .mi-lista-controles:has(.perfil-estado) .mi-lista-orden select { width: 100%; }
+  .mi-lista-controles:has(.perfil-estado) .mi-lista-puntaje .total-sat { max-width: 300px; }
+}
+
+@media (max-width: 640px) {
+  .mi-lista > .banda:not(.banda-contacto) { padding-block: 14px; }
+  .mi-lista-titulo-fila .banda-subtitulo { font-size: 14px; }
+  /* Tu SAT y Ordenar por lado a lado; el perfil, a todo el ancho debajo. */
+  .mi-lista-controles {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "puntaje orden" "perfil perfil";
+    align-items: start;
+    gap: 10px 12px;
+  }
+  .mi-lista-control-puntaje { grid-area: puntaje; }
+  .mi-lista-control-perfil { grid-area: perfil; }
+  .mi-lista-orden { grid-area: orden; }
+  .mi-lista-puntaje .total-sat { width: 100%; }
+  .mi-lista-puntaje-listo { min-width: 0; }
+  .mi-lista-orden select { width: 100%; }
+  .perfil { gap: 6px; }
+  .segmento { width: 100%; }
+  .segmento label { flex: 1; font-size: 13px; line-height: 1.2; text-align: center; white-space: nowrap; }
 }
 
 /* ========== Mapa de la portada: SVG propio, ver MapaInteractivo.tsx ========== */

@@ -1,5 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import type { ReactNode, RefObject } from 'react';
+import type { CSSProperties, ReactNode, RefObject } from 'react';
 import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatPoliticaSAT } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
@@ -102,23 +102,10 @@ function formatear(valor: number | null | undefined, formato: Fila['formato']): 
   return valor.toLocaleString('en-US');
 }
 
-/** "$19,639 – $95,350", o un solo monto si todas cuestan lo mismo (o hay una sola). */
-function rangoDinero(valores: (number | null | undefined)[]): string | null {
-  const con = valores.filter((v): v is number => v != null);
-  if (con.length === 0) return null;
-  const min = Math.min(...con), max = Math.max(...con);
-  return min === max ? formatDinero(min) : `${formatDinero(min)} – ${formatDinero(max)}`;
-}
-
 /** Para quién están calculados los costos: "estudiante internacional", "vives en Texas". */
 const textoPerfil = (p: Perfil) =>
   p.tipo === 'internacional' ? 'estudiante internacional'
     : p.estado ? `vives en ${NOMBRES_ESTADOS[p.estado] ?? p.estado}` : 'vives en EE. UU.';
-
-const notaCostoPerfil = (p: Perfil) =>
-  p.tipo === 'internacional' ? 'Antes de becas, como estudiante internacional.'
-    : p.estado ? `Antes de becas, viviendo en ${NOMBRES_ESTADOS[p.estado] ?? p.estado}.`
-    : 'Antes de becas. Elige tu estado abajo para ver la matrícula del estado.';
 
 function grupos(perfil: Perfil, puntaje: number): Grupo[] {
   const residente = perfil.tipo === 'eeuu';
@@ -131,7 +118,7 @@ function grupos(perfil: Perfil, puntaje: number): Grupo[] {
         {
           etiqueta: 'Tus posibilidades de entrar',
           ayuda: AYUDA_NIVELES,
-          aLoAncho: () => puntaje > 0 ? null : 'Escribe tu puntaje SAT en el resumen de arriba para ver tus posibilidades en cada una.',
+          aLoAncho: () => puntaje > 0 ? null : 'Escribe tu SAT arriba de esta tabla para ver tus posibilidades en cada una.',
           // Corta ("Alta"): la fila ya dice que se habla de tus posibilidades.
           texto: (u, c) => c.nivel
             ? <EtiquetaNivel nivel={c.nivel} corta />
@@ -199,8 +186,10 @@ function grupos(perfil: Perfil, puntaje: number): Grupo[] {
     {
       titulo: 'Becas de la universidad',
       filas: [
-        { etiqueta: 'Alumnos con beca', ayuda: glosarioCampos.BECAS_1ER_ANIO, numero: u => u.IGRNT_P != null ? u.IGRNT_P / 100 : null, formato: 'porcentaje', mejor: 'mayor' },
-        { etiqueta: 'Beca promedio al año', numero: u => u.IGRNT_A, formato: 'dinero', mejor: 'mayor' },
+        // Son cifras de todos los alumnos. A un internacional no se le marca "Mejor": la universidad
+        // no publica cuántos extranjeros reciben beca, y la ficha le avisa que suelen ser bastantes menos.
+        { etiqueta: 'Alumnos con beca', ayuda: glosarioCampos.BECAS_1ER_ANIO, numero: u => u.IGRNT_P != null ? u.IGRNT_P / 100 : null, formato: 'porcentaje', mejor: residente ? 'mayor' : undefined },
+        { etiqueta: 'Beca promedio al año', numero: u => u.IGRNT_A, formato: 'dinero', mejor: residente ? 'mayor' : undefined },
       ],
     },
     {
@@ -287,6 +276,8 @@ export function ComparadorUniversidades({
 }: Props) {
   const [perfil, setPerfil] = usePerfil();
   const [orden, setOrden] = useState<Orden>('guardado');
+  // Una vez escrito el puntaje, su campo se reemplaza por el resumen; esto lo vuelve a abrir.
+  const [cambiandoPuntaje, setCambiandoPuntaje] = useState(false);
 
   // ---------- Avisos con "Deshacer" ----------
   const [aviso, setAviso] = useState<AvisoLista | null>(avisoInicial ?? null);
@@ -341,20 +332,8 @@ export function ComparadorUniversidades({
   // ¿Se mezclan colleges de 2 años con universidades de 4? Entonces en costos solo compiten las de 4.
   const mezclaNiveles = ordenadas.some(u => u.ICLEVEL === '4-Year') && ordenadas.some(u => u.ICLEVEL !== '4-Year');
 
-  // ---------- Resumen de la lista ----------
+  // Lo usa el cierre de la página, que cambia si la lista no tiene ninguna de probabilidad alta.
   const conteo = NIVELES.map(n => ({ ...n, cantidad: ordenadas.filter(u => ctx(u).nivel === n.nivel).length }));
-  const sinNivel = ordenadas.filter(u => ctx(u).nivel == null).length;
-  const consejo = (() => {
-    const [alta, media, baja] = conteo.map(c => c.cantidad);
-    if (alta + media + baja === 0) return null;
-    // Nunca se promete nada: se sugiere cómo equilibrar la lista.
-    if (alta === 0) return 'Te conviene sumar alguna con probabilidad alta.';
-    if (media + baja === 0) return 'Puedes sumar alguna más exigente.';
-    return 'Tu lista combina distintas probabilidades.';
-  })();
-
-  const rangoCosto = rangoDinero(ordenadas.map(u => ctx(u).costos.total));
-  const rangoSalario = rangoDinero(ordenadas.map(u => u.MD_EARN_WNE_4YR));
 
   const envolturaRef = useRef<HTMLDivElement>(null);
   const theadRef = useRef<HTMLTableSectionElement>(null);
@@ -461,87 +440,63 @@ export function ComparadorUniversidades({
               </p>
               <button type="button" className="boton-marino" onClick={onVolver}>Explorar universidades</button>
             </div>
-          ) : (
-            <dl className="esenciales esenciales-lista" aria-label="Resumen de tu lista">
-              <div className="esencial">
-                <dt className="esencial-etiqueta">Tus posibilidades<InfoTooltip sobre="Tus posibilidades" texto={AYUDA_NIVELES} /></dt>
-                {puntajeSAT > 0 ? (
-                  <>
-                    <dd className="esencial-valor resumen-niveles">
-                      {conteo.filter(c => c.cantidad > 0).map(c => (
-                        <span key={c.nivel} className="resumen-nivel">
-                          <b className="numero">{c.cantidad}</b><EtiquetaNivel nivel={c.nivel} corta />
-                        </span>
-                      ))}
-                      {conteo.every(c => c.cantidad === 0) && <span className="esencial-vacio">Sin datos SAT</span>}
-                    </dd>
-                    <dd className="esencial-nota">
-                      {consejo}
-                      {sinNivel > 0 && <> {sinNivel === 1 ? '1 no publica' : `${sinNivel} no publican`} puntajes SAT.</>}
-                      {' '}Con tu SAT de <strong className="numero">{puntajeSAT}</strong>.
-                    </dd>
-                  </>
-                ) : (
-                  <>
-                    <dd className="esencial-valor resumen-puntaje">
-                      <InputTotalSAT id="sat-total-lista" etiqueta="Tu SAT total" total={0}
-                        onEscribir={() => {}} setSoloTotal={v => { if (v > 0) onCambiarPuntajeSAT(v); }} />
-                    </dd>
-                    <dd className="esencial-nota">Escríbelo y lo comparamos con el de los admitidos de cada una.</dd>
-                  </>
-                )}
-              </div>
-              <div className="esencial">
-                <dt className="esencial-etiqueta">Costo anual total<InfoTooltip sobre="Costo anual total" texto={glosarioCampos.COSTO_TOTAL_ANUAL} /></dt>
-                <dd className={`esencial-valor numero${rangoCosto ? '' : ' esencial-vacio'}`}>
-                  {rangoCosto ?? 'Sin dato'}
-                </dd>
-                <dd className="esencial-nota">{notaCostoPerfil(perfil)}</dd>
-              </div>
-              <div className="esencial">
-                <dt className="esencial-etiqueta">Salario a 4 años<InfoTooltip sobre="Salario a 4 años" texto={glosarioCampos.MD_EARN_4YR} /></dt>
-                <dd className={`esencial-valor numero${rangoSalario ? '' : ' esencial-vacio'}`}>
-                  {rangoSalario ?? 'Sin dato'}
-                </dd>
-                <dd className="esencial-nota">Lo que gana al año el egresado típico.</dd>
-              </div>
-            </dl>
-          )}
+          ) : null}
         </div>
       </section>
 
       {n > 0 && (
         <section className="banda banda-gris" aria-label="Comparación">
           <div className="in">
-            {/* Perfil y orden: cambian lo que muestra la tabla, por eso van justo encima de ella. */}
+            {/* Puntaje, perfil y orden: cambian lo que muestra la tabla, por eso van justo encima de ella.
+                Cada control lleva su etiqueta arriba, como los campos de la hoja de filtros. */}
             <div className="mi-lista-controles">
-              <div className="perfil">
-                <span id="perfil-titulo" className="perfil-titulo">Calcular costos para</span>
-                <div className="segmento" role="radiogroup" aria-labelledby="perfil-titulo">
-                  <label className={perfil.tipo === 'internacional' ? 'activo' : undefined}>
-                    <input type="radio" name="perfil" checked={perfil.tipo === 'internacional'}
-                      onChange={() => setPerfil({ tipo: 'internacional' })} />
-                    Estudiante internacional
-                  </label>
-                  <label className={perfil.tipo === 'eeuu' ? 'activo' : undefined}>
-                    <input type="radio" name="perfil" checked={perfil.tipo === 'eeuu'}
-                      onChange={() => setPerfil({ tipo: 'eeuu', estado: perfil.tipo === 'eeuu' ? perfil.estado : null })} />
-                    Vivo en EE. UU.
-                  </label>
+              {/* El puntaje sigue haciendo falta para la fila de posibilidades de la tabla. */}
+              <div className="mi-lista-control mi-lista-control-puntaje">
+                <span className="mi-lista-control-etiqueta">Tu SAT</span>
+                <div className="mi-lista-puntaje">
+                  {puntajeSAT > 0 && !cambiandoPuntaje ? (
+                    <div className="total-sat total-sat-listo mi-lista-puntaje-listo">
+                      <strong className="numero mi-lista-puntaje-valor">{puntajeSAT}</strong>
+                      <button type="button" className="mi-lista-puntaje-cambiar" onClick={() => setCambiandoPuntaje(true)} aria-label="Cambiar mi puntaje SAT">Cambiar</button>
+                    </div>
+                  ) : (
+                    <>
+                      <InputTotalSAT id="sat-total-lista" etiqueta="Tu SAT" total={0} autoFocus={cambiandoPuntaje}
+                        onEscribir={() => {}} setSoloTotal={v => { if (v > 0) { onCambiarPuntajeSAT(v); setCambiandoPuntaje(false); } }} />
+                      {cambiandoPuntaje && <button type="button" className="mi-lista-puntaje-cambiar" onClick={() => setCambiandoPuntaje(false)}>Cancelar</button>}
+                    </>
+                  )}
                 </div>
-                {perfil.tipo === 'eeuu' && (
-                  <span className="perfil-estado">
-                    <label htmlFor="perfil-estado" className="visualmente-oculto">Estado donde vives</label>
-                    <select id="perfil-estado" value={perfil.estado ?? ''} onChange={e => setPerfil({ tipo: 'eeuu', estado: e.target.value || null })}>
-                      <option value="">Elige tu estado</option>
-                      {ESTADOS.map(([sigla, nombre]) => <option key={sigla} value={sigla}>{nombre}</option>)}
-                    </select>
-                    <InfoTooltip sobre="Vivo en EE. UU." texto={AYUDA_RESIDENTE} />
-                  </span>
-                )}
               </div>
-              <label className="mi-lista-orden">
-                <span>Ordenar por</span>
+              <div className="mi-lista-control mi-lista-control-perfil">
+                <span id="perfil-titulo" className="mi-lista-control-etiqueta">Calcular costos para</span>
+                <div className="perfil">
+                  <div className="segmento" role="radiogroup" aria-labelledby="perfil-titulo">
+                    <label className={perfil.tipo === 'internacional' ? 'activo' : undefined}>
+                      <input type="radio" name="perfil" checked={perfil.tipo === 'internacional'}
+                        onChange={() => setPerfil({ tipo: 'internacional' })} />
+                      Estudiante internacional
+                    </label>
+                    <label className={perfil.tipo === 'eeuu' ? 'activo' : undefined}>
+                      <input type="radio" name="perfil" checked={perfil.tipo === 'eeuu'}
+                        onChange={() => setPerfil({ tipo: 'eeuu', estado: perfil.tipo === 'eeuu' ? perfil.estado : null })} />
+                      Vivo en EE. UU.
+                    </label>
+                  </div>
+                  {perfil.tipo === 'eeuu' && (
+                    <span className="perfil-estado">
+                      <label htmlFor="perfil-estado" className="visualmente-oculto">Estado donde vives</label>
+                      <select id="perfil-estado" value={perfil.estado ?? ''} onChange={e => setPerfil({ tipo: 'eeuu', estado: e.target.value || null })}>
+                        <option value="">Elige tu estado</option>
+                        {ESTADOS.map(([sigla, nombre]) => <option key={sigla} value={sigla}>{nombre}</option>)}
+                      </select>
+                      <InfoTooltip sobre="Vivo en EE. UU." texto={AYUDA_RESIDENTE} />
+                    </span>
+                  )}
+                </div>
+              </div>
+              <label className="mi-lista-control mi-lista-orden">
+                <span className="mi-lista-control-etiqueta">Ordenar por</span>
                 <select value={orden} onChange={e => setOrden(e.target.value as Orden)}>
                   {ORDENES.map(o => (
                     <option key={o.id} value={o.id} disabled={o.id === 'probabilidad' && puntajeSAT === 0}>{o.texto}</option>
@@ -562,7 +517,9 @@ export function ComparadorUniversidades({
             )}
 
             <div className="panel comparar-envoltura" ref={envolturaRef}>
-              <table className="comparar-tabla">
+              {/* Columnas iguales: si no, el navegador las reparte según el largo de cada texto y las
+                  fotos salen de distinto tamaño. Con muchas universidades, la tabla crece y se desliza. */}
+              <table className="comparar-tabla" style={{ '--universidades': n } as CSSProperties}>
                 <thead ref={theadRef}>
                   <tr>
                     <th scope="col" className="comparar-esquina"><span className="visualmente-oculto">Dato</span></th>
