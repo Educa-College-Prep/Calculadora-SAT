@@ -207,9 +207,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   color: var(--tinta-fuerte);
 }
 .resultado-texto { font-size: 17px; font-weight: 600; }
-.resultado-ayuda { flex-basis: 100%; font-size: 14px; font-weight: 600; color: var(--tinta-fuerte); }
-.resultado-encima { flex-basis: 100%; font-size: 14px; color: var(--tinta-fuerte); }
-.resultado-nota { flex-basis: 100%; font-size: 13px; color: var(--grafito-suave); }
+.resultado-encima { font-size: 13px; color: var(--grafito-suave); }
+.resultado-nota { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0 4px; font-size: 13px; color: var(--grafito-suave); }
 
 .tablero {
   display: grid;
