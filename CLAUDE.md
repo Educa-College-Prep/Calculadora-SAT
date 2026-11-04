@@ -57,14 +57,14 @@ Publicar = mergear a `main` (lo hace `deploy.yml`). El script `npm run deploy` (
 
 ## Arquitectura de la app
 
-- **Datos**: `App.tsx` baja `universidades.json` una vez, normaliza algunos campos (`aNumero` para salarios que pueden venir como `"PS"`), agrega `_id` (índice) y `USNEWS_ORDEN`. Otros JSON se cargan perezosamente con una promesa cacheada a nivel de módulo (`utils/fotos.ts`, `utils/fuentesDatos.ts`, mapas en `MapaCondados.tsx`). Las rutas siempre con `import.meta.env.BASE_URL` (la base es `/Calculadora-SAT/`, ver `vite.config.ts`).
+- **Datos**: `App.tsx` baja `universidades.json` una vez, normaliza algunos campos (`aNumero` para salarios que pueden venir como `"PS"`), agrega `_id` (índice) y `USNEWS_ORDEN`. Otros JSON se cargan perezosamente con una promesa cacheada a nivel de módulo (`utils/fotos.ts`, `utils/fuentesDatos.ts`, mapa en `MapaInteractivo.tsx`). Las rutas siempre con `import.meta.env.BASE_URL` (la base es `/Calculadora-SAT/`, ver `vite.config.ts`).
 - **Campos**: se usan los nombres originales de College Scorecard / IPEDS (`INSTNM`, `STABBR`, `SATMT25`, `ADMCON7`, `TUITIONFEE_OUT`, `NPT4_PRIV`…). `ADMCON7`, `CONTROL`, etc. ya vienen traducidos al español en el JSON. Faltante = `null`.
 - **Filtrado** (`App.tsx`): los filtros se pasan por `useDeferredValue` para no trabar la UI con ~4300 registros. Cada filtro activo distingue tres casos: cumple, no cumple (se descarta) y *no se sabe* (se queda, marcada en `faltantesPorId` y ordenada al final). Respetar esta regla al agregar filtros.
 - **Niveles SAT** (`utils/nivelSAT.ts`): Probabilidad alta / media / baja comparando el puntaje total con el rango 25–75 de los admitidos. Es la única fuente de verdad: lista, filtros y ficha la usan. No decir "Segura": ninguna admisión está garantizada solo por el puntaje (decisión de Educa).
 - **Búsqueda** (`utils/busqueda.ts`, `utils/aliases.ts`): índice con alias ("MIT") y tolerancia a errores de tipeo.
 - **Vistas**: principal (buscador, filtros, mapa, top, lista), ficha (`DetalleUniversidad`) y Mi lista (`ComparadorUniversidades`). Se navega con `window.history` (pushState/popstate), sin router. La barra (`BarraEduca`) vuelve al inicio emitiendo el evento `EVENTO_INICIO`.
 - **Mi lista** (`utils/useMiLista.ts`): guardada en `localStorage`, clave por `claveUniversidad` (nombre|ciudad|estado).
-- **Gráficos/mapas**: Recharts, react-google-charts (mapa de EE.UU.) y Leaflet/react-leaflet (condados).
+- **Gráficos/mapas**: Recharts para gráficos. El mapa de la portada es SVG propio (`MapaInteractivo.tsx`), con `public/geo/mapa-eeuu.json`, que genera `scripts/generar_mapa_eeuu.mjs`.
 
 ## El robot de datos (`actualizar_datos.py`)
 
