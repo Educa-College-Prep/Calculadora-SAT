@@ -77,7 +77,7 @@ interface Grupo { titulo: string; filas: Fila[]; destacado?: boolean }
 type Orden = 'guardado' | 'probabilidad' | 'costo' | 'admision';
 
 const ORDENES: { id: Orden; texto: string }[] = [
-  { id: 'guardado', texto: 'Como las guardaste' },
+  { id: 'guardado', texto: 'Guardadas' },
   { id: 'probabilidad', texto: 'Probabilidad (alta primero)' },
   { id: 'costo', texto: 'Costo anual (menor primero)' },
   { id: 'admision', texto: 'Admisión (mayor primero)' },
