@@ -28,7 +28,7 @@ import type { Nivel } from './utils/nivelSAT';
 import { NIVELES } from './utils/nivelSAT';
 import { BarrasNivel } from './components/EtiquetaNivel';
 import { AvisoFuentes } from './components/AvisoFuentes';
-import { EVENTO_INICIO } from './components/BarraEduca';
+import { EVENTO_INICIO, CONTACTO } from './components/BarraEduca';
 
 /** Opción del filtro "¿Piden el SAT?" → valor de ADMCON7 (política de puntajes de IPEDS). */
 const POLITICA_SAT: Record<string, string> = {
@@ -478,6 +478,7 @@ export default function App() {
   // se ve el contador de resultados, que dice lo mismo (y si no, lo taparía).
   const listaRef = useRef<HTMLDivElement>(null);
   const bandaMapaRef = useRef<HTMLElement>(null);
+  const bandaResultadosRef = useRef<HTMLElement>(null);
   const [listaAbajo, setListaAbajo] = useState(true);
   const [contadorALaVista, setContadorALaVista] = useState(false);
   useEffect(() => {
@@ -738,12 +739,22 @@ export default function App() {
                       )}
                     </>
                   ) : (
-                    <>
-                      <span className="resultado-cifra">{universidadesFiltradas.length.toLocaleString()}</span>
-                      <span className="resultado-texto">
-                        {universidadesFiltradas.length === 1 ? 'universidad encaja' : 'universidades encajan'} con lo que marcaste
+                    // Sin puntaje, lo primero es decir qué hacer. Quien todavía no rinde el SAT también
+                    // tiene un camino: explorar, y la única acción amarilla de la pantalla (Un Solo Sol).
+                    <span className="invitacion">
+                      <span className="invitacion-titulo">Escribe tu puntaje y te decimos a cuáles te alcanza</span>
+                      <span className="invitacion-texto">
+                        ¿Aún no rindes el SAT? Ríndelo para medirte, o{' '}
+                        <button type="button" className="boton-limpiar boton-limpiar-enlace"
+                          onClick={() => bandaResultadosRef.current?.scrollIntoView({ block: 'start' })}>
+                          explora por costo o estado
+                        </button>.
                       </span>
-                    </>
+                      <a className="boton-sol invitacion-accion" href={CONTACTO} target="_blank" rel="noopener noreferrer">
+                        Prepárate para el SAT con Educa
+                        <span className="visualmente-oculto"> (se abre en otra pestaña)</span>
+                      </a>
+                    </span>
                   )}
                   <span className="resultado-nota">
                     {[
@@ -755,8 +766,9 @@ export default function App() {
                       conteoNiveles && nivelesSAT.length > 0 && nivelesSAT.length < 3
                         ? `mostrando ${universidadesFiltradas.length.toLocaleString()} en la lista` : null,
                       // Con puntaje, el lugar ya va en la frase de arriba.
-                      conteoNiveles ? null : `de ${universidades.length.toLocaleString()} en la base de datos`,
-                      !conteoNiveles && enLugar ? enLugar.trim() : null,
+                      conteoNiveles ? null : filtrosActivos.length > 0
+                        ? `Por ahora, ${universidadesFiltradas.length.toLocaleString()} de ${universidades.length.toLocaleString()} universidades${enLugar}`
+                        : `${universidades.length.toLocaleString()} universidades con datos oficiales de EE. UU.`,
                     ].filter(Boolean).join(' · ')}
                     {filtrosActivos.length > 0 && (
                       <>
@@ -810,7 +822,7 @@ export default function App() {
             </section>
           )}
 
-          <section className="banda banda-blanco" aria-label="Resultados">
+          <section ref={bandaResultadosRef} className="banda banda-blanco" aria-label="Resultados">
             <div className="in cuerpo">
               <Filtros
                 estadoSeleccionado={estadoSeleccionado} setEstadoSeleccionado={setEstadoSeleccionado}
