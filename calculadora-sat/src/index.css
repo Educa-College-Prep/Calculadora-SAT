@@ -2488,11 +2488,11 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .esencial-enlace::after { content: ''; position: absolute; inset: -14px -10px; }
 
 /* Perfil (de dónde eres) y orden: encima de la tabla, porque cambian lo que muestra.
-   Cada control lleva su etiqueta arriba y la fila se alinea por abajo. */
+   Cada control lleva su etiqueta arriba y la fila se alinea por arriba (los tres miden 50px). */
 .mi-lista-controles {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 16px 24px;
   margin-bottom: 20px;
 }
@@ -2521,7 +2521,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .segmento input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
 .segmento label:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
 .perfil-estado { display: inline-flex; align-items: center; gap: 4px; }
-.perfil-estado select, .mi-lista-orden select { width: auto; min-height: 44px; border-radius: 999px; padding-inline: 16px; }
+.perfil-estado select, .mi-lista-orden select { width: auto; height: 50px; min-height: 50px; border-radius: 999px; padding-inline: 16px; }
 .mi-lista-orden { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 
 /* La tabla. Bordes separados (no colapsados): con la columna de datos fija al correr la tabla
@@ -2848,6 +2848,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .mi-lista-control-perfil { grid-area: perfil; }
   .mi-lista-orden { grid-area: orden; }
   .mi-lista-puntaje, .mi-lista-puntaje .total-sat, .mi-lista-orden select { width: 100%; }
+  .mi-lista-orden select { font-size: 13px; padding-inline: 12px 26px; }
   .mi-lista-puntaje .total-sat { max-width: 300px; }
 }
 @media (min-width: 941px) and (max-width: 1180px) {
@@ -2864,6 +2865,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .mi-lista-controles:has(.perfil-estado) .mi-lista-puntaje,
   .mi-lista-controles:has(.perfil-estado) .mi-lista-puntaje .total-sat,
   .mi-lista-controles:has(.perfil-estado) .mi-lista-orden select { width: 100%; }
+  .mi-lista-controles:has(.perfil-estado) .mi-lista-orden select { font-size: 13px; padding-inline: 12px 26px; }
   .mi-lista-controles:has(.perfil-estado) .mi-lista-puntaje .total-sat { max-width: 300px; }
 }
 
@@ -2883,7 +2885,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .mi-lista-orden { grid-area: orden; }
   .mi-lista-puntaje .total-sat { width: 100%; }
   .mi-lista-puntaje-listo { min-width: 0; }
-  .mi-lista-orden select { width: 100%; }
+  .mi-lista-orden select { width: 100%; font-size: 13px; padding-inline: 12px 26px; }
   .perfil { gap: 6px; }
   .segmento { width: 100%; }
   .segmento label { flex: 1; font-size: 13px; line-height: 1.2; text-align: center; white-space: nowrap; }

@@ -270,7 +270,7 @@ Las mismas piezas que la ficha: migas de pan "← Resultados / Mi lista", una ba
 - **La mejor de la fila:** fondo azul Educa suave (`#e8ecf8`), cifra en marino y una insignia marino "✓ Mejor" (el texto oculto agrega "de tu lista"). Nunca en amarillo. En costos, un college de 2 años no compite con universidades de 4.
 - **Tu SAT:** píldora blanca con borde, de la misma altura que el selector de perfil. Con puntaje, el número va en 18px con cifras tabulares y "Cambiar" como botón ovalado en azul suave (`#e8ecf8`), con 44px de área táctil. Al cambiarlo, el campo usa la misma píldora con borde sólido y "/ 1600" dentro, y "Cancelar" queda al lado con el mismo estilo. El aviso de error va debajo de la píldora, dentro del mismo control.
 - **Perfil de costos:** control ovalado de dos opciones (la elegida en marino) y, si vive en EE. UU., el estado al lado del selector, en la misma fila. Cambia la matrícula (del estado o de fuera del estado) y muestra el precio neto solo a quien puede recibirlo.
-- **Ordenar por:** un selector con su etiqueta arriba, junto a los otros dos controles. En celular, tu SAT y orden van lado a lado y el perfil ocupa el ancho completo debajo.
+- **Ordenar por:** un selector de 50px con su etiqueta arriba, alineado con los otros dos controles. En celular, tu SAT y orden van lado a lado y el perfil ocupa el ancho completo debajo.
 - **Al bajar:** una franja blanca con los nombres queda pegada bajo la barra de Educa y se corre de lado junto con la tabla; los títulos de grupo quedan pegados a la izquierda.
 - **Avisos:** píldora marino arriba, debajo de la barra de Educa ("Quitaste Yale de tu lista." + "Deshacer" en blanco), 8 segundos.
 - **Imprimir:** solo el título, el resumen y la tabla, en horizontal.
