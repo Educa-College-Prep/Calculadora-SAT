@@ -1,5 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import type { ReactNode, RefObject } from 'react';
+import type { CSSProperties, ReactNode, RefObject } from 'react';
 import type { Universidad } from '../types';
 import { formatDinero, formatPorcentaje, formatPoliticaSAT } from '../utils/formatters';
 import { glosarioCampos } from '../utils/glosarioCampos';
@@ -199,8 +199,10 @@ function grupos(perfil: Perfil, puntaje: number): Grupo[] {
     {
       titulo: 'Becas de la universidad',
       filas: [
-        { etiqueta: 'Alumnos con beca', ayuda: glosarioCampos.BECAS_1ER_ANIO, numero: u => u.IGRNT_P != null ? u.IGRNT_P / 100 : null, formato: 'porcentaje', mejor: 'mayor' },
-        { etiqueta: 'Beca promedio al año', numero: u => u.IGRNT_A, formato: 'dinero', mejor: 'mayor' },
+        // Son cifras de todos los alumnos. A un internacional no se le marca "Mejor": la universidad
+        // no publica cuántos extranjeros reciben beca, y la ficha le avisa que suelen ser bastantes menos.
+        { etiqueta: 'Alumnos con beca', ayuda: glosarioCampos.BECAS_1ER_ANIO, numero: u => u.IGRNT_P != null ? u.IGRNT_P / 100 : null, formato: 'porcentaje', mejor: residente ? 'mayor' : undefined },
+        { etiqueta: 'Beca promedio al año', numero: u => u.IGRNT_A, formato: 'dinero', mejor: residente ? 'mayor' : undefined },
       ],
     },
     {
@@ -287,6 +289,8 @@ export function ComparadorUniversidades({
 }: Props) {
   const [perfil, setPerfil] = usePerfil();
   const [orden, setOrden] = useState<Orden>('guardado');
+  // Una vez escrito el puntaje, su campo se reemplaza por el resumen; esto lo vuelve a abrir.
+  const [cambiandoPuntaje, setCambiandoPuntaje] = useState(false);
 
   // ---------- Avisos con "Deshacer" ----------
   const [aviso, setAviso] = useState<AvisoLista | null>(avisoInicial ?? null);
@@ -465,7 +469,7 @@ export function ComparadorUniversidades({
             <dl className="esenciales esenciales-lista" aria-label="Resumen de tu lista">
               <div className="esencial">
                 <dt className="esencial-etiqueta">Tus posibilidades<InfoTooltip sobre="Tus posibilidades" texto={AYUDA_NIVELES} /></dt>
-                {puntajeSAT > 0 ? (
+                {puntajeSAT > 0 && !cambiandoPuntaje ? (
                   <>
                     <dd className="esencial-valor resumen-niveles">
                       {conteo.filter(c => c.cantidad > 0).map(c => (
@@ -478,16 +482,20 @@ export function ComparadorUniversidades({
                     <dd className="esencial-nota">
                       {consejo}
                       {sinNivel > 0 && <> {sinNivel === 1 ? '1 no publica' : `${sinNivel} no publican`} puntajes SAT.</>}
-                      {' '}Con tu SAT de <strong className="numero">{puntajeSAT}</strong>.
+                      {' '}Con tu SAT de <strong className="numero">{puntajeSAT}</strong>
+                      {' · '}<button type="button" className="esencial-enlace" onClick={() => setCambiandoPuntaje(true)} aria-label="Cambiar mi puntaje SAT">Cambiar</button>
                     </dd>
                   </>
                 ) : (
                   <>
                     <dd className="esencial-valor resumen-puntaje">
-                      <InputTotalSAT id="sat-total-lista" etiqueta="Tu SAT total" total={0}
-                        onEscribir={() => {}} setSoloTotal={v => { if (v > 0) onCambiarPuntajeSAT(v); }} />
+                      <InputTotalSAT id="sat-total-lista" etiqueta="Tu SAT total" total={0} autoFocus={cambiandoPuntaje}
+                        onEscribir={() => {}} setSoloTotal={v => { if (v > 0) { onCambiarPuntajeSAT(v); setCambiandoPuntaje(false); } }} />
                     </dd>
-                    <dd className="esencial-nota">Escríbelo y lo comparamos con el de los admitidos de cada una.</dd>
+                    <dd className="esencial-nota">
+                      Escríbelo y lo comparamos con el de los admitidos de cada una.
+                      {cambiandoPuntaje && <>{' '}<button type="button" className="esencial-enlace" onClick={() => setCambiandoPuntaje(false)}>Cancelar</button></>}
+                    </dd>
                   </>
                 )}
               </div>
@@ -562,7 +570,9 @@ export function ComparadorUniversidades({
             )}
 
             <div className="panel comparar-envoltura" ref={envolturaRef}>
-              <table className="comparar-tabla">
+              {/* Columnas iguales: si no, el navegador las reparte según el largo de cada texto y las
+                  fotos salen de distinto tamaño. Con muchas universidades, la tabla crece y se desliza. */}
+              <table className="comparar-tabla" style={{ '--universidades': n } as CSSProperties}>
                 <thead ref={theadRef}>
                   <tr>
                     <th scope="col" className="comparar-esquina"><span className="visualmente-oculto">Dato</span></th>

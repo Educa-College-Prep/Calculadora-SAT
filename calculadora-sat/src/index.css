@@ -2463,6 +2463,20 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .esenciales-lista .esencial-valor { font-size: clamp(24px, 2.3vw, 34px); }
 .esencial-nota { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: var(--muted); }
 .esencial-nota strong { color: var(--ink); }
+/* Enlace dentro de la nota: en la misma línea del texto, con el área de toque ampliada hacia afuera. */
+.esencial-enlace {
+  position: relative;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--educa);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.esencial-enlace::after { content: ''; position: absolute; inset: -14px -10px; }
 .resumen-niveles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
 .resumen-nivel { display: inline-flex; align-items: center; gap: 8px; }
 .resumen-nivel b { font-weight: 700; line-height: 1; }
@@ -2514,7 +2528,17 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
    absolute) queden dentro de la caja que se desplaza; si no, se salían de la página y en el
    celular la achicaban como si fuera más ancha. */
 .comparar-envoltura { position: relative; overflow-x: auto; overscroll-behavior-x: contain; }
-.comparar-tabla { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; }
+.comparar-tabla {
+  --ancho-dato: 232px;
+  --ancho-uni: 184px;
+  table-layout: fixed;
+  width: 100%;
+  min-width: calc(var(--ancho-dato) + var(--universidades) * var(--ancho-uni));
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 15px;
+}
+.comparar-tabla .comparar-esquina { width: var(--ancho-dato); }
 .comparar-tabla th, .comparar-tabla td { padding: 12px 16px; text-align: left; vertical-align: top; }
 .comparar-tabla td { min-width: 184px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
 .comparar-tabla tbody th[scope="row"] {
@@ -2522,7 +2546,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   font-size: 14px;
   font-weight: 600;
   color: var(--muted);
-  white-space: nowrap;
   border-top: 1px solid var(--line);
 }
 /* La columna de los nombres de dato queda fija al desplazar hacia el costado. */
@@ -2538,6 +2561,8 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .comparar-uni { min-width: 184px; padding: 16px 16px 18px; font-weight: 400; border-left: 1px solid var(--line); }
 .comparar-foto {
   position: relative;
+  /* Con una o dos universidades la columna es muy ancha: la foto no crece con ella. */
+  max-width: 320px;
   aspect-ratio: 16 / 9;
   margin-bottom: 14px;
   overflow: hidden;
@@ -2698,7 +2723,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .esenciales-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
-  .comparar-tabla { font-size: 14px; }
+  .comparar-tabla { --ancho-dato: 124px; --ancho-uni: 156px; font-size: 14px; }
   .comparar-tabla th, .comparar-tabla td { padding: 10px 12px; }
   /* La columna fija de nombres de dato, angosta, para dejar sitio a las universidades. */
   .comparar-tabla tbody th[scope="row"] { min-width: 112px; max-width: 124px; font-size: 13px; white-space: normal; }
@@ -2741,7 +2766,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .mi-lista .banda { padding-block: 8px; }
   .mi-lista .in { padding-inline: 0; }
   .comparar-envoltura { overflow: visible; border: 0; }
-  .comparar-tabla { font-size: 11px; }
+  .comparar-tabla { min-width: 0; font-size: 11px; }
   .comparar-tabla th, .comparar-tabla td { min-width: 0; padding: 6px 8px; }
   .comparar-tabla th[scope="row"], .comparar-esquina, .comparar-grupo th > span { position: static; box-shadow: none; }
   .comparar-destacado td { font-size: 13px; }
