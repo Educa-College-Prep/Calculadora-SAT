@@ -32,7 +32,8 @@ const stateMapOptions = {
   defaultColor: '#d3dae3',
   keepAspectRatio: true,
   enableRegionInteractivity: true,
-  tooltip: { isHtml: true, trigger: 'focus' },
+  // Sin título: sería el código interno de la región ("US-NC"); el nombre ya va en el cuadro.
+  tooltip: { isHtml: true, trigger: 'focus', showTitle: false },
   legend: { textStyle: { color: '#1b2a57', fontName: 'Lexend', fontSize: 12 } },
 };
 

@@ -86,7 +86,6 @@ function problemaTotal(n: number): string | null {
   return 'El total va de 400 a 1600.';
 }
 const PRECIO_TOPE = 100000;
-const MARGEN_STICKY = 16;
 
 /**
  * Calcula dónde se "pega" la hoja al hacer scroll. Si cabe en la pantalla, arriba
@@ -99,10 +98,8 @@ function useTopeSticky() {
     const hoja = ref.current;
     if (!hoja) return;
     const actualizar = () => {
-      // La barra de Educa queda fija arriba: la hoja se pega justo debajo de ella.
-      const barra = document.getElementById('barra')?.offsetHeight ?? 0;
-      const tope = barra + Math.min(MARGEN_STICKY, window.innerHeight - barra - hoja.offsetHeight - MARGEN_STICKY);
-      hoja.style.setProperty('--hoja-tope', `${tope}px`);
+      // El tope se calcula en el CSS: depende también de las barras fijas, que cambian con el puntaje.
+      hoja.style.setProperty('--hoja-alto', `${hoja.offsetHeight}px`);
     };
     actualizar();
     // La altura cambia, por ejemplo, al aparecer el botón "Ver todo el país".
@@ -525,7 +522,7 @@ export function Filtros({
             <Casilla
               key={nivel}
               marcada={!!conteoNiveles && nivelesSAT.includes(nivel)}
-              deshabilitada={!conteoNiveles}
+              deshabilitada={!conteoNiveles || (conteoNiveles[nivel] === 0 && !nivelesSAT.includes(nivel))}
               onCambio={() => setNivelesSAT(nivelesSAT.includes(nivel) ? nivelesSAT.filter(n => n !== nivel) : [...nivelesSAT, nivel])}
               texto={
                 <>

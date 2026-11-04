@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { Universidad } from '../types';
-import { posicionUSNews, textoPuesto, NOMBRE_LISTA, EDICION_USNEWS, FUENTE_USNEWS, nivelRanking } from '../data/rankingUSNews';
+import { posicionUSNews, textoPuesto, ayudaPuesto, EDICION_USNEWS, FUENTE_USNEWS, nivelRanking } from '../data/rankingUSNews';
 import type { Nivel } from '../utils/nivelSAT';
 import { EtiquetaNivel } from './EtiquetaNivel';
 import { formatDinero } from '../utils/formatters';
@@ -17,8 +17,9 @@ function FilaTop({ uni, numero, onSeleccionar }: { uni: Universidad; numero: num
           <span className="top-lugar">{uni.CITY}, {uni.STABBR}</span>
         </span>
         {ranking ? (
-          <span className={`marca marca-ranking marca-ranking-${nivelRanking(ranking.puesto)} top-motivo`} title={`${NOMBRE_LISTA[ranking.lista]}. Fuente: ${FUENTE_USNEWS}`}>
+          <span className={`marca marca-ranking marca-ranking-${nivelRanking(ranking.puesto)} top-motivo marca-con-ayuda`} data-ayuda={ayudaPuesto(ranking)}>
             {textoPuesto(ranking)}
+            <span className="visualmente-oculto"> ({ayudaPuesto(ranking)})</span>
           </span>
         ) : uni.MD_EARN_WNE_4YR != null ? (
           <span className="marca top-motivo" title="Salario de egresados a 4 años (College Scorecard)">Salario {formatDinero(uni.MD_EARN_WNE_4YR)}</span>
@@ -32,7 +33,7 @@ function FilaTop({ uni, numero, onSeleccionar }: { uni: Universidad; numero: num
 
 /**
  * Las mejores entre tus resultados (las eligen utils/topUniversidades). Sin puntaje SAT, una
- * lista numerada. Con puntaje, "tu lista equilibrada": unas de probabilidad alta, otras media y
+ * lista numerada. Con puntaje, "Sugerencias para ti": unas de probabilidad alta, otras media y
  * un par de baja, cada grupo con su título, como la arma un consejero.
  */
 export const TopUniversidades = memo(function TopUniversidades({ universidades, grupos, lugar, onSeleccionar }: {
@@ -44,7 +45,7 @@ export const TopUniversidades = memo(function TopUniversidades({ universidades, 
   onSeleccionar: (uni: Universidad) => void;
 }) {
   const conRanking = universidades.filter(u => posicionUSNews(u)).length;
-  const titulo = grupos ? 'Tu lista equilibrada' : 'Top universidades';
+  const titulo = grupos ? 'Sugerencias para ti' : 'Top universidades';
   const vacio = grupos ? grupos.length === 0 : universidades.length === 0;
   let numero = 0;
 
