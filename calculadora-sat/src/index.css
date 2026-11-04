@@ -2764,3 +2764,25 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .mi-lista-puntaje .total-sat input { height: 40px; font-size: 18px; }
 .mi-lista-puntaje .casilla-error { flex-basis: 100%; margin: 0; }
 .mi-lista-puntaje .casilla-error:empty { display: none; }
+
+/* Mi lista: lo importante es la tabla. Título, buscador y controles ocupan lo justo para que se vea sin bajar. */
+.mi-lista > .banda:not(.banda-contacto) { padding-block: clamp(16px, 2vw, 24px); }
+.mi-lista-titulo-fila { align-items: center; }
+.mi-lista-titulo { font-size: clamp(28px, 3.2vw, 40px); }
+.mi-lista-titulo-fila .banda-subtitulo { margin-top: 4px; font-size: 15px; }
+.mi-lista-agregar { margin-top: 12px; }
+.mi-lista-controles { gap: 10px 20px; margin-bottom: 12px; }
+.comparar-foto { max-width: 200px; margin-bottom: 10px; }
+.comparar-uni { padding-block: 12px 14px; }
+@media (max-width: 640px) {
+  .mi-lista > .banda:not(.banda-contacto) { padding-block: 14px; }
+  .mi-lista-titulo-fila .banda-subtitulo { font-size: 14px; }
+  .mi-lista-controles { gap: 8px; }
+  .mi-lista-orden { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; width: 100%; }
+  .mi-lista-orden span { flex: none; }
+  .mi-lista-orden select { flex: 1; min-width: 0; }
+  .perfil { gap: 6px; }
+  .perfil-titulo { font-size: 13px; }
+  .segmento { width: 100%; }
+  .segmento label { flex: 1; font-size: 13px; line-height: 1.2; text-align: center; white-space: nowrap; }
+}
