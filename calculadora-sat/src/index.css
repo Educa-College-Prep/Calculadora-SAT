@@ -2117,7 +2117,39 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 @media (max-width: 350px) {
   .barra-educa-producto { display: none; }
 }
+/* Mi lista en la barra: solo en celular, donde el botón de la portada queda lejos al bajar.
+   Ahí reemplaza a ese botón y a "College Finder", que no cabrían los tres. */
+.barra-educa-lista { display: none; }
+@media (max-width: 640px) {
+  .barra-educa-producto, .boton-mi-lista { display: none; }
+  .barra-educa-lista {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 5px;
+    min-height: 44px;
+    margin-left: auto;
+    padding: 0 10px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--educa);
+    white-space: nowrap;
+    background: #fff;
+    border: 1.5px solid var(--brand-soft);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .barra-educa-contacto { min-height: 44px; margin-left: 0; }
+  .barra-educa-lista .contador { animation: contador-mi-lista 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+}
+/* Pantallas angostas: la estrella y el contador bastan; el nombre lo lee el lector de pantalla. */
+@media (max-width: 379px) {
+  .barra-educa-lista-texto { display: none; }
+}
+@keyframes contador-mi-lista { from { transform: scale(1.35); } to { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) {
+  .barra-educa-lista .contador { animation: none; }
   .barra-educa-contacto { transition: none; }
   .barra-educa-contacto:hover { transform: none; }
 }

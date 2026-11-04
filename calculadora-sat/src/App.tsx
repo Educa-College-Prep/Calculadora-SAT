@@ -13,7 +13,7 @@ import { calcularCostoVida } from './utils/costos';
 import { leerFiltrosDeURL, escribirFiltrosEnURL, PRECIO_MAXIMO_SLIDER } from './utils/filtrosURL';
 import type { FiltrosURL } from './utils/filtrosURL';
 import { posicionUSNews } from './data/rankingUSNews';
-import { useMiLista, claveUniversidad } from './utils/useMiLista';
+import { useMiLista, claveUniversidad, publicarCantidadMiLista } from './utils/useMiLista';
 import type { TipoControl } from './utils/tipoControl';
 import { MapaGeo } from './components/MapaGeo';
 import { TopUniversidades } from './components/TopUniversidades';
@@ -28,7 +28,7 @@ import type { Nivel } from './utils/nivelSAT';
 import { NIVELES } from './utils/nivelSAT';
 import { BarrasNivel } from './components/EtiquetaNivel';
 import { AvisoFuentes } from './components/AvisoFuentes';
-import { EVENTO_INICIO, CONTACTO } from './components/BarraEduca';
+import { EVENTO_INICIO, EVENTO_MI_LISTA, CONTACTO } from './components/BarraEduca';
 
 /** Opción del filtro "¿Piden el SAT?" → valor de ADMCON7 (política de puntajes de IPEDS). */
 const POLITICA_SAT: Record<string, string> = {
@@ -597,6 +597,18 @@ export default function App() {
     const porClave = new Map(universidades.map(u => [claveUniversidad(u), u]));
     return miLista.claves.map(c => porClave.get(c)).filter((u): u is Universidad => u != null);
   }, [universidades, miLista.claves]);
+
+  // La barra de Educa muestra este contador. Antes de cargar los datos no se publica: daría 0.
+  useEffect(() => {
+    if (universidades.length > 0) publicarCantidadMiLista(universidadesGuardadas.length);
+  }, [universidades.length, universidadesGuardadas.length]);
+
+  // La estrella de la barra. Si ya se está en Mi lista no suma otra entrada al historial.
+  useEffect(() => {
+    const alAbrir = () => { if (!viendoMiLista) abrirMiLista(); };
+    window.addEventListener(EVENTO_MI_LISTA, alAbrir);
+    return () => window.removeEventListener(EVENTO_MI_LISTA, alAbrir);
+  }, [viendoMiLista, abrirMiLista]);
 
   // Un enlace compartido desde Mi lista (?lista=166683,170976, por UNITID): sus universidades se
   // suman a la lista de quien lo abre y se abre Mi lista, con un aviso para deshacerlo. El

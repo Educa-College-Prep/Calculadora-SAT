@@ -1,12 +1,16 @@
 import { useLayoutEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import logoEduca from '../assets/educa-logo.png';
+import { useCantidadMiLista } from '../utils/useMiLista';
 
 /** Página de contacto de Educa: la usan la barra y el cierre de la ficha. */
 export const CONTACTO = 'https://educacollegeprep.com/pe/contactanos/';
 
 /** Lo escucha App: vuelve a la vista principal sin recargar (se conservan los filtros). */
 export const EVENTO_INICIO = 'college-finder:inicio';
+
+/** Lo escucha App: abre Mi lista desde la estrella de la barra. */
+export const EVENTO_MI_LISTA = 'college-finder:mi-lista';
 
 /** Clic normal → se queda en la app. Con Cmd/Ctrl (nueva pestaña) se deja al navegador. */
 function irAlInicio(e: MouseEvent<HTMLAnchorElement>) {
@@ -17,11 +21,13 @@ function irAlInicio(e: MouseEvent<HTMLAnchorElement>) {
 
 /**
  * Barra de Educa College Prep, como la de su web: logo, nombre de la herramienta y
- * "Contáctanos". Queda fija arriba al bajar por la página.
+ * "Contáctanos". Queda fija arriba al bajar por la página. En celular suma Mi lista, que así
+ * queda al alcance en todas las vistas; ahí "College Finder" cede su lugar (el logo sigue).
  * Va fuera de #root (ver main.tsx) para ocupar todo el ancho de la pantalla.
  */
 export function BarraEduca() {
   const ref = useRef<HTMLElement>(null);
+  const cantidad = useCantidadMiLista();
 
   // Su altura cambia según la pantalla: se publica para que lo que se desplaza hasta un
   // punto de la página (o se queda pegado arriba) no termine escondido debajo de la barra.
@@ -45,6 +51,13 @@ export function BarraEduca() {
         <a className="barra-educa-producto" href={inicio} onClick={irAlInicio} tabIndex={-1} aria-hidden="true">
           College Finder
         </a>
+        <button type="button" className="barra-educa-lista" onClick={() => window.dispatchEvent(new Event(EVENTO_MI_LISTA))}
+          aria-label={`Mi lista: ${cantidad} ${cantidad === 1 ? 'universidad guardada' : 'universidades guardadas'}`}>
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
+          <span className="barra-educa-lista-texto">Mi lista</span>
+          {/* La key reinicia la animación: como la barra siempre se ve, guardar se nota al instante. */}
+          <span key={cantidad} className="contador numero">{cantidad}</span>
+        </button>
         <a className="barra-educa-contacto" href={CONTACTO} target="_blank" rel="noopener noreferrer">
           Contáctanos
           <span className="visualmente-oculto"> (se abre en otra pestaña)</span>
