@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { Universidad } from '../types';
 
 /**
@@ -30,6 +30,27 @@ function escribir(claves: string[]) {
   } catch {
     // Sin almacenamiento disponible: se mantiene solo mientras la página esté abierta.
   }
+}
+
+/**
+ * Cuántas guardadas hay, para la barra de Educa: vive fuera de App (ver main.tsx), así que no
+ * puede recibirlo como prop. Parte de lo guardado en el navegador para que el contador no
+ * arranque en 0, y App publica la cifra real cuando ya cargó los datos.
+ */
+let cantidadPublicada = leer().length;
+const oyentesCantidad = new Set<() => void>();
+
+export function publicarCantidadMiLista(cantidad: number) {
+  if (cantidad === cantidadPublicada) return;
+  cantidadPublicada = cantidad;
+  oyentesCantidad.forEach(avisar => avisar());
+}
+
+export function useCantidadMiLista() {
+  return useSyncExternalStore(
+    (avisar) => { oyentesCantidad.add(avisar); return () => { oyentesCantidad.delete(avisar); }; },
+    () => cantidadPublicada,
+  );
 }
 
 export function useMiLista() {
