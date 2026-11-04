@@ -2758,7 +2758,8 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 
 /* Mi lista: el puntaje va con los demás controles de la tabla. */
 .mi-lista-puntaje { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 14px; font-weight: 600; }
-.mi-lista-puntaje .total-sat { width: 190px; min-height: 44px; margin: 0; padding: 0 12px; align-items: center; background: var(--surface); }
+.mi-lista-puntaje .total-sat-escala { flex: none; white-space: nowrap; }
+.mi-lista-puntaje .total-sat { width: 210px; min-height: 44px; margin: 0; padding: 0 12px; align-items: center; background: var(--surface); }
 .mi-lista-puntaje .total-sat label { white-space: nowrap; }
 .mi-lista-puntaje .total-sat input { height: 40px; font-size: 18px; }
 .mi-lista-puntaje .casilla-error { flex-basis: 100%; margin: 0; }
