@@ -193,11 +193,21 @@ function TiposUniversidad({ tipos, setTipos }: { tipos: TipoControl[]; setTipos:
   );
 }
 
+/** Lo que vale el texto de una sección como puntaje; 0 si está vacío o todavía no es válido. */
+const valorSeccion = (texto: string) =>
+  texto === '' || problemaSeccion(Number(texto)) ? 0 : aDecena(Number(texto));
+
+/** Lo mismo para el total escrito a mano. */
+const valorTotal = (texto: string) =>
+  texto === '' || problemaTotal(Number(texto)) ? 0 : aDecena(Number(texto));
+
 /**
  * Input de una sección del SAT. Deja escribir libremente (hasta 4 dígitos, por si alguien
- * pone su total aquí) y, al salir del campo, guarda el valor redondeado a la decena si está
- * entre 200 y 800. Si no, no filtra y explica qué pasó; si el número parece un total, ofrece
- * usarlo como total. Vacío = sin filtrar (se guarda como 0).
+ * pone su total aquí) y aplica el puntaje en cuanto el número es válido (entre 200 y 800,
+ * redondeado a la decena), sin esperar a salir del campo: así el total y las universidades
+ * responden mientras se escribe. Al salir, el campo muestra el valor redondeado; si no vale,
+ * no filtra y explica qué pasó; si el número parece un total, ofrece usarlo como total.
+ * Vacío = sin filtrar (se guarda como 0).
  */
 function InputSeccionSAT({ id, etiqueta, valor, setValor, onUsarComoTotal }: {
   id: string;
@@ -211,10 +221,11 @@ function InputSeccionSAT({ id, etiqueta, valor, setValor, onUsarComoTotal }: {
   const [salio, setSalio] = useState(false);
 
   // Si el valor cambia desde fuera ("Limpiar filtros", usar el total), se refleja en el campo.
+  // Si es el que sale de lo que se está escribiendo, no se toca: 655 no salta a 660 a media escritura.
   const [valorPrevio, setValorPrevio] = useState(valor);
   if (valor !== valorPrevio) {
     setValorPrevio(valor);
-    setTexto(valor ? String(valor) : '');
+    if (valor !== valorSeccion(texto)) setTexto(valor ? String(valor) : '');
   }
 
   const numero = Number(texto);
@@ -243,7 +254,12 @@ function InputSeccionSAT({ id, etiqueta, valor, setValor, onUsarComoTotal }: {
         autoComplete="off"
         placeholder="—"
         value={texto}
-        onChange={(e) => { setTexto(e.target.value.replace(/\D/g, '').slice(0, 4)); setSalio(false); }}
+        onChange={(e) => {
+          const nuevo = e.target.value.replace(/\D/g, '').slice(0, 4);
+          setTexto(nuevo);
+          setSalio(false);
+          setValor(valorSeccion(nuevo));
+        }}
         onBlur={confirmar}
         onKeyDown={(e) => { if (e.key === 'Enter') confirmar(); }}
         aria-invalid={!!mostrarProblema}
@@ -272,14 +288,17 @@ function InputSeccionSAT({ id, etiqueta, valor, setValor, onUsarComoTotal }: {
  * Total del SAT. Con las dos secciones se calcula solo; sin ellas se puede escribir directo,
  * para quien solo recuerda su total. Escribir aquí borra las secciones: el total manda.
  * También lo usa la ficha ("Tu probabilidad"), con su propio `id` y etiqueta.
+ * `enVivo` aplica el total en cuanto es válido. Solo lo usa la portada: en la ficha y en
+ * Mi lista el campo desaparece al recibir un puntaje, y se iría mientras todavía se escribe.
  */
-export function InputTotalSAT({ total, setSoloTotal, onEscribir, id = 'sat-total', etiqueta = 'Total', autoFocus = false }: {
+export function InputTotalSAT({ total, setSoloTotal, onEscribir, id = 'sat-total', etiqueta = 'Total', autoFocus = false, enVivo = false }: {
   total: number;
   setSoloTotal: (v: number) => void;
   onEscribir: () => void;
   id?: string;
   etiqueta?: string;
   autoFocus?: boolean;
+  enVivo?: boolean;
 }) {
   const [texto, setTexto] = useState(total ? String(total) : '');
   const [salio, setSalio] = useState(false);
@@ -289,7 +308,8 @@ export function InputTotalSAT({ total, setSoloTotal, onEscribir, id = 'sat-total
   const [totalPrevio, setTotalPrevio] = useState(total);
   if (total !== totalPrevio) {
     setTotalPrevio(total);
-    if (!editando) setTexto(total ? String(total) : '');
+    // En vivo, lo que llega casi siempre es lo que se está escribiendo; si no lo es ("Limpiar"), se refleja.
+    if (enVivo ? total !== valorTotal(texto) : !editando) setTexto(total ? String(total) : '');
   }
 
   const problema = texto === '' ? null : problemaTotal(Number(texto));
@@ -318,7 +338,13 @@ export function InputTotalSAT({ total, setSoloTotal, onEscribir, id = 'sat-total
           autoComplete="off"
           placeholder="—"
           value={texto}
-          onChange={(e) => { setTexto(e.target.value.replace(/\D/g, '').slice(0, 4)); setSalio(false); onEscribir(); }}
+          onChange={(e) => {
+            const nuevo = e.target.value.replace(/\D/g, '').slice(0, 4);
+            setTexto(nuevo);
+            setSalio(false);
+            onEscribir();
+            if (enVivo) setSoloTotal(valorTotal(nuevo));
+          }}
           onFocus={() => setEditando(true)}
           onBlur={() => { setEditando(false); confirmar(); }}
           onKeyDown={(e) => { if (e.key === 'Enter') confirmar(); }}
@@ -381,7 +407,7 @@ export function PuntajeSAT({ puntajeMath, setPuntajeMath, puntajeLectura, setPun
         <InputSeccionSAT key={`math-${reinicioSecciones}`} id="sat-math" etiqueta="Matemáticas"
           valor={puntajeMath} setValor={conSeccion(setPuntajeMath)} onUsarComoTotal={usarComoTotal} />
       </div>
-      <InputTotalSAT total={puntajeTotal} setSoloTotal={setPuntajeSoloTotal} onEscribir={borrarSecciones} />
+      <InputTotalSAT enVivo total={puntajeTotal} setSoloTotal={setPuntajeSoloTotal} onEscribir={borrarSecciones} />
       {satFalta && (
         <p className="ayuda ayuda-aviso">Falta tu puntaje de {satFalta}, o escribe solo tu total.</p>
       )}
