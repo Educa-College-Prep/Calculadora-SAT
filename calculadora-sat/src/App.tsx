@@ -7,7 +7,6 @@ import { Buscador } from './components/Buscador';
 import { Filtros, PuntajeSAT, AYUDA_PUNTAJE } from './components/Filtros';
 import { InfoTooltip } from './components/InfoTooltip';
 import { tipoControl } from './utils/tipoControl';
-import { useValorEstable } from './utils/useValorEstable';
 import { useMedia } from './utils/useMedia';
 import { calcularCostoVida } from './utils/costos';
 import { leerFiltrosDeURL, escribirFiltrosEnURL, PRECIO_MAXIMO_SLIDER } from './utils/filtrosURL';
@@ -15,7 +14,7 @@ import type { FiltrosURL } from './utils/filtrosURL';
 import { posicionUSNews } from './data/rankingUSNews';
 import { useMiLista, claveUniversidad, publicarCantidadMiLista } from './utils/useMiLista';
 import type { TipoControl } from './utils/tipoControl';
-import { MapaGeo } from './components/MapaGeo';
+import { MapaInteractivo } from './components/MapaInteractivo';
 import { TopUniversidades } from './components/TopUniversidades';
 import { elegirTop, elegirListaEquilibrada } from './utils/topUniversidades';
 import { ListaUniversidades } from './components/ListaUniversidades';
@@ -37,7 +36,6 @@ const POLITICA_SAT: Record<string, string> = {
   'no-considera': 'Ni requerido ni recomendado',
 };
 
-type TooltipCell = { role: 'tooltip'; p: { html: true } };
 
 /** Convierte "123" → 123; "PS" (Privacy Suppressed), vacío o texto raro → null. */
 function aNumero(valor: unknown): number | null {
@@ -428,43 +426,11 @@ export default function App() {
     [universidadesFiltradas, filtros.sat, viendoMuyPorEncima]
   );
 
-  // --- PREPARACIÓN DE DATOS DEL MAPA GEO ---
-  const datosMapaGeoEstados = useMemo(() => {
-    const filas: (string | number | TooltipCell)[][] = [
-      ["Estado", "Universidades", { role: 'tooltip', p: { html: true } }]
-    ];
-
-    const conteoPorEstado: Record<string, number> = {};
-
-    universidadesSinUbicacion.forEach(uni => {
-      if (uni.STABBR) conteoPorEstado[uni.STABBR] = (conteoPorEstado[uni.STABBR] || 0) + 1;
-    });
-
-    Object.keys(conteoPorEstado).sort().forEach(estado => {
-      const nombreEstado = NOMBRES_ESTADOS[estado] ?? estado;
-      const tooltip = `<div style="padding:8px 10px; line-height:1.35; color:#1b2a57; font-family:Lexend, sans-serif;">
-      <strong style="font-size:15px;">${nombreEstado}</strong><br />
-      <span style="font-size:13px; color:#5d6467;">${conteoPorEstado[estado]} universidades · clic para ver condados</span>
-    </div>`;
-
-      // Con un estado elegido, el valor solo marca "elegido (1) / resto (0)" para
-      // pintar ese estado y dejar los demás en gris. El tooltip conserva el conteo real.
-      const valor = filtros.estado === 'todos'
-        ? conteoPorEstado[estado]
-        : estado === filtros.estado ? 1 : 0;
-
-      filas.push([`US-${estado}`, valor, tooltip]);
-    });
-
-    return filas;
-  }, [universidadesSinUbicacion, filtros.estado]);
-
-  // El mapa de Google y el de condados son lo más caro de redibujar y no se pueden
-  // interrumpir: mientras un filtro cambia seguido, esperan a que se quede quieto.
-  const mapa = useValorEstable(
-    useMemo(() => ({ datos: datosMapaGeoEstados, universidades: universidadesFiltradas, estado: filtros.estado }),
-      [datosMapaGeoEstados, universidadesFiltradas, filtros.estado]),
-    250,
+  // Numeradas en el mapa del país, con los mismos números del cuadro de al lado: las sugerencias
+  // con puntaje; sin él, el mismo top, que el mapa sigue hasta el puesto 20.
+  const topMapa = useMemo(
+    () => listaEquilibrada ? listaEquilibrada.flatMap(g => g.universidades) : elegirTop(universidadesFiltradas, 20),
+    [listaEquilibrada, universidadesFiltradas],
   );
 
   // Callbacks estables: sin esto, los mapas y el gráfico se redibujan en cada tecla.
@@ -479,7 +445,7 @@ export default function App() {
   }, []);
 
   // CELULAR (una sola columna, hasta 960px): el mapa no va en la página, porque empujaba los
-  // resultados una pantalla más abajo y un toque equivocado abría los condados. Se abre en una
+  // resultados una pantalla más abajo. Se abre en una
   // capa encima de todo; al elegir un lugar se cierra y lleva a los resultados.
   const angosto = useMedia('(max-width: 960px)');
   const [mapaAbierto, setMapaAbierto] = useState(false);
@@ -923,13 +889,13 @@ export default function App() {
               <div className="in">
                 <section className="tablero">
                   {!angosto && (
-                    <MapaGeo
-                      alto="380px"
-                      datosMapaGeoEstados={mapa.datos}
-                      universidadesFiltradas={mapa.universidades}
-                      estadoSeleccionado={mapa.estado}
+                    <MapaInteractivo
+                      universidades={universidadesSinUbicacion}
+                      estado={filtros.estado} ciudad={filtros.ciudad}
+                      top={topMapa}
                       onSeleccionarEstado={seleccionarEstadoDesdeMapa}
                       onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
+                      onSeleccionarUniversidad={seleccionarUniversidad}
                     />
                   )}
 
@@ -1028,12 +994,17 @@ export default function App() {
         {angosto && mapaAbierto && (
           <div className="capa-mapa" role="dialog" aria-modal="true" aria-labelledby="capa-mapa-titulo">
             <h2 id="capa-mapa-titulo" className="capa-mapa-titulo">Elige dónde quieres estudiar</h2>
-            <MapaGeo
-              datosMapaGeoEstados={mapa.datos}
-              universidadesFiltradas={mapa.universidades}
-              estadoSeleccionado={mapa.estado}
-              onSeleccionarEstado={st => elegirEnCapa(() => seleccionarEstadoDesdeMapa(st))}
-              onSeleccionarCiudad={ciudad => elegirEnCapa(() => seleccionarCiudadDesdeMapa(ciudad))}
+            {/* Tocar un estado acerca la vista sin cerrar la capa, para poder elegir también la ciudad. */}
+            <MapaInteractivo
+              universidades={universidadesSinUbicacion}
+              estado={filtros.estado} ciudad={filtros.ciudad}
+              top={topMapa}
+              onSeleccionarEstado={seleccionarEstadoDesdeMapa}
+              onSeleccionarCiudad={ciudad => {
+                if (ciudad === 'todas') seleccionarCiudadDesdeMapa(ciudad);
+                else elegirEnCapa(() => seleccionarCiudadDesdeMapa(ciudad));
+              }}
+              onSeleccionarUniversidad={uni => { setMapaAbierto(false); seleccionarUniversidad(uni); }}
             />
             {/* Los estados chicos (Rhode Island, Delaware…) son difíciles de tocar en el mapa:
                 aquí están todos como botones grandes, de los que tienen más universidades a menos. */}
@@ -1050,7 +1021,7 @@ export default function App() {
               ))}
             </ul>
             {/* Cerrar al pie, al alcance del pulgar. */}
-            <button type="button" className="boton boton-primario capa-mapa-cerrar" onClick={() => setMapaAbierto(false)} autoFocus>Cerrar</button>
+            <button type="button" className="boton boton-primario capa-mapa-cerrar" onClick={() => { setMapaAbierto(false); if (estadoSeleccionado !== 'todos') irAResultados(); }} autoFocus>Cerrar</button>
           </div>
         )}
 
