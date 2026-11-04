@@ -2136,7 +2136,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
     color: var(--educa);
     white-space: nowrap;
     background: #fff;
-    border: 1.5px solid var(--brand-soft);
+    border: 1.5px solid #d9deea;
     border-radius: 999px;
     cursor: pointer;
   }
