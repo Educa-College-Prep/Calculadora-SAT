@@ -207,9 +207,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   color: var(--tinta-fuerte);
 }
 .resultado-texto { font-size: 17px; font-weight: 600; }
-.resultado-ayuda { flex-basis: 100%; font-size: 14px; font-weight: 600; color: var(--tinta-fuerte); }
-.resultado-encima { flex-basis: 100%; font-size: 14px; color: var(--tinta-fuerte); }
-.resultado-nota { flex-basis: 100%; font-size: 13px; color: var(--grafito-suave); }
+.resultado-encima { font-size: 13px; color: var(--grafito-suave); }
+.resultado-nota { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0 4px; font-size: 13px; color: var(--grafito-suave); }
 
 .tablero {
   display: grid;
@@ -220,7 +219,6 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 /* Con el mapa de todo el país (alto fijo), el panel no se estira hasta el alto del Top: si no,
    queda un recuadro con mucho blanco arriba y abajo. Con un estado elegido sí se estira, porque
    el mapa de condados llena el espacio. */
-.tablero:has(.mapa-nacional:only-child) { align-items: start; }
 .tablero-lateral {
   display: flex;
   flex-direction: column;
@@ -230,12 +228,6 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 /* Las dos columnas terminan a la misma altura: el último cuadro de la derecha se
    estira, y a la izquierda crece el mapa de condados (o se centra el del país). */
 .tablero-lateral > :last-child { flex: 1; }
-.panel-mapa { display: flex; flex-direction: column; }
-.panel-mapa > .panel-cuerpo { flex: 1; display: flex; flex-direction: column; }
-.panel-mapa .mapa-nacional { display: flex; flex-direction: column; justify-content: center; }
-.panel-mapa .mapa-nacional:only-child { flex: 1; }
-.panel-mapa .mapa-condados { flex: 1; display: flex; flex-direction: column; }
-.mapa-condados-lienzo { position: relative; flex: 1; width: 100%; min-height: 340px; }
 
 @media (max-width: 1180px) {
   .tablero { grid-template-columns: minmax(0, 1fr); }
@@ -570,16 +562,8 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   border-radius: var(--radio-chico);
 }
 
-.mapa-nacional { min-height: 300px; }
-.mapa-condados {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--linea);
-}
 
 /* Globos de Leaflet con la tipografía de la página */
-.leaflet-container { font-family: var(--fuente); }
-.leaflet-tooltip, .leaflet-popup-content-wrapper { border-radius: var(--radio-chico); color: var(--grafito); }
 
 .cifras {
   display: grid;
@@ -2117,7 +2101,39 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 @media (max-width: 350px) {
   .barra-educa-producto { display: none; }
 }
+/* Mi lista en la barra: solo en celular, donde el botón de la portada queda lejos al bajar.
+   Ahí reemplaza a ese botón y a "College Finder", que no cabrían los tres. */
+.barra-educa-lista { display: none; }
+@media (max-width: 640px) {
+  .barra-educa-producto, .boton-mi-lista { display: none; }
+  .barra-educa-lista {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 5px;
+    min-height: 44px;
+    margin-left: auto;
+    padding: 0 10px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--educa);
+    white-space: nowrap;
+    background: #fff;
+    border: 1.5px solid #d9deea;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .barra-educa-contacto { min-height: 44px; margin-left: 0; }
+  .barra-educa-lista .contador { animation: contador-mi-lista 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+}
+/* Pantallas angostas: la estrella y el contador bastan; el nombre lo lee el lector de pantalla. */
+@media (max-width: 379px) {
+  .barra-educa-lista-texto { display: none; }
+}
+@keyframes contador-mi-lista { from { transform: scale(1.35); } to { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) {
+  .barra-educa-lista .contador { animation: none; }
   .barra-educa-contacto { transition: none; }
   .barra-educa-contacto:hover { transform: none; }
 }
@@ -2329,9 +2345,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 
 /* Capa del mapa en celular: mapa a todo el ancho, lista de estados y "Cerrar" al pie. */
 .capa-mapa-titulo { margin: 4px 0 0; font-size: 20px; font-weight: 800; }
-.capa-mapa .panel-mapa { background: none; border: 0; }
-.capa-mapa .panel-mapa > .panel-cabecera { display: none; }
-.capa-mapa .panel-mapa > .panel-cuerpo { padding: 0; }
 .capa-mapa-subtitulo { margin: 4px 0 0; font-size: 15px; font-weight: 700; color: var(--tinta-fuerte); }
 .capa-estados { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
 .capa-estado {
@@ -2411,7 +2424,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 
 /* Banda 2: el mapa con más protagonismo y tu lista al lado (en pantallas angostas, uno debajo del otro). */
 @media (min-width: 1181px) {
-  .portada-3 .tablero { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+  .portada-3 .tablero { grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); }
 }
 
 @media (max-width: 960px) {
@@ -2785,4 +2798,46 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .perfil-titulo { font-size: 13px; }
   .segmento { width: 100%; }
   .segmento label { flex: 1; font-size: 13px; line-height: 1.2; text-align: center; white-space: nowrap; }
+}
+
+/* ========== Mapa de la portada: SVG propio, ver MapaInteractivo.tsx ========== */
+.mapa-ix { --brand: #2a3f8f; --navy: #1c2c6e; display: flex; flex-direction: column; padding: 16px 20px; }
+.mapa-ix-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+.mapa-ix-lienzo { position: relative; width: 100%; aspect-ratio: 975 / 610; overflow: hidden; border-radius: 12px; }
+/* Todo el país: el panel centrado junto a las sugerencias, sin estirarse y sin blanco por dentro.
+   Con un estado elegido la columna de al lado crece mucho: el mapa se queda fijo al bajar. */
+.tablero:has(.mapa-ix) { align-items: center; }
+.tablero:has(.mapa-ix-estado.elegido) { align-items: start; }
+.tablero:has(.mapa-ix-estado.elegido) .mapa-ix { position: sticky; top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px) + 12px); }
+.mapa-ix-lienzo svg { display: block; width: 100%; height: 100%; }
+.mapa-ix-cargando { position: absolute; inset: 0; background: #e8ecf8; }
+.mapa-ix-grupo { transform-origin: 0 0; transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1); }
+.mapa-ix-estado {
+  stroke: #fff;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  cursor: pointer;
+  transition: fill 0.35s ease, stroke 0.15s ease;
+}
+.mapa-ix-estado:hover { stroke: var(--navy); stroke-width: 1.5; }
+.mapa-ix-estado.elegido { stroke: var(--brand); stroke-width: 1.5; cursor: default; }
+.mapa-ix-ciudad {
+  fill: var(--brand);
+  fill-opacity: 0.72;
+  stroke: #fff;
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+  transition: fill-opacity 0.15s ease;
+}
+.mapa-ix-ciudad:hover, .mapa-ix-ciudad.activa { fill: var(--navy); fill-opacity: 1; }
+.mapa-ix-marca { cursor: pointer; }
+.mapa-ix-marca circle { fill: var(--navy); stroke: #fff; stroke-width: 1.5; transition: fill 0.15s ease; }
+.mapa-ix-marca:hover circle { fill: var(--brand); }
+.mapa-ix-marca text { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; fill: #fff; pointer-events: none; }
+.mapa-ix-leyenda { min-height: 22px; margin: 10px 0 0; font-size: 14px; font-weight: 600; color: var(--tinta-fuerte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.capa-mapa .mapa-ix { padding: 0; background: none; border: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .mapa-ix-grupo, .mapa-ix-estado, .mapa-ix-ciudad { transition: none; }
 }

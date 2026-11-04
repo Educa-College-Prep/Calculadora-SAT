@@ -7,15 +7,14 @@ import { Buscador } from './components/Buscador';
 import { Filtros, PuntajeSAT, AYUDA_PUNTAJE } from './components/Filtros';
 import { InfoTooltip } from './components/InfoTooltip';
 import { tipoControl } from './utils/tipoControl';
-import { useValorEstable } from './utils/useValorEstable';
 import { useMedia } from './utils/useMedia';
 import { calcularCostoVida } from './utils/costos';
 import { leerFiltrosDeURL, escribirFiltrosEnURL, PRECIO_MAXIMO_SLIDER } from './utils/filtrosURL';
 import type { FiltrosURL } from './utils/filtrosURL';
 import { posicionUSNews } from './data/rankingUSNews';
-import { useMiLista, claveUniversidad } from './utils/useMiLista';
+import { useMiLista, claveUniversidad, publicarCantidadMiLista } from './utils/useMiLista';
 import type { TipoControl } from './utils/tipoControl';
-import { MapaGeo } from './components/MapaGeo';
+import { MapaInteractivo } from './components/MapaInteractivo';
 import { TopUniversidades } from './components/TopUniversidades';
 import { elegirTop, elegirListaEquilibrada } from './utils/topUniversidades';
 import { ListaUniversidades } from './components/ListaUniversidades';
@@ -28,7 +27,7 @@ import type { Nivel } from './utils/nivelSAT';
 import { NIVELES } from './utils/nivelSAT';
 import { BarrasNivel } from './components/EtiquetaNivel';
 import { AvisoFuentes } from './components/AvisoFuentes';
-import { EVENTO_INICIO, CONTACTO } from './components/BarraEduca';
+import { EVENTO_INICIO, EVENTO_MI_LISTA, CONTACTO } from './components/BarraEduca';
 
 /** Opción del filtro "¿Piden el SAT?" → valor de ADMCON7 (política de puntajes de IPEDS). */
 const POLITICA_SAT: Record<string, string> = {
@@ -37,7 +36,6 @@ const POLITICA_SAT: Record<string, string> = {
   'no-considera': 'Ni requerido ni recomendado',
 };
 
-type TooltipCell = { role: 'tooltip'; p: { html: true } };
 
 /** Convierte "123" → 123; "PS" (Privacy Suppressed), vacío o texto raro → null. */
 function aNumero(valor: unknown): number | null {
@@ -46,6 +44,9 @@ function aNumero(valor: unknown): number | null {
   const n = Number(valor);
   return Number.isFinite(n) ? n : null;
 }
+
+/** Por qué hay universidades sin probabilidad: muchas ni siquiera usan el SAT, no es un dato que falte. */
+const AYUDA_SIN_DATOS = 'No usan o no publican puntajes SAT, así que no podemos calcular tu probabilidad. Siguen en los resultados, al final.';
 
 export default function App() {
   const [universidades, setUniversidades] = useState<Universidad[]>([]);
@@ -425,43 +426,11 @@ export default function App() {
     [universidadesFiltradas, filtros.sat, viendoMuyPorEncima]
   );
 
-  // --- PREPARACIÓN DE DATOS DEL MAPA GEO ---
-  const datosMapaGeoEstados = useMemo(() => {
-    const filas: (string | number | TooltipCell)[][] = [
-      ["Estado", "Universidades", { role: 'tooltip', p: { html: true } }]
-    ];
-
-    const conteoPorEstado: Record<string, number> = {};
-
-    universidadesSinUbicacion.forEach(uni => {
-      if (uni.STABBR) conteoPorEstado[uni.STABBR] = (conteoPorEstado[uni.STABBR] || 0) + 1;
-    });
-
-    Object.keys(conteoPorEstado).sort().forEach(estado => {
-      const nombreEstado = NOMBRES_ESTADOS[estado] ?? estado;
-      const tooltip = `<div style="padding:8px 10px; line-height:1.35; color:#1b2a57; font-family:Lexend, sans-serif;">
-      <strong style="font-size:15px;">${nombreEstado}</strong><br />
-      <span style="font-size:13px; color:#5d6467;">${conteoPorEstado[estado]} universidades · clic para ver condados</span>
-    </div>`;
-
-      // Con un estado elegido, el valor solo marca "elegido (1) / resto (0)" para
-      // pintar ese estado y dejar los demás en gris. El tooltip conserva el conteo real.
-      const valor = filtros.estado === 'todos'
-        ? conteoPorEstado[estado]
-        : estado === filtros.estado ? 1 : 0;
-
-      filas.push([`US-${estado}`, valor, tooltip]);
-    });
-
-    return filas;
-  }, [universidadesSinUbicacion, filtros.estado]);
-
-  // El mapa de Google y el de condados son lo más caro de redibujar y no se pueden
-  // interrumpir: mientras un filtro cambia seguido, esperan a que se quede quieto.
-  const mapa = useValorEstable(
-    useMemo(() => ({ datos: datosMapaGeoEstados, universidades: universidadesFiltradas, estado: filtros.estado }),
-      [datosMapaGeoEstados, universidadesFiltradas, filtros.estado]),
-    250,
+  // Numeradas en el mapa del país, con los mismos números del cuadro de al lado: las sugerencias
+  // con puntaje; sin él, el mismo top, que el mapa sigue hasta el puesto 20.
+  const topMapa = useMemo(
+    () => listaEquilibrada ? listaEquilibrada.flatMap(g => g.universidades) : elegirTop(universidadesFiltradas, 20),
+    [listaEquilibrada, universidadesFiltradas],
   );
 
   // Callbacks estables: sin esto, los mapas y el gráfico se redibujan en cada tecla.
@@ -476,7 +445,7 @@ export default function App() {
   }, []);
 
   // CELULAR (una sola columna, hasta 960px): el mapa no va en la página, porque empujaba los
-  // resultados una pantalla más abajo y un toque equivocado abría los condados. Se abre en una
+  // resultados una pantalla más abajo. Se abre en una
   // capa encima de todo; al elegir un lugar se cierra y lleva a los resultados.
   const angosto = useMedia('(max-width: 960px)');
   const [mapaAbierto, setMapaAbierto] = useState(false);
@@ -597,6 +566,18 @@ export default function App() {
     const porClave = new Map(universidades.map(u => [claveUniversidad(u), u]));
     return miLista.claves.map(c => porClave.get(c)).filter((u): u is Universidad => u != null);
   }, [universidades, miLista.claves]);
+
+  // La barra de Educa muestra este contador. Antes de cargar los datos no se publica: daría 0.
+  useEffect(() => {
+    if (universidades.length > 0) publicarCantidadMiLista(universidadesGuardadas.length);
+  }, [universidades.length, universidadesGuardadas.length]);
+
+  // La estrella de la barra. Si ya se está en Mi lista no suma otra entrada al historial.
+  useEffect(() => {
+    const alAbrir = () => { if (!viendoMiLista) abrirMiLista(); };
+    window.addEventListener(EVENTO_MI_LISTA, alAbrir);
+    return () => window.removeEventListener(EVENTO_MI_LISTA, alAbrir);
+  }, [viendoMiLista, abrirMiLista]);
 
   // Un enlace compartido desde Mi lista (?lista=166683,170976, por UNITID): sus universidades se
   // suman a la lista de quien lo abre y se abre Mi lista, con un aviso para deshacerlo. El
@@ -758,12 +739,14 @@ export default function App() {
     };
     const cuantasEncima = muyPorEncima.length;
     const busqueda = busquedaNombre.trim();
+    // Junto a las cajas, lo mínimo: el detalle de por qué no tienen datos va en el "?".
+    const conSinDatos = (totalConNivel > 0 || cuantasEncima > 0) && sinCalcular > 0;
+    // Con grupos a la vista, "Quitar filtros" solo aparece si hay algo más que el puntaje que quitar.
+    const conQuitarFiltros = totalConNivel > 0
+      ? filtrosActivos.some(f => f !== 'puntaje SAT')
+      : filtrosActivos.length > 0;
     const textoNota = [
-      (totalConNivel > 0 || cuantasEncima > 0) && sinCalcular > 0
-        ? (sinCalcular === 1
-          ? 'Otra no publica datos suficientes para calcular tu probabilidad'
-          : `Otras ${sinCalcular.toLocaleString()} no publican datos suficientes para calcular tu probabilidad`)
-        : null,
+      conSinDatos ? `${sinCalcular.toLocaleString()} sin datos SAT` : null,
       conteoNiveles && nivelesSAT.length > 0 && nivelesSAT.length < 3
         ? `mostrando ${universidadesFiltradas.length.toLocaleString()} en los resultados` : null,
       // Con puntaje, el lugar ya va en la frase de arriba.
@@ -841,9 +824,6 @@ export default function App() {
                               </button>
                             ))}
                           </span>
-                          {nivelesSAT.length === 0 && !viendoMuyPorEncima && (
-                            <span className="resultado-ayuda">Elige un grupo para ver dónde están y cuáles son.</span>
-                          )}
                         </>
                       )}
                       {cuantasEncima > 0 && (
@@ -856,7 +836,7 @@ export default function App() {
                             </>
                           ) : totalConNivel > 0 ? (
                             <>
-                              {cuantasEncima === 1 ? 'Otra pide' : `Otras ${cuantasEncima.toLocaleString()} piden`} bastante más que {filtros.sat}
+                              {cuantasEncima === 1 ? '1 pide' : `${cuantasEncima.toLocaleString()} piden`} bastante más
                               {' · '}
                               <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={verMuyPorEncima}>{cuantasEncima === 1 ? 'Verla' : 'Verlas'}</button>
                             </>
@@ -888,7 +868,8 @@ export default function App() {
                   )}
                   <span className="resultado-nota">
                     {textoNota}
-                    {filtrosActivos.length > 0 && (
+                    {conSinDatos && <InfoTooltip sobre="universidades sin datos SAT" texto={AYUDA_SIN_DATOS} />}
+                    {conQuitarFiltros && (
                       <>
                         {textoNota && ' · '}
                         <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={limpiarFiltros}
@@ -908,13 +889,13 @@ export default function App() {
               <div className="in">
                 <section className="tablero">
                   {!angosto && (
-                    <MapaGeo
-                      alto="380px"
-                      datosMapaGeoEstados={mapa.datos}
-                      universidadesFiltradas={mapa.universidades}
-                      estadoSeleccionado={mapa.estado}
+                    <MapaInteractivo
+                      universidades={universidadesSinUbicacion}
+                      estado={filtros.estado} ciudad={filtros.ciudad}
+                      top={topMapa}
                       onSeleccionarEstado={seleccionarEstadoDesdeMapa}
                       onSeleccionarCiudad={seleccionarCiudadDesdeMapa}
+                      onSeleccionarUniversidad={seleccionarUniversidad}
                     />
                   )}
 
@@ -1013,12 +994,17 @@ export default function App() {
         {angosto && mapaAbierto && (
           <div className="capa-mapa" role="dialog" aria-modal="true" aria-labelledby="capa-mapa-titulo">
             <h2 id="capa-mapa-titulo" className="capa-mapa-titulo">Elige dónde quieres estudiar</h2>
-            <MapaGeo
-              datosMapaGeoEstados={mapa.datos}
-              universidadesFiltradas={mapa.universidades}
-              estadoSeleccionado={mapa.estado}
-              onSeleccionarEstado={st => elegirEnCapa(() => seleccionarEstadoDesdeMapa(st))}
-              onSeleccionarCiudad={ciudad => elegirEnCapa(() => seleccionarCiudadDesdeMapa(ciudad))}
+            {/* Tocar un estado acerca la vista sin cerrar la capa, para poder elegir también la ciudad. */}
+            <MapaInteractivo
+              universidades={universidadesSinUbicacion}
+              estado={filtros.estado} ciudad={filtros.ciudad}
+              top={topMapa}
+              onSeleccionarEstado={seleccionarEstadoDesdeMapa}
+              onSeleccionarCiudad={ciudad => {
+                if (ciudad === 'todas') seleccionarCiudadDesdeMapa(ciudad);
+                else elegirEnCapa(() => seleccionarCiudadDesdeMapa(ciudad));
+              }}
+              onSeleccionarUniversidad={uni => { setMapaAbierto(false); seleccionarUniversidad(uni); }}
             />
             {/* Los estados chicos (Rhode Island, Delaware…) son difíciles de tocar en el mapa:
                 aquí están todos como botones grandes, de los que tienen más universidades a menos. */}
@@ -1035,7 +1021,7 @@ export default function App() {
               ))}
             </ul>
             {/* Cerrar al pie, al alcance del pulgar. */}
-            <button type="button" className="boton boton-primario capa-mapa-cerrar" onClick={() => setMapaAbierto(false)} autoFocus>Cerrar</button>
+            <button type="button" className="boton boton-primario capa-mapa-cerrar" onClick={() => { setMapaAbierto(false); if (estadoSeleccionado !== 'todos') irAResultados(); }} autoFocus>Cerrar</button>
           </div>
         )}
 
