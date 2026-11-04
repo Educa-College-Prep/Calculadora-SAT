@@ -47,6 +47,9 @@ function aNumero(valor: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Por qué hay universidades sin probabilidad: muchas ni siquiera usan el SAT, no es un dato que falte. */
+const AYUDA_SIN_DATOS = 'No usan o no publican puntajes SAT, así que no podemos calcular tu probabilidad. Siguen en los resultados, al final.';
+
 export default function App() {
   const [universidades, setUniversidades] = useState<Universidad[]>([]);
   const [universidadSeleccionada, setUniversidadSeleccionada] = useState<Universidad | null>(null);
@@ -758,12 +761,14 @@ export default function App() {
     };
     const cuantasEncima = muyPorEncima.length;
     const busqueda = busquedaNombre.trim();
+    // Junto a las cajas, lo mínimo: el detalle de por qué no tienen datos va en el "?".
+    const conSinDatos = (totalConNivel > 0 || cuantasEncima > 0) && sinCalcular > 0;
+    // Con grupos a la vista, "Quitar filtros" solo aparece si hay algo más que el puntaje que quitar.
+    const conQuitarFiltros = totalConNivel > 0
+      ? filtrosActivos.some(f => f !== 'puntaje SAT')
+      : filtrosActivos.length > 0;
     const textoNota = [
-      (totalConNivel > 0 || cuantasEncima > 0) && sinCalcular > 0
-        ? (sinCalcular === 1
-          ? 'Otra no publica datos suficientes para calcular tu probabilidad'
-          : `Otras ${sinCalcular.toLocaleString()} no publican datos suficientes para calcular tu probabilidad`)
-        : null,
+      conSinDatos ? `${sinCalcular.toLocaleString()} sin datos SAT` : null,
       conteoNiveles && nivelesSAT.length > 0 && nivelesSAT.length < 3
         ? `mostrando ${universidadesFiltradas.length.toLocaleString()} en los resultados` : null,
       // Con puntaje, el lugar ya va en la frase de arriba.
@@ -841,9 +846,6 @@ export default function App() {
                               </button>
                             ))}
                           </span>
-                          {nivelesSAT.length === 0 && !viendoMuyPorEncima && (
-                            <span className="resultado-ayuda">Elige un grupo para ver dónde están y cuáles son.</span>
-                          )}
                         </>
                       )}
                       {cuantasEncima > 0 && (
@@ -856,7 +858,7 @@ export default function App() {
                             </>
                           ) : totalConNivel > 0 ? (
                             <>
-                              {cuantasEncima === 1 ? 'Otra pide' : `Otras ${cuantasEncima.toLocaleString()} piden`} bastante más que {filtros.sat}
+                              {cuantasEncima === 1 ? '1 pide' : `${cuantasEncima.toLocaleString()} piden`} bastante más
                               {' · '}
                               <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={verMuyPorEncima}>{cuantasEncima === 1 ? 'Verla' : 'Verlas'}</button>
                             </>
@@ -888,7 +890,8 @@ export default function App() {
                   )}
                   <span className="resultado-nota">
                     {textoNota}
-                    {filtrosActivos.length > 0 && (
+                    {conSinDatos && <InfoTooltip sobre="universidades sin datos SAT" texto={AYUDA_SIN_DATOS} />}
+                    {conQuitarFiltros && (
                       <>
                         {textoNota && ' · '}
                         <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={limpiarFiltros}
