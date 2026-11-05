@@ -27,6 +27,7 @@ import type { Nivel } from './utils/nivelSAT';
 import { NIVELES } from './utils/nivelSAT';
 import { BarrasNivel } from './components/EtiquetaNivel';
 import { AvisoFuentes } from './components/AvisoFuentes';
+import { usePresencia } from './utils/usePresencia';
 import { EVENTO_INICIO, EVENTO_MI_LISTA, CONTACTO } from './components/BarraEduca';
 
 /** Opción del filtro "¿Piden el SAT?" → valor de ADMCON7 (política de puntajes de IPEDS). */
@@ -341,6 +342,7 @@ export default function App() {
 
   // Quitar los filtros también borra el puntaje: se puede deshacer unos segundos, como en Mi lista.
   const [filtrosAntes, setFiltrosAntes] = useState<FiltrosURL | null>(null);
+  const [filtrosAntesVisible, avisoFiltrosSaliendo] = usePresencia(filtrosAntes, 150);
   useEffect(() => {
     if (!filtrosAntes) return;
     const espera = setTimeout(() => setFiltrosAntes(null), 8000);
@@ -477,11 +479,24 @@ export default function App() {
   }, [universidadesSinUbicacion]);
   // Al pasar a pantalla ancha, el mapa vuelve a la página.
   if (!angosto && mapaAbierto) setMapaAbierto(false);
+  // La capa queda montada un momento al cerrarse, para bajar en vez de desaparecer.
+  const [capaMontada, capaSaliendo] = usePresencia(angosto && mapaAbierto ? true : null, 150);
 
   // Botón fijo "Ver N universidades": en celular, mientras la lista todavía está más abajo
   // (llenando el puntaje o los filtros), lleva a ella y dice cuántas hay. Se esconde cuando ya
   // se ve el contador de resultados, que dice lo mismo (y si no, lo taparía).
   const listaRef = useRef<HTMLDivElement>(null);
+  // Al cambiar de estado, la lista entra suave (sin volver a montarla: conserva su página).
+  const estadoPrevio = useRef(filtros.estado);
+  useEffect(() => {
+    if (estadoPrevio.current === filtros.estado) return;
+    estadoPrevio.current = filtros.estado;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    listaRef.current?.animate(
+      [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 400, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+    );
+  }, [filtros.estado]);
   const bandaMapaRef = useRef<HTMLElement>(null);
   const bandaResultadosRef = useRef<HTMLElement>(null);
   const [listaAbajo, setListaAbajo] = useState(true);
@@ -816,7 +831,8 @@ export default function App() {
                                 disabled={conteoNiveles[n.nivel] === 0 && !nivelesSAT.includes(n.nivel)}
                                 aria-label={`${conteoNiveles[n.nivel].toLocaleString()} ${conteoNiveles[n.nivel] === 1 ? 'universidad' : 'universidades'} con ${n.nivel.toLowerCase()}`}
                                 onClick={() => elegirNivel(n.nivel)} title={n.explicacion}>
-                                <span className="reparto-cifra numero">{conteoNiveles[n.nivel].toLocaleString()}</span>
+                                {/* key: cuando la cifra cambia, la nueva entra con su animación. */}
+                                <span key={conteoNiveles[n.nivel]} className="reparto-cifra numero cifra-cambia">{conteoNiveles[n.nivel].toLocaleString()}</span>
                                 <span className="reparto-etiqueta">
                                   <BarrasNivel barras={n.barras} />
                                   {n.nivel.toLowerCase()}
@@ -979,8 +995,8 @@ export default function App() {
 
           {/* Vive siempre en la página (vacío): así el lector de pantalla lo anuncia al cambiar. */}
           <div className="aviso-lista-zona aviso-filtros" role="status" aria-live="polite">
-            {filtrosAntes && (
-              <div className="aviso-lista">
+            {filtrosAntesVisible && (
+              <div className={`aviso-lista${avisoFiltrosSaliendo ? ' aviso-lista-saliendo' : ''}`}>
                 <span>Quitaste tus filtros.</span>
                 <button type="button" className="aviso-lista-deshacer" onClick={deshacerLimpiar}>Deshacer</button>
                 <button type="button" className="aviso-lista-cerrar" onClick={() => setFiltrosAntes(null)} aria-label="Cerrar aviso">
@@ -991,8 +1007,8 @@ export default function App() {
           </div>
         </div>
 
-        {angosto && mapaAbierto && (
-          <div className="capa-mapa" role="dialog" aria-modal="true" aria-labelledby="capa-mapa-titulo">
+        {capaMontada && (
+          <div className={`capa-mapa${capaSaliendo ? ' capa-mapa-saliendo' : ''}`} role="dialog" aria-modal="true" aria-labelledby="capa-mapa-titulo">
             <h2 id="capa-mapa-titulo" className="capa-mapa-titulo">Elige dónde quieres estudiar</h2>
             {/* Tocar un estado acerca la vista sin cerrar la capa, para poder elegir también la ciudad. */}
             <MapaInteractivo

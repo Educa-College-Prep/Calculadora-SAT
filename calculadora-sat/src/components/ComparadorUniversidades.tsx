@@ -1,3 +1,4 @@
+import { usePresencia } from '../utils/usePresencia';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode, RefObject } from 'react';
 import type { Universidad } from '../types';
@@ -123,7 +124,8 @@ function grupos(perfil: Perfil, puntaje: number): Grupo[] {
           aLoAncho: () => puntaje > 0 ? null : 'Escribe tu SAT arriba de esta tabla para ver tus posibilidades en cada una.',
           // Corta ("Alta"): la fila ya dice que se habla de tus posibilidades.
           texto: (u, c) => c.nivel
-            ? <EtiquetaNivel nivel={c.nivel} corta />
+            // key: al cambiar el puntaje, la etiqueta nueva entra con su animación.
+            ? <span key={c.nivel} className="cifra-cambia"><EtiquetaNivel nivel={c.nivel} corta /></span>
             : <span className="comparar-sin-dato">{sinSAT(u) ?? 'No publica puntajes SAT'}</span>,
         },
         { etiqueta: 'Tasa de admisión', numero: u => u.ADM_RATE, formato: 'porcentaje' },
@@ -222,6 +224,7 @@ const Icono = ({ children }: { children: ReactNode }) => (
     {children}
   </svg>
 );
+const IconoCopiado = () => <Icono><path d="M5 12.5l4.5 4.5L19 7.5" /></Icono>;
 const IconoCompartir = () => <Icono><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" /><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" /></Icono>;
 const IconoDescargar = () => <Icono><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></Icono>;
 const IconoVaciar = () => <Icono><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></Icono>;
@@ -295,6 +298,8 @@ export function ComparadorUniversidades({
 
   const quitar = (u: Universidad) => { avisar(`Quitaste ${u.INSTNM} de tu lista.`, claves); onQuitar(u); };
   const vaciar = () => { avisar('Vaciaste tu lista.', claves); onVaciar(); };
+  // Al quitarse, el aviso queda un momento para desvanecerse.
+  const [avisoVisible, avisoSaliendo] = usePresencia(aviso, 150);
   const deshacer = () => { if (aviso?.antes) onRestaurar(aviso.antes); setAviso(null); };
 
   // ---------- Agregar desde el buscador ----------
@@ -342,6 +347,14 @@ export function ComparadorUniversidades({
   const pegada = useCabeceraPegada(envolturaRef, theadRef, ordenadas.length);
 
   // ---------- Compartir ----------
+  // Tras copiar, el ícono pasa a un check por dos segundos (el número relanza la animación).
+  const [copiado, setCopiado] = useState(0);
+  const [checkVisible, setCheckVisible] = useState(false);
+  useEffect(() => {
+    if (!checkVisible) return;
+    const t = setTimeout(() => setCheckVisible(false), 2000);
+    return () => clearTimeout(t);
+  }, [copiado, checkVisible]);
   const compartir = async () => {
     const ids = ordenadas.map(u => u.UNITID).filter((id): id is number => id != null);
     const url = `${window.location.origin}${import.meta.env.BASE_URL}?lista=${ids.join(',')}`;
@@ -351,7 +364,7 @@ export function ComparadorUniversidades({
     // justo después del clic, y si se espera a que termine de copiar, Safari lo bloquea.
     const hayMenu = typeof navigator.share === 'function';
     navigator.clipboard.writeText(url).then(
-      () => avisar('Copiamos el enlace de tu lista. Pégalo en WhatsApp, en un correo o donde quieras.'),
+      () => { setCheckVisible(true); setCopiado(c => c + 1); avisar('Copiamos el enlace de tu lista. Pégalo en WhatsApp, en un correo o donde quieras.'); },
       // Sin portapapeles (algunos navegadores lo bloquean) y sin menú: que lo copie a mano.
       () => { if (!hayMenu) window.prompt('Copia el enlace de tu lista:', url); },
     );
@@ -395,10 +408,10 @@ export function ComparadorUniversidades({
 
       {/* El aviso vive siempre en la página (vacío): así el lector de pantalla lo anuncia al cambiar. */}
       <div className="aviso-lista-zona" role="status" aria-live="polite">
-        {aviso && (
-          <div className="aviso-lista" key={aviso.id}>
-            <span>{aviso.texto}</span>
-            {aviso.antes && <button type="button" className="aviso-lista-deshacer" onClick={deshacer}>Deshacer</button>}
+        {avisoVisible && (
+          <div className={`aviso-lista${avisoSaliendo ? ' aviso-lista-saliendo' : ''}`} key={avisoVisible.id}>
+            <span>{avisoVisible.texto}</span>
+            {avisoVisible.antes && <button type="button" className="aviso-lista-deshacer" onClick={deshacer}>Deshacer</button>}
             <button type="button" className="aviso-lista-cerrar" onClick={() => setAviso(null)} aria-label="Cerrar aviso">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
             </button>
@@ -418,7 +431,9 @@ export function ComparadorUniversidades({
               <div className="mi-lista-acciones">
                 {/* Ícono + una palabra: solo el ícono no lo reconoce todo el mundo. */}
                 <button type="button" className="boton-enlace" onClick={compartir} title="Copia el enlace de tu lista y ábrelo para compartir">
-                  <IconoCompartir />Compartir
+                  <span key={String(checkVisible)} className={copiado ? 'icono-cambia' : undefined} style={{ display: 'inline-flex' }}>
+                    {checkVisible ? <IconoCopiado /> : <IconoCompartir />}
+                  </span>Compartir
                 </button>
                 {/* No descarga directo: abre la ventana de imprimir, donde se elige "Guardar como PDF". */}
                 <button type="button" className="boton-enlace" onClick={() => window.print()} title="Guardar en PDF o imprimir"
