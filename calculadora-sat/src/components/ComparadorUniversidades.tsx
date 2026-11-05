@@ -76,11 +76,13 @@ interface Grupo { titulo: string; filas: Fila[]; destacado?: boolean }
 
 type Orden = 'guardado' | 'probabilidad' | 'costo' | 'admision';
 
+/** Textos cortos a propósito: el selector muestra la opción elegida y en celular mide la mitad
+ *  del ancho (~110px de texto, descontando la flecha). Con "(menor primero)" y similares se cortaban a la mitad. */
 const ORDENES: { id: Orden; texto: string }[] = [
   { id: 'guardado', texto: 'Guardadas' },
-  { id: 'probabilidad', texto: 'Probabilidad (alta primero)' },
-  { id: 'costo', texto: 'Costo anual (menor primero)' },
-  { id: 'admision', texto: 'Admisión (mayor primero)' },
+  { id: 'probabilidad', texto: 'Más probables' },
+  { id: 'costo', texto: 'Menor costo' },
+  { id: 'admision', texto: 'Admiten más' },
 ];
 
 /** Estados para elegir dónde vives, por nombre (sin los territorios chicos del Pacífico). */
