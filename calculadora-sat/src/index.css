@@ -2383,8 +2383,8 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
    Portada en bandas a todo el ancho, como la ficha. Usa los tokens de la ficha
    (--bg, --surface…) con los valores de la portada.
    ========================================================= */
-#root:has(> .portada) { max-width: none; padding: 0; }
-#root:has(> .portada) > :not(.portada) {
+#root:has(> .portada, > .flujo) { max-width: none; padding: 0; }
+#root:has(> .portada, > .flujo) > :not(.portada, .flujo) {
   max-width: 1280px;
   margin-inline: auto;
   padding-inline: clamp(16px, 4vw, 48px);
@@ -2955,6 +2955,9 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .flujo-buscador { flex: 0 1 380px; }
 .flujo-buscador .buscador-etiqueta, .flujo-buscador label { font-size: 13px; color: var(--grafito-suave); }
 
+/* Las barras de arriba y abajo van de borde a borde (#root suelta su ancho, como en la portada);
+   el contenido se centra en .in, un poco más ancho aquí para que el mapa y la ficha respiren. */
+.flujo .in { max-width: 1440px; }
 .flujo-cuerpo { flex: 1; width: 100%; box-sizing: border-box; padding-block: clamp(20px, 3vw, 36px); }
 
 .flujo-tarjeta {
@@ -3001,8 +3004,9 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 
 /* Paso 2: el mapa sin marco, sobre el fondo, y la ficha del estado al lado. */
 .flujo-donde { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
-/* Con tope de ancho: más grande, el mapa empuja la barra de abajo fuera de la pantalla. */
-.flujo-donde-mapa { flex: 999 1 560px; min-width: 0; max-width: 640px; display: flex; flex-direction: column; gap: 12px; }
+/* El ancho sale del alto de la pantalla (la grilla es 11×8, ~1.4 de ancho por alto): en pantallas
+   altas el mapa crece; en las bajas no empuja la barra de abajo fuera de la vista. */
+.flujo-donde-mapa { flex: 999 1 560px; min-width: 0; max-width: clamp(520px, calc((100vh - 460px) * 1.3), 900px); display: flex; flex-direction: column; gap: 12px; }
 .flujo-donde-mapa .flujo-subtitulo { margin-top: -4px; }
 .flujo-donde-ficha {
   flex: 1 1 320px; display: flex; flex-direction: column; gap: 14px; padding: 22px 24px;
