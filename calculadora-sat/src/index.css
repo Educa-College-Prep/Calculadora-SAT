@@ -2931,3 +2931,222 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 @media (prefers-reduced-motion: reduce) {
   .mapa-ix-grupo, .mapa-ix-estado, .mapa-ix-ciudad { transition: none; }
 }
+
+/* ==========================================================================
+   "Cuéntanos de ti" en 4 pasos (FlujoPasos) y los resultados que siguen.
+   ========================================================================== */
+
+/* --navy y --sun los usa .boton-sol: fuera de .portada no están definidos. */
+.flujo { --navy: var(--tinta-fuerte); --sun: var(--resaltador); display: flex; flex-direction: column; min-height: calc(100vh - 72px); background: var(--papel); }
+
+/* Arriba: en qué paso va (chico, para que no compita con la pregunta) y el buscador, para quien
+   ya sabe a cuál quiere ir. */
+.flujo-arriba { background: var(--hoja); border-bottom: 1px solid var(--linea); }
+.flujo-arriba-in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; padding-block: 12px; }
+.flujo-progreso { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--grafito-suave); }
+.flujo-rayas { display: grid; grid-template-columns: repeat(4, 40px); gap: 4px; }
+.flujo-raya {
+  height: 8px; padding: 0; border: 0; border-radius: 999px; background: var(--linea); cursor: pointer;
+  /* Más alta por dentro de lo que se ve: se toca fácil sin engordar la raya. */
+  position: relative;
+}
+.flujo-raya::after { content: ''; position: absolute; inset: -14px 0; }
+.flujo-raya-hecha { background: var(--tinta); }
+.flujo-buscador { flex: 0 1 380px; }
+.flujo-buscador .buscador-etiqueta, .flujo-buscador label { font-size: 13px; color: var(--grafito-suave); }
+
+.flujo-cuerpo { flex: 1; width: 100%; box-sizing: border-box; padding-block: clamp(20px, 3vw, 36px); }
+
+.flujo-tarjeta {
+  display: flex; flex-direction: column; gap: 20px;
+  padding: clamp(24px, 4vw, 40px); background: var(--hoja); border: 1px solid var(--linea); border-radius: var(--radio);
+}
+.flujo-titulo { margin: 0; font-size: clamp(26px, 3.2vw, 34px); line-height: 1.2; font-weight: 600; color: var(--tinta-fuerte); letter-spacing: -0.01em; }
+.flujo-subtitulo { margin: -12px 0 0; font-size: 15px; color: var(--grafito-suave); }
+.flujo-nota { margin: 0; font-size: 13px; color: var(--grafito-suave); }
+.flujo-aviso {
+  margin: 0; padding: 8px 12px; font-size: 14px; color: var(--alerta);
+  background: var(--alerta-fondo); border: 1px solid var(--alerta-borde); border-radius: var(--radio-chico);
+}
+.flujo-opciones { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.flujo-pastilla {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 18px;
+  font: inherit; font-size: 15px; color: var(--grafito);
+  background: var(--hoja); border: 1px solid var(--tinta-suave); border-radius: 999px; cursor: pointer;
+}
+.flujo-pastilla:hover { border-color: var(--tinta); }
+.flujo-pastilla[aria-pressed='true'] { color: var(--tinta-fuerte); font-weight: 600; background: var(--tinta-fondo); border: 2px solid var(--tinta); }
+.flujo-pastilla-numero { font-size: 12px; font-weight: 500; color: var(--grafito-suave); }
+.flujo-pastilla[aria-pressed='true'] .flujo-pastilla-numero { color: var(--tinta); }
+.flujo-pastilla-nose { border-style: dashed; border-color: var(--grafito-suave); }
+
+.flujo-campo { display: flex; flex-direction: column; gap: 6px; max-width: 520px; font-size: 14px; font-weight: 500; }
+.flujo-campo input { min-height: 48px; font-weight: 400; }
+
+.flujo-presupuestos { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.flujo-caja {
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px;
+  min-height: 84px; padding: 14px 16px; font: inherit; color: var(--grafito); text-align: left;
+  background: var(--hoja); border: 1px solid var(--tinta-suave); border-radius: 12px; cursor: pointer;
+}
+.flujo-caja:hover { border-color: var(--tinta); }
+.flujo-caja[aria-pressed='true'], .flujo-caja[data-elegida='true'] { color: var(--tinta-fuerte); background: var(--tinta-fondo); border: 2px solid var(--tinta); }
+.flujo-caja-titulo { font-size: 17px; font-weight: 600; }
+.flujo-caja-detalle { font-size: 13px; color: var(--grafito-suave); }
+.flujo-caja-fila { flex-direction: row; align-items: center; gap: 12px; min-height: 64px; }
+.flujo-caja-fila input { width: 92px; min-height: 44px; font-size: 17px; font-weight: 600; }
+.flujo-grupo { margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 10px; }
+.flujo-grupo legend { padding: 0 0 10px; font-size: 15px; font-weight: 600; }
+
+/* Paso 2: el mapa sin marco, sobre el fondo, y la ficha del estado al lado. */
+.flujo-donde { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+/* Con tope de ancho: más grande, el mapa empuja la barra de abajo fuera de la pantalla. */
+.flujo-donde-mapa { flex: 999 1 560px; min-width: 0; max-width: 640px; display: flex; flex-direction: column; gap: 12px; }
+.flujo-donde-mapa .flujo-subtitulo { margin-top: -4px; }
+.flujo-donde-ficha {
+  flex: 1 1 320px; display: flex; flex-direction: column; gap: 14px; padding: 22px 24px;
+  background: var(--hoja); border: 1px solid var(--linea); border-radius: var(--radio);
+  box-shadow: 0 8px 24px rgba(28, 44, 110, 0.06);
+}
+.flujo-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.flujo-chip { display: inline-flex; align-items: center; border: 1px solid var(--linea); border-radius: 999px; background: var(--papel); }
+.flujo-chip button { min-height: 36px; padding: 0 6px; font: inherit; font-size: 13px; font-weight: 600; color: inherit; background: none; border: 0; cursor: pointer; }
+.flujo-chip button:first-child { padding-left: 12px; }
+.flujo-chip button:last-child { width: 32px; display: inline-flex; align-items: center; justify-content: center; }
+.flujo-chip-activo { background: var(--resaltador); border-color: var(--resaltador); }
+
+/* Abajo, fija: cuántas encajan por ahora y los botones para avanzar. */
+.flujo-barra {
+  position: sticky; bottom: 0; z-index: 20;
+  background: var(--hoja); border-top: 1px solid var(--linea); box-shadow: 0 -8px 24px rgba(28, 44, 110, 0.08);
+}
+.flujo-barra-in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; padding-block: 12px; }
+.flujo-cuenta { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.flujo-cuenta-etiqueta { font-size: 13px; color: var(--grafito-suave); }
+.flujo-cuenta-numero { font-size: 30px; font-weight: 600; line-height: 1; color: var(--tinta-fuerte); }
+.flujo-cuenta-de { font-size: 14px; color: var(--grafito-suave); }
+.flujo-cuenta-carrera {
+  display: inline-flex; align-items: center; min-height: 28px; padding: 0 12px;
+  font-size: 13px; font-weight: 500; color: #1f5a4e; background: var(--boligrafo-fondo); border-radius: 999px;
+}
+.flujo-botones { display: flex; align-items: center; gap: 8px; }
+.flujo-saltar { min-height: 44px; padding-inline: 8px; }
+
+@media (max-width: 640px) {
+  .flujo-buscador { flex-basis: 100%; }
+  .flujo-barra-in { gap: 8px; }
+  .flujo-botones { width: 100%; flex-wrap: wrap; justify-content: space-between; }
+  .flujo-botones .boton-sol { flex: 1 1 100%; order: -1; }
+  .flujo-cuenta-numero { font-size: 24px; }
+}
+
+/* ---------- Mapa de cuadritos ---------- */
+.cuadritos { display: flex; flex-direction: column; gap: 10px; }
+.cuadritos-pista { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: 40px; }
+.cuadritos-pista-nombre {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 16px;
+  font-size: 18px; font-weight: 600; color: #fff; background: var(--tinta-fuerte); border-radius: 999px;
+}
+.cuadritos-pista-detalle, .cuadritos-pista-vacia { font-size: 14px; color: var(--grafito-suave); }
+.cuadritos-grilla { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 6px; }
+.cuadrito {
+  position: relative; aspect-ratio: 1; min-width: 0; padding: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  font: inherit; color: #4d5878; background: #e2e6f2; border: 0; border-radius: 10px; cursor: pointer;
+  transition: background-color 120ms, transform 120ms, box-shadow 120ms;
+}
+.cuadrito-sigla { font-size: clamp(10px, 1.1vw, 14px); font-weight: 600; line-height: 1; }
+.cuadrito-numero { font-size: clamp(9px, 0.85vw, 11px); line-height: 1; opacity: 0.8; }
+.cuadrito-encima { z-index: 2; color: var(--tinta-fuerte); background: var(--tinta-suave); transform: scale(1.18); box-shadow: 0 6px 18px rgba(28, 44, 110, 0.3); }
+.cuadrito-elegido { color: var(--grafito); background: var(--resaltador); }
+.cuadrito-elegido.cuadrito-encima { background: var(--resaltador); }
+.cuadrito-foco { outline: 3px solid var(--tinta-fuerte); outline-offset: 2px; }
+.cuadrito:focus-visible { outline: 3px solid var(--tinta); outline-offset: 2px; }
+.cuadritos-chico .cuadritos-grilla { gap: 3px; }
+.cuadritos-chico .cuadrito { border-radius: 5px; }
+.cuadritos-chico .cuadrito-sigla { font-size: 9px; }
+.cuadritos-chico .cuadritos-pista { min-height: 32px; }
+.cuadritos-chico .cuadritos-pista-nombre { min-height: 30px; font-size: 15px; }
+@media (prefers-reduced-motion: reduce) { .cuadrito { transition: none; } .cuadrito-encima { transform: none; } }
+
+/* ---------- Ficha de un estado ---------- */
+.ficha-estado { display: flex; flex-direction: column; gap: 12px; }
+.ficha-estado-titulo { margin: 0; font-size: 22px; font-weight: 600; color: var(--tinta-fuerte); }
+.ficha-estado-cifras { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; }
+.ficha-estado-cifras div { display: flex; flex-direction: column-reverse; }
+.ficha-estado-cifras dt { font-size: 13px; font-weight: 500; }
+.ficha-estado-cifras dd { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.2; color: var(--tinta-fuerte); }
+.ficha-estado-nota, .ficha-estado-fuente { margin: 0; font-size: 12px; color: var(--grafito-suave); }
+.ficha-estado-ciudades { margin: 0; font-size: 14px; }
+.ficha-estado-mejores { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid var(--linea); }
+.ficha-estado-mejores h3 { margin: 0; font-size: 15px; font-weight: 600; color: var(--tinta-fuerte); }
+.ficha-estado-mejores ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.ficha-estado-mejores li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.ficha-estado-mejores p { margin: 0; font-size: 14px; }
+.ficha-estado-puesto { flex: none; padding: 2px 8px; font-size: 12px; font-weight: 700; color: var(--grafito); background: #fff3b8; border-radius: var(--radio-chico); }
+.ficha-estado-compacta .ficha-estado-titulo { font-size: 17px; }
+.ficha-estado-compacta .ficha-estado-cifras dd { font-size: 18px; }
+.ficha-estado-compacta .ficha-estado-ciudades { display: none; }
+
+/* ---------- Resultados: cabecera ---------- */
+.portada-resultados .resultados-cabecera { padding-block: clamp(20px, 3vw, 32px); border-bottom: 1px solid var(--linea); }
+.resultados-cabecera-in { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px 32px; }
+.resultados-cabecera-texto { flex: 1 1 520px; display: flex; flex-direction: column; gap: 12px; }
+.resultados-titulo { margin: 0; font-size: clamp(26px, 3vw, 34px); line-height: 1.2; font-weight: 600; color: var(--tinta-fuerte); }
+.resultados-respuestas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.resultados-respuestas-etiqueta { font-size: 13px; color: var(--grafito-suave); }
+.resultados-respuesta {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
+  font: inherit; font-size: 14px; font-weight: 500; color: var(--tinta-fuerte);
+  background: var(--tinta-fondo); border: 1px solid var(--tinta-suave); border-radius: 999px; cursor: pointer;
+}
+.resultados-respuesta:hover { border-color: var(--tinta); }
+.resultados-cabecera-lado { flex: 0 1 360px; display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+.resultados-cabecera-lado .boton-mi-lista { margin-top: 0; align-self: flex-end; }
+.portada-resultados .resultados-cuerpo { padding-top: clamp(20px, 3vw, 32px); }
+
+/* ---------- Resultados: el mapa en una burbuja ---------- */
+.burbuja-mapa { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 1050; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.burbuja-mapa-boton {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 20px 0 16px;
+  font: inherit; color: #fff; background: var(--tinta-fuerte); border: 0; border-radius: 999px; cursor: pointer;
+  box-shadow: 0 10px 28px rgba(28, 44, 110, 0.35);
+}
+.burbuja-mapa-boton:hover { background: var(--tinta); }
+.burbuja-mapa-texto { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+.burbuja-mapa-etiqueta { font-size: 12px; color: var(--tinta-suave); }
+.burbuja-mapa-resumen { font-size: 15px; font-weight: 600; }
+.burbuja-mapa-abierta .burbuja-mapa-boton { background: var(--tinta); }
+.burbuja-mapa-panel {
+  /* Debajo de la barra de Educa (fija arriba) y encima de la burbuja. */
+  width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 190px); overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px; padding: 18px 20px;
+  background: var(--hoja); border: 1px solid var(--linea); border-radius: var(--radio);
+  box-shadow: 0 18px 48px rgba(28, 44, 110, 0.25);
+  transform-origin: bottom right; animation: burbuja-abrir 160ms ease-out;
+}
+.burbuja-mapa-cabecera h2 { margin: 0; font-size: 18px; font-weight: 600; color: var(--tinta-fuerte); }
+.burbuja-mapa-cabecera span { font-size: 13px; color: var(--grafito-suave); }
+@keyframes burbuja-abrir { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .burbuja-mapa-panel { animation: none; } }
+.burbuja-mapa-cabecera { display: flex; flex-direction: column; gap: 2px; }
+/* Globito con el nombre del estado, sobre el cuadrito que tiene el mouse (o el foco del teclado). */
+.cuadrito-globo {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  z-index: 3; padding: 5px 10px; white-space: nowrap; pointer-events: none;
+  font-size: 13px; font-weight: 600; line-height: 1.2; color: #fff;
+  background: var(--tinta-fuerte); border-radius: var(--radio-chico);
+  box-shadow: 0 6px 16px rgba(28, 44, 110, 0.3);
+}
+.cuadrito-globo::after {
+  content: ''; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+  border: 5px solid transparent; border-top-color: var(--tinta-fuerte);
+}
+.cuadrito-globo-izq { left: 0; transform: none; }
+.cuadrito-globo-izq::after { left: 18px; }
+.cuadrito-globo-der { left: auto; right: 0; transform: none; }
+.cuadrito-globo-der::after { left: auto; right: 13px; }
+/* El cuadrito se agranda al pasar el mouse: el globo se compensa para leerse a tamaño normal. */
+.cuadrito-encima .cuadrito-globo { font-size: 11px; }
+.cuadritos-chico .cuadrito-globo { font-size: 12px; bottom: calc(100% + 6px); }

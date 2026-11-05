@@ -8,7 +8,7 @@ import { CARRERAS_ESPANOL } from '../data/carrerasEspanol';
  *
  * El archivo (~700 KB) se pide recién cuando alguien abre una ficha, y una sola vez.
  */
-interface ArchivoSalarios {
+export interface ArchivoSalarios {
   /** Código CIP → nombre en inglés. */
   carreras: Record<string, string>;
   /** UNITID → [código CIP, salario a 1 año, a 4 años, graduados del último año]. */
@@ -28,7 +28,7 @@ export interface SalarioCarrera {
 
 let archivo: Promise<ArchivoSalarios | null> | null = null;
 
-function cargarSalarios() {
+export function cargarSalarios() {
   archivo ??= fetch(`${import.meta.env.BASE_URL}salarios_carreras.json`)
     .then(r => (r.ok ? r.json() : null))
     .catch(() => null);
@@ -66,4 +66,25 @@ export function useSalariosCarreras(unitid: number | null | undefined): SalarioC
   }, [unitid]);
 
   return resultado && resultado.unitid === unitid ? resultado.carreras : undefined;
+}
+
+/**
+ * El archivo entero, para filtrar y ordenar la lista por carrera. Se pide recién cuando
+ * `activo` es true (alguien abrió los pasos o eligió una carrera): quien no lo usa no lo baja.
+ * null mientras no llega (o si no se pudo bajar).
+ */
+export function useArchivoCarreras(activo: boolean): ArchivoSalarios | null {
+  const [archivoCargado, setArchivoCargado] = useState<ArchivoSalarios | null>(null);
+  useEffect(() => {
+    if (!activo || archivoCargado) return;
+    let vigente = true;
+    cargarSalarios().then(datos => { if (vigente && datos) setArchivoCargado(datos); });
+    return () => { vigente = false; };
+  }, [activo, archivoCargado]);
+  return archivoCargado;
+}
+
+/** Nombre de una carrera para mostrar: en español si ya está traducida; si no, el de Scorecard. */
+export function nombreCarrera(cip: string, archivoCarreras: ArchivoSalarios | null): string {
+  return CARRERAS_ESPANOL[cip] ?? archivoCarreras?.carreras[cip] ?? cip;
 }
