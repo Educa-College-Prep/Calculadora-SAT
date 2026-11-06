@@ -27,7 +27,7 @@ interface Props {
   universidades: Universidad[];
   /** Cuántas pasan los filtros elegidos hasta ahora (el mismo número que tendrá la lista). */
   encajan: number;
-  /** De esas, cuántas publican datos de la carrera elegida (null = sin carrera). */
+  /** De esas, cuántas publican el salario de la carrera elegida (null = sin carrera). */
   conCarrera: number | null;
   carreras: string[];
   setCarreras: (cips: string[]) => void;
@@ -112,7 +112,7 @@ export function FlujoPasos(props: Props) {
             <strong className="flujo-cuenta-numero numero">{encajan.toLocaleString('en-US')}</strong>
             <span className="flujo-cuenta-de">de {universidades.length.toLocaleString('en-US')} universidades</span>
             {conCarrera != null && (
-              <span className="flujo-cuenta-carrera">{conCarrera.toLocaleString('en-US')} publican datos de {nombreElegidas}</span>
+              <span className="flujo-cuenta-carrera">{conCarrera.toLocaleString('en-US')} publican el salario de {nombreElegidas}</span>
             )}
           </p>
           <div className="flujo-botones">
@@ -134,7 +134,7 @@ export function FlujoPasos(props: Props) {
 function PasoCarrera({ carreras, setCarreras, archivoCarreras }: { carreras: string[]; setCarreras: (c: string[]) => void; archivoCarreras: ArchivoSalarios | null }) {
   const [texto, setTexto] = useState('');
 
-  // Cuántas universidades publican cada carrera: el número de cada botón.
+  // Cuántas universidades ofrecen cada carrera: el número de cada botón.
   const porCarrera = useMemo(() => {
     const conteo = new Map<string, number>();
     if (!archivoCarreras) return conteo;
@@ -208,7 +208,7 @@ function PasoCarrera({ carreras, setCarreras, archivoCarreras }: { carreras: str
       {buscada.length >= 2 && archivoCarreras && encontradas.length === 0 && (
         <p className="flujo-nota">No encontramos “{texto.trim()}”. Prueba con otra palabra, en español o en inglés.</p>
       )}
-      <p className="flujo-nota">El número es cuántas universidades publican el salario de esa carrera (College Scorecard). Las demás no se descartan: van al final, marcadas.</p>
+      <p className="flujo-nota">El número es cuántas universidades ofrecen esa carrera (bachiller), según los graduados que reporta cada una a College Scorecard. Las que no la ofrecen salen de la lista; las que no reportan sus carreras se quedan, al final y marcadas.</p>
     </section>
   );
 }

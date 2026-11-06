@@ -1631,6 +1631,14 @@ html { scroll-behavior: smooth; }
 .salarios-sugerencias { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .salarios-ver { margin-top: 14px; }
 
+/* Las carreras que ofrece sin salario publicado: solo nombres, debajo de la tabla. */
+.salarios-sin { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+.salarios-sin-titulo { margin: 0 0 4px; font-size: 15px; }
+.salarios-sin-cuenta { font-weight: 400; color: var(--muted); }
+.salarios-sin .ayuda { margin: 0; }
+.salarios-sin-lista { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.salarios-sin-lista li { padding: 4px 11px; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; }
+
 /* Celular: el nombre arriba y los dos montos debajo, cada uno con su etiqueta. */
 @media (max-width: 640px) {
   .sal-cabecera { display: none; }

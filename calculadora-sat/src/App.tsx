@@ -63,7 +63,7 @@ export default function App() {
   // abierto, en celular tapaba toda la lista. Se abre con "Más filtros".
   const [masFiltros, setMasFiltros] = useState(false);
   const [ciudadSeleccionada, setCiudadSeleccionada] = useState<string>(inicial.ciudad);
-  /** Códigos CIP de las carreras que le interesan: ordenan la lista y marcan las que no tienen datos. */
+  /** Códigos CIP de las carreras que le interesan: quedan las que ofrecen alguna, ordenadas por salario. */
   const [carreras, setCarreras] = useState<string[]>(inicial.carreras);
   /** "Aún no lo presento" en el paso del SAT: solo cambia cómo se resume, no filtra nada. */
   const [satNoRendido, setSatNoRendido] = useState(false);
@@ -188,12 +188,15 @@ export default function App() {
 
   // El archivo de carreras se baja recién al abrir los pasos o al elegir una carrera.
   const archivoCarreras = useArchivoCarreras(enPasos || carreras.length > 0);
-  /** UNITID → (CIP → salario: a 4 años si lo hay, si no a 1 año). Solo carreras con salario publicado. */
+  /**
+   * UNITID → (CIP → salario: a 4 años si lo hay, si no a 1 año; null si no lo publica). Están
+   * todas las carreras de bachiller que ofrece cada universidad, publiquen salario o no.
+   */
   const carrerasPorUnitid = useMemo(() => {
-    const mapa = new Map<number, Map<string, number>>();
+    const mapa = new Map<number, Map<string, number | null>>();
     if (!archivoCarreras) return mapa;
     for (const [unitid, filas] of Object.entries(archivoCarreras.universidades)) {
-      mapa.set(Number(unitid), new Map(filas.map(([cip, unAnio, cuatroAnios]) => [cip, cuatroAnios ?? unAnio ?? 0])));
+      mapa.set(Number(unitid), new Map(filas.map(([cip, unAnio, cuatroAnios]) => [cip, cuatroAnios ?? unAnio])));
     }
     return mapa;
   }, [archivoCarreras]);
@@ -246,6 +249,20 @@ export default function App() {
   }, [carrerasPorUnitid, filtros.carreras]);
 
   /**
+   * ¿Ofrece alguna de las carreras elegidas? true / false / null = no se sabe.
+   * Scorecard registra las carreras de bachiller según los graduados que reporta cada universidad:
+   * - si le registra carreras pero ninguna de las elegidas, no la ofrece;
+   * - si no le registra ninguna y su título más alto es asociado o certificado (community
+   *   colleges, ~870), no da bachiller: tampoco la ofrece;
+   * - si da bachiller o posgrado y aun así no le registra carreras (~20), no se sabe.
+   */
+  const ofreceCarrera = useCallback((uni: Universidad): boolean | null => {
+    const deUni = uni.UNITID != null ? carrerasPorUnitid.get(uni.UNITID) : undefined;
+    if (deUni) return filtros.carreras.some(cip => deUni.has(cip));
+    return uni.HIGHDEG === 'Bachiller' || uni.HIGHDEG === 'Posgrado' ? null : false;
+  }, [carrerasPorUnitid, filtros.carreras]);
+
+  /**
    * Filtrado con manejo explícito de datos faltantes.
    *
    * Antes, una universidad sin SAT_AVG, sin matrícula o sin política de admisión
@@ -255,11 +272,12 @@ export default function App() {
    */
   const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId, conteoNiveles, muyPorEncima, conteoPolitica } = useMemo(() => {
     const { estado, estados, ciudad, tipos, precio, politica, sat } = filtros;
-    // La carrera no filtra ni cuenta como "dato faltante": que Scorecard no publique su salario no
-    // quiere decir que no la ofrezcan. Solo ordena (ver universidadesOrdenadas). Si contara como
-    // faltante, "240 encajan" terminaba siendo "228 sin datos": el número dejaba de significar algo.
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
     const filtroSATActivo = sat > 0;
+    // La carrera filtra por si la universidad la OFRECE, no por si publica su salario: si no,
+    // "encajan 45" incluía a las que no la tienen. El salario solo ordena (universidadesOrdenadas).
+    // Mientras baja el archivo de carreras no se filtra: el número se corrige cuando llega.
+    const filtroCarreraActivo = filtros.carreras.length > 0 && carrerasPorUnitid.size > 0;
     const filtroPrecioActivo = precio < PRECIO_MAXIMO_SLIDER;
     const filtroPoliticaActivo = politica !== 'todos';
 
@@ -300,6 +318,12 @@ export default function App() {
         // Costo real al año (matrícula + vida), el mismo que muestra la fila.
         if (uni.COSTO_ANUAL == null) falta.push('Sin dato de costo');
         else if (uni.COSTO_ANUAL > precio) return false;
+      }
+
+      if (filtroCarreraActivo) {
+        const ofrece = ofreceCarrera(uni);
+        if (ofrece === false) return false;
+        if (ofrece == null) falta.push('Sin datos de carreras');
       }
 
       // Las que no informan su política solo aparecen en "Todos": mostrarlas bajo
@@ -369,7 +393,7 @@ export default function App() {
       viendoMuyPorEncima,
       conteoPolitica: contarPolitica(viendoMuyPorEncima ? encimaSinPolitica : sinFiltroPolitica.filter(delNivel)),
     };
-  }, [universidades, resultadoBusqueda, filtros, verEncimaDe]);
+  }, [universidades, resultadoBusqueda, filtros, verEncimaDe, carrerasPorUnitid, ofreceCarrera]);
 
 
   // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
@@ -491,7 +515,7 @@ export default function App() {
     return conteo;
   }, [universidadesSinUbicacion]);
 
-  // Para "Por ahora encajan": de las que encajan, cuántas publican datos de la carrera elegida.
+  // Para "Por ahora encajan": de las que encajan (todas ofrecen la carrera, o no se sabe), cuántas publican su salario.
   const conDatoCarrera = useMemo(() => {
     if (filtros.carreras.length === 0 || carrerasPorUnitid.size === 0) return null;
     return universidadesFiltradas.filter(u => salarioCarrera(u) != null).length;

@@ -21,7 +21,7 @@ export interface FiltrosURL {
   /** Varios estados a la vez (los pasos de la portada dejan elegir hasta 6). Con uno solo se usa `estado`. */
   estados: string[];
   ciudad: string;
-  /** Códigos CIP de las carreras que le interesan (salarios_carreras.json). No descartan: ordenan y marcan. */
+  /** Códigos CIP de las carreras que le interesan (salarios_carreras.json). Quedan las que ofrecen alguna, ordenadas por salario. */
   carreras: string[];
   puntajeMath: number;
   puntajeLectura: number;

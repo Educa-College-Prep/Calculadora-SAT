@@ -31,7 +31,7 @@ interface Props {
   onBorrarBusqueda: () => void;
   /**
    * La carrera elegida en los pasos: cada fila muestra lo que ganan sus egresados ahí, y la lista va
-   * primero con las que lo publican. No descarta ni marca a las demás. null = sin carrera.
+   * primero con las que lo publican. Las que no la ofrecen ya se descartaron en App. null = sin carrera.
    */
   carrera?: { nombre: string; salario: (uni: Universidad) => number | null } | null;
 }
@@ -260,9 +260,9 @@ export function ListaUniversidades({
           </div>
           {ordenarPor === 'ninguno' && (
             <p className="ayuda orden-explicacion">
-              {/* La carrera solo ordena: se dice por qué la lista empieza donde empieza, sin marcar a nadie. */}
+              {/* Todas ofrecen la carrera (o no se sabe, y van marcadas): se dice por qué la lista empieza donde empieza. */}
               {carrera
-                ? `Primero las ${universidadesFiltradas.filter(u => carrera.salario(u) != null).length.toLocaleString('en-US')} que publican cuánto ganan sus egresados de ${carrera.nombre}, de más a menos. Que las demás no lo publiquen no quiere decir que no la ofrezcan.`
+                ? `Primero las ${universidadesFiltradas.filter(u => carrera.salario(u) != null).length.toLocaleString('en-US')} que publican cuánto ganan sus egresados de ${carrera.nombre}, de más a menos; después, las que la ofrecen sin publicar el salario.`
                 : puntajeSAT > 0
                 ? 'Primero donde tu probabilidad es alta, luego media y baja; en cada una, por ranking y salario.'
                 : 'Primero las del ranking U.S. News; luego por salario de egresados.'}
@@ -277,6 +277,8 @@ export function ListaUniversidades({
         <p className="nota-info lista-aviso">
           {[...faltantesPorId.values()].every(f => f.length === 1 && f[0] === 'Sin datos SAT')
             ? `${faltantesPorId.size.toLocaleString('en-US')} no publican puntajes SAT: muchas no lo piden y deciden por tus notas, ensayos y actividades. Están al final de los resultados, marcadas.`
+            : [...faltantesPorId.values()].every(f => f.length === 1 && f[0] === 'Sin datos de carreras')
+            ? `${faltantesPorId.size.toLocaleString('en-US')} no reportan sus carreras a College Scorecard: puede que ofrezcan la que buscas. Están al final de los resultados, marcadas.`
             : `${faltantesPorId.size.toLocaleString('en-US')} no tienen alguno de los datos que piden tus filtros. Están al final de los resultados, marcadas.`}
         </p>
       )}
