@@ -68,7 +68,7 @@ function useNumeroAnimado(valor: number): number {
       return () => cancelAnimationFrame(cuadro);
     }
     const inicio = performance.now();
-    const DURACION = 450;
+    const DURACION = 450; // entre --duration-slow y --duration-very-slow: es el momento de la portada
     const avanzar = (ahora: number) => {
       const p = Math.min(1, (ahora - inicio) / DURACION);
       const suave = 1 - (1 - p) ** 3;

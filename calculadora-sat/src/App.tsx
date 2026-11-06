@@ -23,6 +23,7 @@ import type { AvisoLista } from './components/ComparadorUniversidades';
 import { alcanzable, clasificar } from './utils/nivelSAT';
 import type { Nivel } from './utils/nivelSAT';
 import { AvisoFuentes } from './components/AvisoFuentes';
+import { usePresencia } from './utils/usePresencia';
 import { EVENTO_INICIO, EVENTO_MI_LISTA, ID_BUSCADOR_BARRA } from './components/BarraEduca';
 import { createPortal } from 'react-dom';
 import type { Sugerencia } from './components/FlujoPasos';
@@ -421,6 +422,8 @@ export default function App() {
 
   // Quitar los filtros también borra el puntaje: se puede deshacer unos segundos, como en Mi lista.
   const [filtrosAntes, setFiltrosAntes] = useState<FiltrosURL | null>(null);
+  // El aviso "Quitaste tus filtros" queda un momento al cerrarse, para irse con un fundido.
+  const [filtrosAntesVisible, avisoFiltrosSaliendo] = usePresencia(filtrosAntes, 150);
   useEffect(() => {
     if (!filtrosAntes) return;
     const espera = setTimeout(() => setFiltrosAntes(null), 8000);
@@ -610,6 +613,19 @@ export default function App() {
   );
 
   const listaRef = useRef<HTMLDivElement>(null);
+  // Al cambiar el lugar (desde la burbuja del mapa o "Más filtros"), la lista entra suave, sin
+  // volver a montarla: así conserva su página.
+  const lugarFiltrado = [filtros.estado, ...filtros.estados, '-', ...filtros.excluidos].join(',');
+  const lugarPrevio = useRef(lugarFiltrado);
+  useEffect(() => {
+    if (lugarPrevio.current === lugarFiltrado) return;
+    lugarPrevio.current = lugarFiltrado;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    listaRef.current?.animate(
+      [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 400, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+    );
+  }, [lugarFiltrado]);
   /** Pasar de un paso a otro (o a los resultados) empieza arriba de la página. */
   const irAPaso = useCallback((n: number) => {
     setPaso(n);
@@ -910,8 +926,8 @@ export default function App() {
 
           {/* Vive siempre en la página (vacío): así el lector de pantalla lo anuncia al cambiar. */}
           <div className="aviso-lista-zona aviso-filtros" role="status" aria-live="polite">
-            {filtrosAntes && (
-              <div className="aviso-lista">
+            {filtrosAntesVisible && (
+              <div className={`aviso-lista${avisoFiltrosSaliendo ? ' aviso-lista-saliendo' : ''}`}>
                 <span>Quitaste tus filtros.</span>
                 <button type="button" className="aviso-lista-deshacer" onClick={deshacerLimpiar}>Deshacer</button>
                 <button type="button" className="aviso-lista-cerrar" onClick={() => setFiltrosAntes(null)} aria-label="Cerrar aviso">

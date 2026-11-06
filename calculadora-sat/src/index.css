@@ -34,6 +34,25 @@
 
   --fuente: 'Lexend', 'Avenir Next', 'Segoe UI', sans-serif;
 
+  /* Escala de movimiento (la de transitions.dev): cada valor según su uso, no por el número.
+     Así un aviso, la capa del mapa o un tooltip se mueven con el mismo ritmo en toda la app. */
+  --duration-stagger: 40ms;
+  --duration-micro: 80ms;      /* retraso del tooltip, cada tramo de la sacudida */
+  --duration-quick: 150ms;     /* cerrar capa o menú, cambio de texto, aparecer tooltip */
+  --duration-fast: 250ms;      /* abrir capa o menú, cambio de ícono */
+  --duration-medium: 350ms;    /* cerrar panel o aviso */
+  --duration-slow: 400ms;      /* abrir panel, foto que llega */
+  --duration-very-slow: 500ms; /* momentos de énfasis: cifra que cambia */
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: ease-in-out;
+  --ease-out: ease-out;
+  --ease-linear: linear;
+  --ease-bounce: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --distance-micro: 4px;
+  --distance-small: 6px;
+  --distance-base: 8px;
+  --distance-medium: 12px;
+
   font: 15px/1.55 var(--fuente);
   font-optical-sizing: auto;
   color: var(--grafito);
@@ -905,7 +924,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
   box-shadow: 0 6px 20px rgba(17, 29, 63, 0.18);
   transform: translate(-50%, calc(-100% - var(--alto-barra, 0px) - 24px));
   opacity: 0;
-  transition: transform 0.25s ease, opacity 0.2s ease;
+  transition: transform var(--duration-fast) var(--ease-smooth-out), opacity var(--duration-fast) var(--ease-smooth-out);
 }
 .barra-flotante-visible { transform: translate(-50%, 0); opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
@@ -1227,13 +1246,13 @@ html { scroll-behavior: smooth; }
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 0.35s ease;
+  transition: opacity var(--duration-slow) var(--ease-in-out);
 }
 .foto-uni-lista img { opacity: 1; }
 /* Mientras llega la foto: un brillo suave, sin saltos de tamaño. */
 .foto-uni-cargando {
   background: linear-gradient(100deg, var(--tinta-fuerte) 30%, var(--tinta) 50%, var(--tinta-fuerte) 70%) 0 0 / 300% 100%;
-  animation: foto-brillo 1.6s ease-in-out infinite;
+  animation: foto-brillo 1.6s var(--ease-in-out) infinite;
 }
 @keyframes foto-brillo { from { background-position: 100% 0; } to { background-position: 0 0; } }
 .foto-uni-credito {
@@ -2209,7 +2228,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .barra-educa-lista:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(17, 29, 63, 0.2); }
-.barra-educa-lista .contador { color: var(--educa); background: #fff; animation: contador-mi-lista 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.barra-educa-lista .contador { color: var(--educa); background: #fff; animation: contador-mi-lista var(--duration-fast) var(--ease-bounce); }
 /* Ya está en la barra: el botón de los resultados sobraba. */
 .boton-mi-lista { display: none; }
 @media (max-width: 900px) {
@@ -2345,9 +2364,9 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   height: var(--alto-niveles, 56px);
   background: var(--hoja);
   box-shadow: 0 1px 0 var(--linea), 0 8px 16px -12px rgba(17, 29, 63, 0.35);
-  animation: barra-niveles-entra 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: barra-niveles-entra var(--duration-fast) var(--ease-smooth-out);
 }
-@keyframes barra-niveles-entra { from { opacity: 0; transform: translateY(-8px); } }
+@keyframes barra-niveles-entra { from { opacity: 0; transform: translateY(calc(var(--distance-base) * -1)); } }
 @media (prefers-reduced-motion: reduce) { .barra-niveles { animation: none; } }
 .barra-niveles-in { display: flex; align-items: center; gap: 8px; height: 100%; }
 .barra-niveles-sat { margin-right: 4px; font-size: 14px; color: var(--grafito-suave); white-space: nowrap; }
@@ -2794,9 +2813,12 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   background: var(--navy);
   border-radius: 999px;
   box-shadow: 0 12px 30px -12px rgba(17, 29, 63, 0.6);
-  animation: aviso-entra 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: aviso-entra var(--duration-medium) var(--ease-smooth-out);
+  transition: opacity var(--duration-quick) var(--ease-smooth-out), transform var(--duration-quick) var(--ease-smooth-out);
 }
-@keyframes aviso-entra { from { opacity: 0; transform: translateY(-8px); } }
+@keyframes aviso-entra { from { opacity: 0; transform: translateY(calc(var(--distance-base) * -1)); } }
+/* Al cerrarse (o pasar sus 8 segundos) se desvanece subiendo, más rápido de lo que entró. */
+.aviso-lista-saliendo { opacity: 0; transform: translateY(calc(var(--distance-base) * -1)); pointer-events: none; }
 .aviso-lista-deshacer, .aviso-lista-cerrar {
   display: inline-grid;
   place-items: center;
@@ -3004,7 +3026,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   vector-effect: non-scaling-stroke;
   stroke-linejoin: round;
   cursor: pointer;
-  transition: fill 0.35s ease, stroke 0.15s ease;
+  transition: fill var(--duration-medium) var(--ease-in-out), stroke var(--duration-quick) var(--ease-out);
 }
 .mapa-ix-estado:hover { stroke: var(--navy); stroke-width: 1.5; }
 .mapa-ix-estado.elegido { stroke: var(--brand); stroke-width: 1.5; cursor: default; }
@@ -3015,17 +3037,80 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   stroke-width: 1.2;
   vector-effect: non-scaling-stroke;
   cursor: pointer;
-  transition: fill-opacity 0.15s ease;
+  transition: fill-opacity var(--duration-quick) var(--ease-out);
 }
 .mapa-ix-ciudad:hover, .mapa-ix-ciudad.activa { fill: var(--navy); fill-opacity: 1; }
 .mapa-ix-marca { cursor: pointer; }
-.mapa-ix-marca circle { fill: var(--navy); stroke: #fff; stroke-width: 1.5; transition: fill 0.15s ease; }
+.mapa-ix-marca circle { fill: var(--navy); stroke: #fff; stroke-width: 1.5; transition: fill var(--duration-quick) var(--ease-out); }
 .mapa-ix-marca:hover circle { fill: var(--brand); }
 .mapa-ix-marca text { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; fill: #fff; pointer-events: none; }
 .mapa-ix-leyenda { min-height: 22px; margin: 10px 0 0; font-size: 14px; font-weight: 600; color: var(--tinta-fuerte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .capa-mapa .mapa-ix { padding: 0; background: none; border: 0; }
 @media (prefers-reduced-motion: reduce) {
   .mapa-ix-grupo, .mapa-ix-estado, .mapa-ix-ciudad { transition: none; }
+}
+
+/* =========================================================
+   Transiciones (transitions.dev). Solo opacity/transform/scale, para no mover el layout.
+   La regla global de "reducir movimiento" (arriba) las anula todas; cada bloque repite su
+   propia protección por si esa regla cambia.
+   ========================================================= */
+
+/* Tooltip: aparece con un retraso corto (pasar el mouse por encima no lo abre de casualidad),
+   con fundido y una escala mínima desde la burbuja; al cerrar se va al instante. Usa la
+   propiedad `scale`, aparte, porque el `transform` del globo lo escribe InfoTooltip para
+   correrlo dentro de la pantalla. */
+.ayuda-globo {
+  transform-origin: 50% 100%;
+  animation: tooltip-entra var(--duration-quick) var(--ease-out) var(--duration-micro) both;
+}
+.ayuda-globo-abajo { transform-origin: 50% 0; }
+@keyframes tooltip-entra { from { opacity: 0; scale: 0.96; } }
+
+/* Buscador: el borde se aviva suave al enfocar y las sugerencias se abren desde el campo. */
+.buscador-campo input { transition: border-color var(--duration-quick) var(--ease-out), box-shadow var(--duration-quick) var(--ease-out); }
+.sugerencias {
+  transform-origin: 50% 0;
+  animation: menu-entra var(--duration-fast) var(--ease-smooth-out);
+}
+@keyframes menu-entra { from { opacity: 0; transform: translateY(calc(var(--distance-micro) * -1)) scale(0.98); } }
+
+/* La ✕ del buscador y "Limpiar (n)" de los filtros entran con fundido y escala, sin saltar. */
+.buscador-borrar { animation: aparece-escala var(--duration-fast) var(--ease-smooth-out); }
+.hoja-cabecera .boton-limpiar { animation: aparece-escala var(--duration-fast) var(--ease-smooth-out); }
+@keyframes aparece-escala { from { opacity: 0; scale: 0.8; } }
+
+/* Puntaje inválido: una sacudida corta del campo cuando aparece el aviso (no en cada tecla:
+   la animación corre solo cuando el campo pasa a inválido), y el aviso entra con fundido. */
+.total-sat-error,
+.casilla-sat input[aria-invalid="true"] {
+  animation: sacudida calc(var(--duration-micro) * 2 + 60ms * 2) linear;
+}
+@keyframes sacudida {
+  0%     { transform: translateX(0); animation-timing-function: var(--ease-smooth-out); }
+  28.57% { transform: translateX(var(--distance-small)); animation-timing-function: var(--ease-smooth-out); }
+  57.14% { transform: translateX(calc(var(--distance-small) * -1)); animation-timing-function: var(--ease-smooth-out); }
+  78.57% { transform: translateX(var(--distance-micro)); animation-timing-function: var(--ease-smooth-out); }
+  100%   { transform: translateX(0); }
+}
+.casilla-error:not(:empty) { animation: texto-entra var(--duration-fast) var(--ease-out); }
+
+/* Cambio de texto o de ícono en el mismo lugar (Guardar → Guardada, la estrella que se
+   llena, Compartir → Copiado): lo nuevo entra con fundido y un desplazamiento mínimo. */
+.texto-cambia { display: inline-block; animation: texto-entra var(--duration-quick) var(--ease-in-out); }
+@keyframes texto-entra { from { opacity: 0; transform: translateY(var(--distance-micro)); } }
+.icono-cambia { animation: icono-entra var(--duration-fast) var(--ease-in-out); }
+@keyframes icono-entra { from { opacity: 0; scale: 0.6; filter: blur(2px); } }
+
+/* Cifra que cambia (las tres cajas de la portada, tus posibilidades en Mi lista): entra
+   desde abajo con un desenfoque leve, para que se note que se actualizó. */
+.cifra-cambia { display: inline-block; animation: cifra-entra var(--duration-very-slow) var(--ease-bounce) both; }
+@keyframes cifra-entra { from { opacity: 0; transform: translateY(var(--distance-base)); filter: blur(2px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ayuda-globo, .sugerencias, .buscador-borrar, .hoja-cabecera .boton-limpiar,
+  .total-sat-error, .casilla-sat input, .casilla-error, .texto-cambia, .icono-cambia,
+  .cifra-cambia { animation: none !important; transition: none !important; }
 }
 
 /* ==========================================================================
@@ -3150,10 +3235,10 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .flujo-sugerencia .boton-enlace { font: inherit; font-weight: 700; color: var(--tinta); text-decoration: underline; text-underline-offset: 3px; }
 
 /* Cada paso entra con un fundido y un desplazamiento corto, desde el lado hacia el que se va. */
-.flujo-paso-adelante { animation: paso-entra-adelante 220ms cubic-bezier(0.16, 1, 0.3, 1); }
-.flujo-paso-atras { animation: paso-entra-atras 220ms cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes paso-entra-adelante { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
-@keyframes paso-entra-atras { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+.flujo-paso-adelante { animation: paso-entra-adelante var(--duration-fast) var(--ease-smooth-out); }
+.flujo-paso-atras { animation: paso-entra-atras var(--duration-fast) var(--ease-smooth-out); }
+@keyframes paso-entra-adelante { from { opacity: 0; transform: translateX(var(--distance-medium)); } to { opacity: 1; transform: none; } }
+@keyframes paso-entra-atras { from { opacity: 0; transform: translateX(calc(var(--distance-medium) * -1)); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .flujo-paso-adelante, .flujo-paso-atras { animation: none; } }
 
 /* Abajo, fija: cuántas encajan por ahora y los botones para avanzar. */
@@ -3214,7 +3299,7 @@ html:has(.flujo) { scroll-padding-bottom: 120px; }
   position: relative; aspect-ratio: 1; min-width: 0; padding: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
   font: inherit; color: #4d5878; background: #e2e6f2; border: 0; border-radius: 10px; cursor: pointer;
-  transition: background-color 120ms, transform 120ms, box-shadow 120ms;
+  transition: background-color var(--duration-quick) var(--ease-out), transform var(--duration-quick) var(--ease-out), box-shadow var(--duration-quick) var(--ease-out);
 }
 .cuadrito-sigla { font-size: clamp(11px, 1.1vw, 14px); font-weight: 600; line-height: 1; }
 .cuadrito-numero { font-size: clamp(10px, 0.85vw, 12px); line-height: 1; }
@@ -3239,12 +3324,12 @@ html:has(.flujo) { scroll-padding-bottom: 120px; }
 .cuadritos-leyenda-barra { width: 96px; height: 8px; border-radius: 999px; background: linear-gradient(90deg, #eef1f8, color-mix(in srgb, var(--tinta) 78%, #eef1f8)); }
 
 /* "Dónde no quiero": lo descartado en rojo y tachado con una ✕; tiembla al marcarlo. */
-.cuadrito-excluido { color: #8f2219; background: #fdecea; box-shadow: inset 0 0 0 2px #c8382c; animation: cuadrito-tiembla 380ms ease-in-out; }
+.cuadrito-excluido { color: #8f2219; background: #fdecea; box-shadow: inset 0 0 0 2px #c8382c; animation: cuadrito-tiembla var(--duration-medium) var(--ease-in-out); }
 .cuadrito-excluido::after {
   content: '✕'; position: absolute; top: 3px; right: 5px; font-size: 10px; font-weight: 700; line-height: 1; color: #c8382c;
 }
 .cuadrito-excluido.cuadrito-encima { background: #fbd9d5; }
-.cuadritos-temblando .cuadrito { animation: cuadrito-tiembla 380ms ease-in-out; }
+.cuadritos-temblando .cuadrito { animation: cuadrito-tiembla var(--duration-medium) var(--ease-in-out); }
 @keyframes cuadrito-tiembla {
   0%, 100% { translate: 0; }
   20% { translate: -3px 0; }
