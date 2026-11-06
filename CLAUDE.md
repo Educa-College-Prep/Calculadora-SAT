@@ -16,6 +16,7 @@ Todo (interfaz, código, comentarios, commits) está en **español**. Mantenerlo
 .github/workflows/
   deploy.yml            push a main → build y publica en Pages; en PR solo compila
   actualizar-datos.yml  "el robot": cada lunes corre actualizar_datos.py y abre PR si hay datos nuevos
+  actualizar-videos.yml robot de videos: cada día corre actualizar_videos.py y abre PR si hay videos nuevos
 calculadora-sat/        ← la app (todos los comandos se corren desde aquí)
   src/
     main.tsx            monta <BarraEduca /> (barra de la marca) + <App />
@@ -24,6 +25,7 @@ calculadora-sat/        ← la app (todos los comandos se corren desde aquí)
     components/         un componente por archivo, nombres en español (PascalCase)
     utils/              lógica pura y hooks (búsqueda, niveles SAT, costos, formato…)
     data/rankingUSNews.ts  ranking U.S. News (top ~50), se actualiza a mano cada septiembre
+    data/videos_universidades.json  videos de YouTube de Educa por UNITID; lo mantiene el robot de videos
     index.css           todos los estilos (CSS plano, sin framework)
   public/
     universidades.json      base principal (~4300 universidades), GENERADA por script
@@ -33,6 +35,7 @@ calculadora-sat/        ← la app (todos los comandos se corren desde aquí)
   scripts/
     actualizar_datos.py     baja College Scorecard + IPEDS y regenera los JSON
     fotos_universidades.py  regenera fotos_universidades.json vía Wikidata/Commons
+    actualizar_videos.py    agrega a cada ficha los videos nuevos del canal de YouTube de Educa
 capturas/               screenshots que deja el usuario (ignorada por git)
 _to_delete/             basura histórica; no tocar ni usar
 ```
@@ -49,6 +52,7 @@ npm run preview   # sirve dist/
 python3 scripts/actualizar_datos.py            # solo escribe si hay datos nuevos
 python3 scripts/actualizar_datos.py --forzar   # regenera igual
 python3 scripts/fotos_universidades.py         # tarda minutos (límite de Wikipedia)
+python3 scripts/actualizar_videos.py           # con YOUTUBE_API_KEY lee el canal completo; sin ella, el RSS
 ```
 
 No hay tests automatizados. La verificación es `npm run build` (TypeScript estricto con `noUnusedLocals`/`noUnusedParameters`) + `npm run lint` + probar en el navegador.
@@ -75,6 +79,13 @@ Publicar = mergear a `main` (lo hace `deploy.yml`). El script `npm run deploy` (
 - Escribe `hay_datos_nuevos` en `$GITHUB_OUTPUT` y la descripción del PR en `scripts/.cache/resumen_pr.md`.
 - `COLUMNAS` y el filtro de mínimo de columnas definen qué universidades entran; `COLUMNAS_NUEVAS` no cuentan para ese filtro (para no cambiar la lista).
 - No editar `public/universidades.json` ni `fuentes_datos.json` a mano: regenerarlos con el script.
+
+## El robot de videos (`actualizar_videos.py`)
+
+- Lee el canal @EducaCollegePrep con la API de YouTube (`YOUTUBE_API_KEY` en GitHub; canal completo, títulos en español con `hl=es`). Sin clave usa el feed RSS (últimos 15), que YouTube tiene caído a ratos: si falla, no cambia nada. Descarta Shorts (≤ 3 min) y en vivos.
+- Reconoce la universidad por su nombre oficial o un alias de `aliases.ts` (con exclusiones: "UK", "Texas"…), primero en el título y si no en la descripción. Si el título habla de otro país no la agrega (King's College London ≠ King's College de PA).
+- El PR separa: agregados, agregados con duda (⚠️) y no agregados (❓). Todo video visto queda en la universidad o en `ignorados`, para no volver a proponerlo.
+- Se puede editar `videos_universidades.json` a mano (títulos más cortos, mover un video); el robot solo agrega.
 
 ## Convenciones
 

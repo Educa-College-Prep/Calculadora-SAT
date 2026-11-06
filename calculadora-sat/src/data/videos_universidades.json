@@ -1,0 +1,855 @@
+{
+  "universidades": {
+    "164580": {
+      "nombre": "Babson College",
+      "tour": {
+        "id": "86jbPp7xHjo",
+        "titulo": "Babson College Campus Tour | La mejor escuela en Emprendimiento"
+      },
+      "testimonios": [
+        {
+          "id": "HKoxTRjOecA",
+          "titulo": "Babson College | ¡LATINAS en la MEJOR UNIVERSIDAD de EMPRENDIMIENTO del MUNDO!"
+        },
+        {
+          "id": "9AYX2lOj-mc",
+          "titulo": "Cómo estudiar Negocios en Babson College | Admission Counseling"
+        }
+      ]
+    },
+    "189097": {
+      "nombre": "Barnard College",
+      "testimonios": [
+        {
+          "id": "hVuaaI0f9LI",
+          "titulo": "Estudiar Sociología en BARNARD College | La escuela para mujeres integrada a Columbia"
+        }
+      ]
+    },
+    "164748": {
+      "nombre": "Berklee College of Music",
+      "testimonios": [
+        {
+          "id": "opSps2-NZ1Y",
+          "titulo": "Film Scoring en Berklee College of Music | Una de las mejores escuelas de música"
+        }
+      ]
+    },
+    "164924": {
+      "nombre": "Boston College",
+      "testimonios": [
+        {
+          "id": "7g9mBmMSGBY",
+          "titulo": "Estudiar en Massachusetts, EE. UU. | Boston College | Juan Payet"
+        },
+        {
+          "id": "dusq0Nepcl4",
+          "titulo": "¿Cómo equilibrar el colegio con el SAT? | Curso SAT Prep | SAT para Boston College"
+        }
+      ]
+    },
+    "217156": {
+      "nombre": "Brown University",
+      "tour": {
+        "id": "IyR2fkXKcxo",
+        "titulo": "Brown University Campus Tour | Recorrido por una Ivy League"
+      },
+      "testimonios": [
+        {
+          "id": "I94KyoUWKns",
+          "titulo": "Estudiar en BROWN UNIVERSITY | Somos la IVY LEAGUE MÁS FELIZ\""
+        },
+        {
+          "id": "q80rZ0E1TZc",
+          "titulo": "MARCELO estudia en una IVY LEAGUE | The Road to BROWN | Ayuda financiera en una Ivy League"
+        },
+        {
+          "id": "P8UiDQbIi9M",
+          "titulo": "ALESSA ingresó a BROWN University | IVY LEAGUE EEUU | Testimonio Educa"
+        },
+        {
+          "id": "rL7p42A9eSQ",
+          "titulo": "Estudiar 3 carreras en Brown University | De Perú a EE.UU."
+        },
+        {
+          "id": "lLRwnjTY8TE",
+          "titulo": "¿Cómo es estudiar Economía en Brown? | El Open Curriculum que lo cambia todo"
+        },
+        {
+          "id": "_Tw6Qk8iRwg",
+          "titulo": "¿Cómo ingresar a la Ivy League con beca completa? | Brown University"
+        },
+        {
+          "id": "iePLxavGWgs",
+          "titulo": "El “right fit” y la elección entre dos Ivy Leagues: Yale y Brown"
+        }
+      ]
+    },
+    "190150": {
+      "nombre": "Columbia University in the City of New York",
+      "tour": {
+        "id": "V56Zf6OjoaU",
+        "titulo": "Columbia University Tour | Así es la universidad top 10 del mundo"
+      },
+      "testimonios": [
+        {
+          "id": "nBXgo6l2yuk",
+          "titulo": "Sciences Po: vivir sola, viajar por Europa y estudiar en Columbia | Double Degree | Alice de Perú"
+        },
+        {
+          "id": "G7kydPda9jA",
+          "titulo": "Cómo estudiaré con BECA COMPLETA en EEUU y Francia | Columbia y Sciences Po | Educa"
+        }
+      ]
+    },
+    "190415": {
+      "nombre": "Cornell University",
+      "testimonios": [
+        {
+          "id": "DL-JV82Ftv4",
+          "titulo": "¿Cómo entrar a Arquitectura en una IVY LEAGUE? | Cornell University | Perú"
+        }
+      ]
+    },
+    "182670": {
+      "nombre": "Dartmouth College",
+      "tour": {
+        "id": "fds2ie675Yk",
+        "titulo": "Tour por Dartmouth College | ¡La Ivy League más pequeña!"
+      },
+      "testimonios": [
+        {
+          "id": "TUywdMdUVqk",
+          "titulo": "¿Cómo es estudiar en una Ivy League? | Dartmouth College | Matemática Aplicada en DARTMOUTH"
+        }
+      ]
+    },
+    "212054": {
+      "nombre": "Drexel University",
+      "testimonios": [
+        {
+          "id": "tZmVvB8G_Dk",
+          "titulo": "Cómo estudiar Negocios en Estados Unidos | Drexel University | Admission Counseling"
+        }
+      ]
+    },
+    "232186": {
+      "nombre": "George Mason University",
+      "testimonios": [
+        {
+          "id": "40mDkAwohcM",
+          "titulo": "Guía para padres: ¿Cómo postular a universidades de EE. UU. desde cero? | Economía en George Mason"
+        },
+        {
+          "id": "hoM5ektogjU",
+          "titulo": "¿Cómo es estudiar Economía en Estados Unidos? | George Mason University"
+        }
+      ]
+    },
+    "131469": {
+      "nombre": "George Washington University",
+      "testimonios": [
+        {
+          "id": "xlPZuhcGyyM",
+          "titulo": "Diseño Gráfico en George Washington University | Admission Counseling"
+        }
+      ]
+    },
+    "131496": {
+      "nombre": "Georgetown University",
+      "tour": {
+        "id": "ZwJTQuxOhXg",
+        "titulo": "Georgetown: la universidad #1 en Ciencias Políticas | Campus Tour"
+      },
+      "testimonios": [
+        {
+          "id": "nJCpBiDqRmM",
+          "titulo": "Cómo logré 1560 y Perfect Math en el SAT | Cómo fui admitido en Georgetown | Curso SAT Prep"
+        },
+        {
+          "id": "0bGgKkcv5J4",
+          "titulo": "¿Vale la pena tomar un año sabático para estudiar en Estados Unidos? | Cómo aplicar a Georgetown"
+        },
+        {
+          "id": "IN2P2y07Hrc",
+          "titulo": "¿Cómo es estudiar en Georgetown? | La mejor universidad de Relaciones Internacionales | EE.UU."
+        },
+        {
+          "id": "DxLC2qON22Y",
+          "titulo": "ECONOMÍA (Georgetown) vs DISEÑO GRÁFICO (SAIC) | LATINOS en Universidad EEUU | Agree to Disagree"
+        },
+        {
+          "id": "QhIqRcHcTas",
+          "titulo": "Mi 2do año estudiando en GEORGETOWN UNIVERSITY | Cómo ingresar a tu Dream School"
+        },
+        {
+          "id": "KJ1AvT-RXE8",
+          "titulo": "¿Cómo es estudiar en Georgetown University? | Admission Counseling | Renato"
+        },
+        {
+          "id": "CjLZQBiUds0",
+          "titulo": "¿Cómo estudiar Finanzas en Estados Unidos? | Georgetown University"
+        },
+        {
+          "id": "fVoljLaql4U",
+          "titulo": "Admitida a las mejores universidades de EE.UU. y Canadá | Admission Counseling"
+        }
+      ]
+    },
+    "139755": {
+      "nombre": "Georgia Institute of Technology-Main Campus",
+      "testimonios": [
+        {
+          "id": "7hgVugD9_z8",
+          "titulo": "Cómo estudiar Ingeniería Civil en Georgia Tech | 3 de EE.UU. | Estudiar en Estados Unidos"
+        },
+        {
+          "id": "_rnyiyKvqzA",
+          "titulo": "¿Cómo ser admitido en GEORGIA TECH? | TOP 3 en Ingeniería en Estados Unidos | De Perú a EE.UU."
+        },
+        {
+          "id": "SwY12HuMP2Y",
+          "titulo": "¿Cómo es estudiar Ingeniería Mecánica en Georgia Tech? | De Perú a EEUU | Top 10 Public Universities"
+        }
+      ]
+    },
+    "166027": {
+      "nombre": "Harvard University",
+      "tour": {
+        "id": "Q5FA_t0llQY",
+        "titulo": "Harvard Campus Tour | Recorriendo la mejor universidad del mundo"
+      }
+    },
+    "151351": {
+      "nombre": "Indiana University-Bloomington",
+      "testimonios": [
+        {
+          "id": "nDThLYxnOho",
+          "titulo": "¿Cómo estudiar Periodismo en Estados Unidos? | Indiana University Bloomington"
+        },
+        {
+          "id": "B9vnBi1mgTU",
+          "titulo": "Micaela estudia en un top 10 de Economía en Estados Unidos | Indiana University Bloomington"
+        }
+      ]
+    },
+    "162928": {
+      "nombre": "Johns Hopkins University",
+      "testimonios": [
+        {
+          "id": "6FArUWLth18",
+          "titulo": "¿Cómo es estudiar en Johns Hopkins University? | La vida en JHU"
+        },
+        {
+          "id": "8FemQmSpWBw",
+          "titulo": "De Pre-Med a Negocios en Johns Hopkins University | Cómo cambiar de carrera"
+        }
+      ]
+    },
+    "213543": {
+      "nombre": "Lehigh University",
+      "testimonios": [
+        {
+          "id": "cOywFbjYQN8",
+          "titulo": "El camino a Lehigh University | Cómo encontrar tu universidad ideal"
+        }
+      ]
+    },
+    "193900": {
+      "nombre": "New York University",
+      "tour": {
+        "id": "ry_g7fN-DoI",
+        "titulo": "Así es estudiar en Nueva York | Campus Tour por NYU"
+      },
+      "testimonios": [
+        {
+          "id": "RY31cuv5ifg",
+          "titulo": "Estudiar Business en NYU STERN | La Universidad 35 de EE. UU.!"
+        },
+        {
+          "id": "KInnQWCw0gs",
+          "titulo": "De Parsons a NYU | Cómo ingresé a mi DREAM SCHOOL como TRANSFER en Nueva York"
+        },
+        {
+          "id": "zh8AHnAYYcI",
+          "titulo": "De Parsons a NYU Gallatin | ¿Cómo diseñé mi carrera en Entertainment Business?"
+        }
+      ]
+    },
+    "167358": {
+      "nombre": "Northeastern University",
+      "testimonios": [
+        {
+          "id": "YFfAbfFwgRs",
+          "titulo": "Cómo ingresé a Northeastern University | Mi camino a Economía"
+        }
+      ]
+    },
+    "147767": {
+      "nombre": "Northwestern University",
+      "testimonios": [
+        {
+          "id": "pK_t4iBtojM",
+          "titulo": "Dos caminos, mismo éxito Northwestern & Tulane University | Admission Counseling | Rafaela & Mateo"
+        },
+        {
+          "id": "jqJJ2AHL24Y",
+          "titulo": "De Quito a Northwestern University | Data Science en EE UU | Mateo de Ecuador"
+        }
+      ]
+    },
+    "214777": {
+      "nombre": "Pennsylvania State University-Main Campus",
+      "testimonios": [
+        {
+          "id": "UC62EGQBUg8",
+          "titulo": "Cómo ingresé a Penn State | Negocios en EE.UU. | Admission Counseling"
+        }
+      ]
+    },
+    "121150": {
+      "nombre": "Pepperdine University",
+      "testimonios": [
+        {
+          "id": "ca2pU2jlorA",
+          "titulo": "Guía para padres: Así es como mi hija estudiará en Estados Unidos | Pepperdine University"
+        },
+        {
+          "id": "nluA5gWwry0",
+          "titulo": "De BOGOTÁ a MALIBÚ | ¡Así fue cómo Isabella ingresó a Pepperdine University!"
+        },
+        {
+          "id": "-TZ5ks5QRU0",
+          "titulo": "¿Cómo es estudiar Ciencias Políticas en Estados Unidos? | Pepperdine University"
+        }
+      ]
+    },
+    "121345": {
+      "nombre": "Pomona College",
+      "testimonios": [
+        {
+          "id": "eJ9_s6ujLsc",
+          "titulo": "De Perú a Pomona College | 30 Preguntas con Alessio | Artes Liberales en Pomona College"
+        },
+        {
+          "id": "oOE1p2wF8kM",
+          "titulo": "¿Qué son las Liberal Arts Colleges y cómo postular? | The Road to POMONA COLLEGE | Perú a EEUU"
+        },
+        {
+          "id": "draC9N-VEkY",
+          "titulo": "Estudiar Política y Economía en Pomona College | ¿Cómo funciona un Double Major?"
+        }
+      ],
+      "tour": {
+        "id": "QzLKJqxGuS4",
+        "titulo": "Pomona College Campus Tour | ¿Qué hace especial a Pomona College? | California"
+      }
+    },
+    "186131": {
+      "nombre": "Princeton University",
+      "tour": {
+        "id": "aFT84EcTUuo",
+        "titulo": "Tour por Princeton University: todo lo que debes saber"
+      },
+      "testimonios": [
+        {
+          "id": "KnsnEwxgrL0",
+          "titulo": "¿Cómo es estudiar un Doctorado en Princeton? | De LATAM a una IVY LEAGUE | José Luis de Perú"
+        }
+      ]
+    },
+    "243780": {
+      "nombre": "Purdue University-Main Campus",
+      "testimonios": [
+        {
+          "id": "5Iuv4fFqWD4",
+          "titulo": "Ingeniería Aeroespacial en Purdue University desde LATAM | El proceso de Lucas"
+        },
+        {
+          "id": "izMadAivQaA",
+          "titulo": "Mi admisión a Purdue University | Testimonio de Valeria"
+        },
+        {
+          "id": "aDL5vmAp_fw",
+          "titulo": "¿Cómo estudiar Business en Estados Unidos? | Purdue University"
+        }
+      ]
+    },
+    "195003": {
+      "nombre": "Rochester Institute of Technology",
+      "testimonios": [
+        {
+          "id": "dyyDRzFluK8",
+          "titulo": "Cómo creé mi propia licenciatura en RIT | Rochester Institute of Technology"
+        }
+      ]
+    },
+    "148487": {
+      "nombre": "Roosevelt University",
+      "testimonios": [
+        {
+          "id": "sPowbGXzbBg",
+          "titulo": "¿Cómo postular a universidades en USA? | UC Berkeley y Roosevelt University | Admission Counseling"
+        },
+        {
+          "id": "5KOLt4UwyRI",
+          "titulo": "¿Cómo aplicar a una universidad de artes en EE.UU.? | Chicago College of Performing Arts (CCPA)"
+        }
+      ]
+    },
+    "143048": {
+      "nombre": "School of the Art Institute of Chicago",
+      "testimonios": [
+        {
+          "id": "DxLC2qON22Y",
+          "titulo": "ECONOMÍA (Georgetown) vs DISEÑO GRÁFICO (SAIC) | LATINOS en Universidad EEUU | Agree to Disagree"
+        }
+      ]
+    },
+    "195809": {
+      "nombre": "St. John's University-New York",
+      "testimonios": [
+        {
+          "id": "Z_2836hwm5Q",
+          "titulo": "DESCUBRE el PROCESO para una UNIVERSIDAD en NEWYORK | The ROAD to ST JOHNS | Perú a EEUU"
+        }
+      ]
+    },
+    "243744": {
+      "nombre": "Stanford University",
+      "tour": {
+        "id": "JuZizW36lzY",
+        "titulo": "Stanford Campus Tour | Aquí estudiaron los fundadores de Google"
+      },
+      "testimonios": [
+        {
+          "id": "cPsEUjtaL3A",
+          "titulo": "¿Cómo es estudiar en STANFORD | Universidad 3 en EE.UU.? | Ingeniería Mecánica"
+        },
+        {
+          "id": "m-kI_ohZCJ8",
+          "titulo": "Estudiar en STANFORD | Computer Science y Political Science | Admission Counseling"
+        },
+        {
+          "id": "ypCjVcqqeIw",
+          "titulo": "Mi 2do año en STANFORD | ¿Cómo es estudiar Física en California? | Admission Counseling"
+        },
+        {
+          "id": "2ouPyGgZ1DM",
+          "titulo": "¿Cómo subir el puntaje SAT de 1350 a 1560 para Stanford? | Curso SAT Prep | Estudiar en Stanford"
+        },
+        {
+          "id": "buOXZBVUqho",
+          "titulo": "Estudiar Computer Science y Political Science en Stanford | Admission Counseling"
+        }
+      ]
+    },
+    "228778": {
+      "nombre": "The University of Texas at Austin",
+      "testimonios": [
+        {
+          "id": "w6W1eYGEP8M",
+          "titulo": "¡Así logró ingresar a UT Austin! | La mejor universidad pública de EE.UU.! | Gap Year"
+        },
+        {
+          "id": "rjDjmf5tXVs",
+          "titulo": "BECAS PARA DEPORTISTAS en USA | Cómo postular a la UNIVERSIDAD como DEPORTISTA | UT Austin"
+        },
+        {
+          "id": "ilDoV2sWEu4",
+          "titulo": "Cómo ingresé a UT Austin para Public Relations | Estudiar en Texas"
+        },
+        {
+          "id": "bIIuLxEmm3w",
+          "titulo": "María Fernanda fue admitida a UT Austin | Universidad top en Estados Unidos"
+        },
+        {
+          "id": "dwXcTDqDn-A",
+          "titulo": "¿Cómo estudiar Psicología en EE.UU.? | UT Austin | Admission Counseling"
+        }
+      ]
+    },
+    "160755": {
+      "nombre": "Tulane University of Louisiana",
+      "testimonios": [
+        {
+          "id": "pK_t4iBtojM",
+          "titulo": "Dos caminos, mismo éxito Northwestern & Tulane University | Admission Counseling | Rafaela & Mateo"
+        }
+      ]
+    },
+    "110635": {
+      "nombre": "University of California-Berkeley",
+      "tour": {
+        "id": "7DI8Xbdbhaw",
+        "titulo": "¿Vale la pena estudiar en UC Berkeley? | UC Berkeley Campus Tour"
+      },
+      "testimonios": [
+        {
+          "id": "sPowbGXzbBg",
+          "titulo": "¿Cómo postular a universidades en USA? | UC Berkeley y Roosevelt University | Admission Counseling"
+        },
+        {
+          "id": "V6u6xpLw0yI",
+          "titulo": "La MEJOR UNIVERSIDAD PÚBLICA de EEUU | ¿Cómo es estudiar en UC Berkeley? | Economía y Data Science"
+        },
+        {
+          "id": "UcRizhAI3N8",
+          "titulo": "Mi admisión a UC Berkeley | ¿Cómo prepararte para el SAT y los ensayos de admisión?"
+        },
+        {
+          "id": "a65HI8NcWLc",
+          "titulo": "¿Cómo es estudiar Media Studies? | De Arquitectura a Media Studies en UC Berkeley"
+        }
+      ]
+    },
+    "110644": {
+      "nombre": "University of California-Davis",
+      "testimonios": [
+        {
+          "id": "l2Yeq-G4qqo",
+          "titulo": "De Lima a UC Davis | Managerial Economics en EE.UU."
+        }
+      ]
+    },
+    "110662": {
+      "nombre": "University of California-Los Angeles",
+      "tour": {
+        "id": "17iWtoexVAw",
+        "titulo": "UCLA Campus Tour | ¿Cómo es estudiar en UCLA?"
+      },
+      "testimonios": [
+        {
+          "id": "tD3OtShIj4U",
+          "titulo": "¿Cómo es estudiar en la MEJOR UNIVERSIDAD PÚBLICA de ESTADOS UNIDOS? | UCLA | 30PreguntasEduca"
+        },
+        {
+          "id": "fF-JTxLbo9Q",
+          "titulo": "ISABELLA estudia en la MEJOR UNIV. Pública de ESTADOS UNIDOS | The Road to UCLA | Admisión USA"
+        },
+        {
+          "id": "yhN4KusAtNQ",
+          "titulo": "¡Así logré ser admitida en UCLA! | Mi primer paso para estudiar Derecho en EE.UU."
+        }
+      ]
+    },
+    "144050": {
+      "nombre": "University of Chicago",
+      "testimonios": [
+        {
+          "id": "Rsi4ZgmHuG4",
+          "titulo": "DOS HERMANOS LATINOS en una UNIVERSIDAD TOP 25 MUNDO | The University of CHICAGO | EE.UU"
+        },
+        {
+          "id": "1G2uT8w3GPw",
+          "titulo": "De Trujillo, Perú a UChicago | Cómo ingresar a una de las universidades más selectivas de EE.UU."
+        },
+        {
+          "id": "HJrXmNFS-Z0",
+          "titulo": "Fui admitida en una universidad top 10 de EE.UU. | Early Decision | UChicago"
+        }
+      ]
+    },
+    "129020": {
+      "nombre": "University of Connecticut",
+      "testimonios": [
+        {
+          "id": "j4cEGyL6Xek",
+          "titulo": "Camino a UConn | Ingeniería Biomédica y programa de Medicina"
+        }
+      ]
+    },
+    "145637": {
+      "nombre": "University of Illinois Urbana-Champaign",
+      "testimonios": [
+        {
+          "id": "JXhwwiOYClk",
+          "titulo": "Estudiar en EE.UU. | El camino de Nicolás hacia la University of Illinois Urbana-Champaign"
+        }
+      ]
+    },
+    "135726": {
+      "nombre": "University of Miami",
+      "testimonios": [
+        {
+          "id": "Y16eWU-bl_c",
+          "titulo": "Estudiaré Business Administration en EEUU | University of Miami"
+        }
+      ]
+    },
+    "170976": {
+      "nombre": "University of Michigan-Ann Arbor",
+      "testimonios": [
+        {
+          "id": "P1ffkTx0agk",
+          "titulo": "University of Michigan | ¿Cómo fui admitida a la 3 universidad pública de EE.UU.? | Colombia"
+        }
+      ]
+    },
+    "152080": {
+      "nombre": "University of Notre Dame",
+      "testimonios": [
+        {
+          "id": "85aJJ7lZgYA",
+          "titulo": "¿Cómo ingresar a University of Notre Dame? | Admission Counseling | Study in Indiana, US"
+        },
+        {
+          "id": "FKfh0aRiCy8",
+          "titulo": "Cómo ingresé a University of Notre Dame | Finanzas en EE.UU."
+        }
+      ]
+    },
+    "215062": {
+      "nombre": "University of Pennsylvania",
+      "tour": {
+        "id": "NpPFsbb1GSk",
+        "titulo": "University of Pennsylvania (UPenn) Campus Tour | #1 in Business"
+      },
+      "testimonios": [
+        {
+          "id": "k2AOlw0_efk",
+          "titulo": "¿Cómo ser admitido en Wharton de UPenn? | Estudiar NEGOCIOS de EEUU | 1 en Business"
+        },
+        {
+          "id": "uiS8nUpfOzQ",
+          "titulo": "Estudiar en UPENN | La MEJOR UNIVERSIDAD de NEGOCIOS de EEUU"
+        },
+        {
+          "id": "I8jsSD_p078",
+          "titulo": "LA UNIV. 1 de NEGOCIOS del MUNDO | The Road to UPENN en Early Decision | María de Perú"
+        },
+        {
+          "id": "B35h18QNsjQ",
+          "titulo": "¿Cómo es estudiar en la mejor escuela de negocios del mundo? | Wharton School"
+        },
+        {
+          "id": "6q_ksoIr8h8",
+          "titulo": "¿Cómo ingresar a UPenn y la Ivy League desde LATAM? | Admission Counseling"
+        }
+      ]
+    },
+    "215293": {
+      "nombre": "University of Pittsburgh-Pittsburgh Campus",
+      "testimonios": [
+        {
+          "id": "HAojN9AQsEk",
+          "titulo": "Marcela estudiará Ingeniería Biomédica en EE.UU. | Gap year | Admission Counseling"
+        }
+      ]
+    },
+    "137351": {
+      "nombre": "University of South Florida",
+      "testimonios": [
+        {
+          "id": "kJtA64EUYIc",
+          "titulo": "De Lima a USF | Biología Celular y Molecular en EE.UU."
+        }
+      ]
+    },
+    "123961": {
+      "nombre": "University of Southern California",
+      "tour": {
+        "id": "0_uSXsSckik",
+        "titulo": "University of Southern California Campus Tour | USC cerca de Hollywood"
+      },
+      "testimonios": [
+        {
+          "id": "qYQSmtvPm-M",
+          "titulo": "¿Cómo ingresé a University of Southern California (USC)? | Estudiar en California | Estados Unidos"
+        },
+        {
+          "id": "BCg5Uy-_ulQ",
+          "titulo": "PERUANO en una de las MEJORES UNIVERSIDADES de CINE | USC | Estudiar CINE en EEUU"
+        }
+      ]
+    },
+    "234076": {
+      "nombre": "University of Virginia-Main Campus",
+      "testimonios": [
+        {
+          "id": "cFNuVmUCkB4",
+          "titulo": "¿Cómo es estudiar en University of Virginia? | UVA Student Life"
+        }
+      ]
+    },
+    "240444": {
+      "nombre": "University of Wisconsin-Madison",
+      "testimonios": [
+        {
+          "id": "CQ84I10al2s",
+          "titulo": "¿Cómo fui admitida en University of Wisconsin - Madison? Admitida en 3 universidades | STEM"
+        }
+      ]
+    },
+    "221999": {
+      "nombre": "Vanderbilt University",
+      "tour": {
+        "id": "L_Q__A6FFJ4",
+        "titulo": "Así es estudiar en Estados Unidos | Campus tour por Vanderbilt University"
+      },
+      "testimonios": [
+        {
+          "id": "CB2Mc2wxZq0",
+          "titulo": "De LATAM a Vanderbilt University | Mi primer año en Ciencias Políticas | TOP 15 EEUU"
+        }
+      ]
+    },
+    "168342": {
+      "nombre": "Williams College",
+      "tour": {
+        "id": "TkckJgHQqpU",
+        "titulo": "Williams College Campus Tour | Top Liberal Arts Colleges"
+      }
+    },
+    "130794": {
+      "nombre": "Yale University",
+      "tour": {
+        "id": "mQEuxUNywYc",
+        "titulo": "Yale University Campus Tour | Secretos de una Ivy League de 300+ años"
+      },
+      "testimonios": [
+        {
+          "id": "TCv0jGPW-14",
+          "titulo": "PERUANO en una IVY LEAGUE | ¿Cómo es estudiar en YALE? | EE.UU."
+        },
+        {
+          "id": "VkS3Oc4e2Fo",
+          "titulo": "PERUANO estudiando en YALE UNIVERSITY (Top 3 EEUU) | The Road to YALE | Ivy League"
+        },
+        {
+          "id": "GaZdAFTX8HA",
+          "titulo": "¿Cómo es estudiar en Yale? | Economía y Humanidades en una Ivy League"
+        },
+        {
+          "id": "iePLxavGWgs",
+          "titulo": "El “right fit” y la elección entre dos Ivy Leagues: Yale y Brown"
+        }
+      ]
+    }
+  },
+  "ignorados": {
+    "gyLbbXF3xvA": "sin universidad de EE.UU. — ¿Cómo abrir tus posibilidades para estudiar en el extranjero? | Curso SAT Prep | Alumna de Perú",
+    "aFBV57yH-hc": "sin universidad de EE.UU. — ¡Admitido en 4 universidades increíbles! | ¿Cómo elegir tu destino? | Admission Counseling",
+    "H1StA_QP4Fk": "sin universidad de EE.UU. — ¿Cómo vencer el miedo al SAT en inglés? | Curso SAT Prep | Diana de Perú",
+    "ixMHR14jvGw": "sin universidad de EE.UU. — ¿Cómo logré 1540 puntos en el examen SAT? | Curso SAT Prep | Top SAT Score",
+    "pJl0NWeezK0": "sin universidad de EE.UU. — Guillermo estudiará en Viena | Educa — Admission Counseling | Lima, Perú",
+    "Bthe_M8xdXo": "sin universidad de EE.UU. — ¿Cómo entrar a universidades del extranjero? | SAT & Counseling | Andrés de Perú",
+    "e2_gad4ncks": "sin universidad de EE.UU. — ¿Cómo estudiar Design Engineering en Reino Unido? | IMPERIAL COLLEGE LONDON | De Perú a UK",
+    "QYu1NVQqpGA": "sin universidad de EE.UU. — ¿Cómo estudiar para el SAT en el verano sin presión? | Curso SAT Prep | Tiago de Perú",
+    "lNbBPHdPA8A": "sin universidad de EE.UU. — ¿Cómo prepararse para un puntaje de SAT perfecto? | SAT Prep Course | Tiago de Perú",
+    "ur1ihp3kgIY": "sin universidad de EE.UU. — ¿Cómo prepararte para el SAT en Perú? | Curso de SAT | Bianca de Perú",
+    "dWH9xLp3wPc": "sin universidad de EE.UU. — ¿Cómo alcanzar un puntaje extraordinario en el SAT? | Curso de preparación SAT | Rodrigo de Perú",
+    "Lrn9E6B69Wg": "sin universidad de EE.UU. — ¿Cómo maximizar tu puntaje en el SAT? | Preparación SAT Especializada | Mateo de Perú",
+    "neEZB2VMqOA": "no agregado (el título habla de otro país; el nombre puede ser de una universidad de allá) — De Perú a Singapur: Estrategia de Admisión a Yale-NUS | GAP Year | Ivy League en Singapur",
+    "yqkj2N9MqYM": "no agregado (el título habla de otro país; el nombre puede ser de una universidad de allá) — BRENDA estudia en una de las MEJORES UNIVERSIDADES de REINO UNIDO King's College London",
+    "SDcyDpkVBMA": "sin universidad de EE.UU. — DOS HERMANAS estudiando en CANADÁ | Misma universidad y diferentes carreras | TORONTO MET",
+    "llovsyUwDlQ": "sin universidad de EE.UU. — ¿Cómo estudiar en la MEJOR UNIVERSIDAD DE PAÍSES BAJOS? Road to UNIVERSITY OF AMSTERDAM | Educa",
+    "8MfN-OJq4G0": "sin universidad de EE.UU. — ¿Cómo postular a UBC en Canadá? | Admission Counseling | Educa College Prep",
+    "z-aE8Tps5_4": "sin universidad de EE.UU. — ¿Es recomendado el SAT Prep de Educa? | Preparación para el SAT | María de Perú",
+    "wv1tvbN0pvg": "sin universidad de EE.UU. — ¿Cómo estudiar para el SAT en poco tiempo? | Curso SAT Intensivo | Cristel de de Perú",
+    "omRvF1poL7U": "sin universidad de EE.UU. — ¿Cómo elegir el mejor curso para el SAT? | Clases para el Examen SAT | Sebastián de Perú",
+    "ZSLhnnW-bb8": "no agregado (el título no nombra ninguna y la descripción nombra varias) — TODO SOBRE EL NUEVO EXAMEN SAT: Cambios LATAM 2023, SAT Digital y más | Educa",
+    "ViMR1SBJ2Tg": "sin universidad de EE.UU. — ¿Cómo lograr más de 1500 puntos en el SAT? | Curso SAT Prep | Sebastián de Perú",
+    "Jps3RoeFuxI": "sin universidad de EE.UU. — ¿CUÁNDO DEBO EMPEZAR MI PROCESO DE POSTULACIÓN? | | Admission Counseling",
+    "EVmxGwY7fCk": "sin universidad de EE.UU. — ¿Cómo asegurar tu puntaje ideal en el SAT? | Plan de estudio SAT | Vania de Perú",
+    "SvDC3oM9x7Q": "sin universidad de EE.UU. — ¿CUÁNTO CUESTA ESTUDIAR EN EL EXTRANJERO en el 2022? | USA, UK, Canadá y más",
+    "Cvw4zVFVYI0": "sin universidad de EE.UU. — Domina el Examen SAT y obtén el puntaje que dé brillo a tu postulación | SAT Prep - Educa",
+    "GZWKGxiWm2I": "sin universidad de EE.UU. — ¿Cómo aumentar tu puntaje en el SAT? | Estrategias para el examen SAT | Cristóbal de Perú",
+    "VoGudAjlq_o": "no agregado (el título no nombra ninguna y la descripción nombra varias) — MODALIDADES DE ADMISIÓN A UNIVERSIDADES | ¿Cómo aplicar a universidades?",
+    "XKGzkSePcrE": "sin universidad de EE.UU. — ¿QUÉ ES EDUCA PARA TI? Nuestros alumnos responden",
+    "BgOCoqrCLlU": "sin universidad de EE.UU. — ¿Cómo sacar 1500 en el examen SAT? | Clases virtuales examen SAT | Leandro de Perú",
+    "BbDMVDEbsVU": "sin universidad de EE.UU. — CAMILA studies in SCIENCES PO PARIS (Top 3 BEST Politics & Intl. Studies in the WORLD) | Educa",
+    "H44qmPYlctY": "sin universidad de EE.UU. — ¿Me conviene tomar un GAP YEAR? | TODO lo que DEBES SABER antes de la UNIVERSIDAD",
+    "fYBpLQ4dtbw": "sin universidad de EE.UU. — ¿Cómo sacar un puntaje perfecto en Math SAT? | Entrenamiento SAT Math | Leandro de Perú",
+    "xVOJ5caPt4U": "no agregado (el título no nombra ninguna y la descripción nombra varias) — ¿CÓMO POSTULAR A UNIVERSIDADES EN EL EXTRANJERO? | Proceso de postulación | Educa",
+    "1T8o3emW8gI": "no agregado (el título no nombra ninguna y la descripción nombra varias) — TIPOS DE UNIVERSIDADES EN ESTADOS UNIDOS | University vs College",
+    "vXC7Fb82iiU": "no agregado (el título no nombra ninguna y la descripción nombra varias) — ¿Cuál es buen puntaje en el SAT? | Admisiones EEUU | Guía para alumnos de Latinoamérica",
+    "YCEnE4pVrlo": "no agregado (el título no nombra ninguna y la descripción nombra varias) — RANKINGS de UNIVERSIDADES alrededor del MUNDO | ¿Cómo elegir universidad? | Educa",
+    "kmNX6cow7WM": "sin universidad de EE.UU. — QUEEN nació en esta UNIVERSIDAD | Imperial College London Fun Facts | TOP universities UK",
+    "eUt-iU0N-mk": "no agregado (es un video de \"Fun Facts\": no es campus tour ni testimonio) — University of Southern California Fun Facts | USC | La UNIVERSIDAD con MÁS MEDALLAS OLÍMPICAS",
+    "Eai1FQ1Qsh8": "sin universidad de EE.UU. — COMPUTER SCIENCE en VU Amsterdam | Estudiar en Vrije Universiteit Amsterdam",
+    "BVdlS5Ftzo0": "no agregado (es un video de \"Fun Facts\": no es campus tour ni testimonio) — Columbia University Fun Facts | En esta UNIVERSIDAD se filmó el HOMBRE ARAÑA | Estudiar en Columbia",
+    "etamFIcCKHA": "sin universidad de EE.UU. — ASÍ es la UNIVERSIDAD MÁS MODERNA de ESPAÑA | IE Madrid Campus Tour | Estudiar en IE",
+    "PjazYaoPoy4": "sin universidad de EE.UU. — Bocconi University Facts | Esta es LA MEJOR escuela de NEGOCIOS en Italia | Educa",
+    "acJiK_6DsDg": "no agregado (es un video de \"Fun Facts\": no es campus tour ni testimonio) — TAYLOR SWIFT se graduó de esta UNIVERSIDAD | New York University (NYU) Fun Facts",
+    "Tq8vZJhGTQE": "sin universidad de EE.UU. — Esta UNIVERSIDAD es MEJOR que OXFORD | University of St Andrews Campus Tour | Estudiar en UK",
+    "HfC_NlNjG3Y": "no agregado (es un video de \"Fun Facts\": no es campus tour ni testimonio) — PRINCETON University Fun Facts | NO HAGAS ESTO si quieres GRADUARTE de PRINCETON",
+    "zUx1vFLS9HA": "no agregado (es un video de \"Fun Facts\": no es campus tour ni testimonio) — UCLA Fun Facts | Estudiar en Los Angeles | University of California Los Angeles",
+    "BHwbAA4laeY": "sin universidad de EE.UU. — ¿Cómo lograr 1500+ en el SAT? | Metodología Especializada Examen SAT | Rodrigo de Perú",
+    "bt3IOtFLrME": "sin universidad de EE.UU. — ¿Cómo es estudiar en ESPAÑA? | Universidad de NAVARRA | 30PreguntasEduca",
+    "k9VCwilkSn8": "no agregado (el título habla de otro país; el nombre puede ser de una universidad de allá) — Cómo ingresé a la MEJOR UNIVERSIDAD del REINO UNIDO | St Andrews University | Educa",
+    "wjrBwDbjr64": "sin universidad de EE.UU. — University of CAMBRIDGE Fun Facts | La UNIVERSIDAD con MÁS PREMIOS NOBEL | Estudiar en UK",
+    "U6TgFrK77Mo": "no agregado (es un video de \"Fun Facts\": no es campus tour ni testimonio) — KING'S COLLEGE LONDON Fun Facts | En esta UNIVERSIDAD vivió la REINA",
+    "84tlSfYmHIU": "sin universidad de EE.UU. — Esta es la MEJOR universidad de Hotelería en el MUNDO | EHL Campus Tour | Estudiar en Suiza",
+    "adkq43qUd_E": "sin universidad de EE.UU. — Cómo ingresé a la MEJOR UNIVERSIDAD de NEGOCIOS en ESPAÑA | Estudiar en ESPAÑA | Educa",
+    "u4rfipzb6C8": "sin universidad de EE.UU. — ¡Estudiar en FRANCIA fue MEJOR de lo que SOÑÉ | Sciences Po Poitiers | 30PreguntasEduca",
+    "kP7bAUS3ies": "sin universidad de EE.UU. — ¿Cómo es el SAT Digital? | Preparación para el SAT | Guía para Latinoamérica",
+    "-Vr55ywk_wI": "sin universidad de EE.UU. — Esta es una de las MEJORES UNIVERSIDADES en ECONOMÍA DEL MUNDO | LSE Campus Tour | Estudiar en UK",
+    "fYyczJIznek": "sin universidad de EE.UU. — Cómo ingresé a mi DREAM SCHOOL en UK | University of Warwick | Estudiar en UK",
+    "cEtRVboDj6I": "sin universidad de EE.UU. — ¿Cómo es estudiar en la UNIVERSIDAD DE AMSTERDAM? | La MEJOR universidad de PAÍSES BAJOS | UvA",
+    "W9cfymlKIQg": "sin universidad de EE.UU. — Degrees Overseas | Tráiler Podcast | Nueva temporada",
+    "-yuGvrnycHk": "sin universidad de EE.UU. — Campus Tour por Istituto Marangoni | AQUÍ estudiaron los FUNDADORES de MOSCHINO y DOLCE & GABBANA",
+    "qs1Uy3X0V7w": "sin universidad de EE.UU. — CAMILA estudia ARQUITECTURA en CANADÁ | Toronto Metropolitan University | Estudiar en Canadá",
+    "998nt8fsP_o": "sin universidad de EE.UU. — Recorriendo la MEJOR UNIVERSIDAD de NEGOCIOS en ESPAÑA | ESADE Campus Tour | Estudiar en España",
+    "w1M9XiO-7ss": "sin universidad de EE.UU. — Erasmus University Rotterdam Campus Tour | ¡Así es una de las MEJORES UNIVERSIDADES de PAÍSES BAJOS!",
+    "uZ0Ct8ZoPNQ": "sin universidad de EE.UU. — ¿Cómo es estudiar Filosofía, Política y Economía en UK? | University of Stirling | ¿Qué es PPE?",
+    "_woo-6D8XWY": "sin universidad de EE.UU. — Estudiar Cine en Francia | 3iS Paris | Experiencia Universitaria en Francia",
+    "O4S-uIg8YvM": "sin universidad de EE.UU. — ¿Cómo es estudiar en Europa? | Campus Tour VU Amsterdam | Países Bajos",
+    "C0ad9s4Nevg": "sin universidad de EE.UU. — ¿Cómo es estudiar en Imperial College London? | Design Engineering en IMPERIAL COLLEGE | TOP 6",
+    "5PXE-bU1oV8": "sin universidad de EE.UU. — Campus Tour de la Universidad Bocconi | ¿Cómo es estudiar en una Top de Negocios en Europa?",
+    "Z8qUj9m3lr0": "sin universidad de EE.UU. — ¿Cómo es estudiar en la IE Segovia? | Estudiar Negocios en Europa? | España",
+    "gnrwjlmaMkI": "sin universidad de EE.UU. — ¿Cómo es estudiar Ingeniería Civil en Canadá? | University of Calgary",
+    "cBbdLKB57Dc": "sin universidad de EE.UU. — Estudiar VETERINARIA en AUSTRALIA — The University Of Queensland podcast",
+    "8gr0aZresoM": "no agregado (el título habla de otro país; el nombre puede ser de una universidad de allá) — ¿Cómo es estudiar en KING'S COLLEGE? | Business Management en Londres | Latino en Reino Unido",
+    "92d6fv-NG7Q": "sin universidad de EE.UU. — ¿Cómo es estudiar Economía en IE UNIVERSITY? | Estudiar en España | Estudiar Economía en Europa",
+    "z7IpDtNemzw": "sin universidad de EE.UU. — ¿Cómo es estudiar Diseño de Interiores en NABA? | Estudiar en Milán | Universidad en Italia",
+    "iJGt0kjCxTc": "sin universidad de EE.UU. — Imperial College London Campus Tour | Conociendo el campus de una de las mejores universidades de UK",
+    "Xb2QK6c-qxE": "no agregado (el título habla de otro país; el nombre puede ser de una universidad de allá) — De Lima a Singapur: estudiar Liberal Arts en Yale-NUS | Admission Counseling | Ariana de Perú",
+    "9k7jAhLVfe8": "sin universidad de EE.UU. — Financial Aid, Scholarships y Becas para Internacionales | Guía completa | Educa College Prep",
+    "a0vJmt4C4Ik": "no agregado (el título no nombra ninguna y la descripción nombra varias) — ¿Será el SAT obligatorio en todas las universidades? | Curso SAT Prep | College Insiders Educa",
+    "2q0wnRWO1XM": "sin universidad de EE.UU. — Tour por la Universidad de Cambridge | ¿Cómo es estudiar en Reino Unido? | Campus Tour",
+    "y0AyB1c1TcM": "sin universidad de EE.UU. — Estudiar Drama en Canadá | University of Toronto | Latina estudiando en Canadá",
+    "2xYXxxnt1b4": "sin universidad de EE.UU. — Tour por McGill University: Top 3 de Canadá | Campus Montreal | Educa College Prep",
+    "D5RDSLi8z4s": "sin universidad de EE.UU. — ¿Cómo entrar al Russell Group desde LATAM? | University of Warwick | Shelmy de Perú",
+    "UWYUgy10Re0": "sin universidad de EE.UU. — ¿Qué es estudiar en McGill University? | Estudiar en Canadá | Andrea de Perú",
+    "8SZmmR9bbeQ": "no agregado (el título habla de otro país; el nombre puede ser de una universidad de allá) — De Georgetown a Oxford, LSE y Ginebra | El poder de un buen Counseling | Renato de Perú — Nextudia",
+    "_Ll06u8trRY": "sin universidad de EE.UU. — Tour por la Universidad de Navarra en Pamplona | Estudiar en España | Educa College Prep",
+    "BzBGAMU_XgE": "sin universidad de EE.UU. — Manchester Campus Tour | Una de las mejores universidades de Reino Unido | Estudiar en UK",
+    "oDu0Y4s7RRk": "sin universidad de EE.UU. — ¿Cómo es estudiar en París? | Tour por Sciences Po, París | ¡UNIVERSIDAD TOP en POLÍTICA!",
+    "z3nsCooCV7M": "sin universidad de EE.UU. — ¿Cuánto cuesta estudiar la UNIVERSIDAD EN EL EXTRANJERO? | Guía de Costos para estudiantes latinos",
+    "oHBWtxLuWa8": "sin universidad de EE.UU. — Cómo logré estudiar BUSINESS ECONOMICS en University of Rotterdam | Top de EUROPA | Países Bajos",
+    "HpSUXiD4K8g": "sin universidad de EE.UU. — ¿Cómo ser admitido en IE University? | Estudiar en España | Mateo de Perú",
+    "B5Vh7gqILq4": "sin universidad de EE.UU. — Guía para Padres: ¿Cómo elegir una universidad internacional? | Proceso de estudiar en el extranjero",
+    "uVfgNM_Zv6s": "sin universidad de EE.UU. — ¿Cómo mejorar tu SAT score y ser mejor candidato? | SAT Prep | Mateo de Ecuador",
+    "5uq29ndgw4I": "sin universidad de EE.UU. — ¿Es difícil el examen SAT para un alumno de Chile? | Preparación para el SAT | Alonso de Chile",
+    "tCbIb_CMkvg": "sin universidad de EE.UU. — Guía para padres: Así fue el proceso para que mi hija estudie en Francia | Admission Counseling",
+    "IGP6GIo8Sqw": "sin universidad de EE.UU. — ¿Cómo ayudan los simulacros en la preparación para el SAT? | SAT Prep | Isabella de Colombia",
+    "mV_3lohkkS0": "sin universidad de EE.UU. — Así logré entrar a Universidad de Navarra | Estudiante de Perú en España | Estudiar en Pamplona",
+    "3ch7ajfh5AI": "no agregado (el título habla de otro país; el nombre puede ser de una universidad de allá) — ¿Cómo fui admitido en una de las mejores universidades de Canadá? | University of British Columbia",
+    "KE07mMA9ay4": "sin universidad de EE.UU. — Tour por IE Segovia | IE University | Estudiar en España",
+    "FohvX92p3x4": "no agregado (el título habla de otro país; el nombre puede ser de una universidad de allá) — Ingresé a una de las MEJORES universidades del MUNDO | King’s College London | Estudiar Leyes en UK",
+    "3eMzWzoxuDE": "sin universidad de EE.UU. — ¿Cómo estudiar en Europa? | Admitida a ESSEC Business School - Francia",
+    "eD0g6QDrlPo": "sin universidad de EE.UU. — Cómo ingresar a ESCP Business School | Estudiar en Europa | Admission Counseling",
+    "OTn4ii0ZMys": "sin universidad de EE.UU. — Guía para padres: Todo lo que debes saber si tu hijo quiere estudiar en Canadá | UBC",
+    "mQal4d-j7Oc": "sin universidad de EE.UU. — Cómo ingresé a ESSEC Business School | Global Business Administration | Estudiar en Francia",
+    "taw6WZBLyM0": "sin universidad de EE.UU. — Tour por University of Amsterdam (UvA) | Una de las mejores universidades de Europa | Campus Tour",
+    "dGnfSPTecNM": "sin universidad de EE.UU. — Tour por University of Waterloo | Estudiar en Canadá | Campus Tour",
+    "_Wazasa5QuE": "sin universidad de EE.UU. — ¿Vale la pena el SAT si no es obligatorio? | Preparación SAT | Mariana de México",
+    "eJlMqx8vYTE": "sin universidad de EE.UU. — Cómo llegué preparada al SAT oficial | SAT Prep | Sabina de México",
+    "SWbjzrLWkz8": "sin universidad de EE.UU. — ¿Cómo saqué mi puntaje SAT objetivo en el primer intento? | SAT Prep | Valeria de México",
+    "SVQOKLPBFt0": "sin universidad de EE.UU. — ¿Vale la pena tomar el SAT si estás en Panamá? | Preparación SAT | María de Panamá",
+    "GFZ5NCdZnbM": "sin universidad de EE.UU. — ¿Vale la pena dar el SAT varias veces? | Curso de SAT Online | Michela de Panamá",
+    "Xi1Htrwi0-8": "sin universidad de EE.UU. — El SAT como boleto a universidades internacionales | SAT Prep | Saúl de Panamá",
+    "ODmKjugZO-s": "sin universidad de EE.UU. — Obtener feedback: la clave para el SAT | Curso de SAT | Emma de Panamá",
+    "Oxdp_ikDUsY": "sin universidad de EE.UU. — Cómo Destacar ante Universidades de EE. UU. | SAT Prep — Educa | Alex de Ecuador",
+    "pPFQATLEYsw": "sin universidad de EE.UU. — Cómo Mejoré mi Puntaje y mi Confianza en el SAT | SAT Prep — Educa | Doménica de Ecuador",
+    "P0SGxCbaw_8": "sin universidad de EE.UU. — Cómo Prepararme para el SAT | Curso de SAT | Rafaela de Ecuador",
+    "NVyxpnBvRDs": "sin universidad de EE.UU. — ¿Cómo entrar a Sciences Po estudiando en LATAM? | College Counseling Educa | Nael de Panamá",
+    "pGj7N6BK_D4": "no agregado (el título no nombra ninguna y la descripción nombra varias) — De Perú a Maestría en Washington DC | Pregrado y Posgrado en EE. UU.",
+    "dHVpuXf0oio": "sin universidad de EE.UU. — Estudiar Ciencia Política en Europa: Sciences Po | SAT Prep | Nael de Panamá",
+    "uAURpREua58": "sin universidad de EE.UU. — Estudiar Psicología en Canadá | University of Toronto | Valeria de Perú",
+    "vwB85x_WynE": "sin universidad de EE.UU. (revisado a mano: video general) — RAZONES para ESTUDIAR en una UNIVERSIDAD del EXTRANJERO | Educa",
+    "VlPL5dHf44c": "sin universidad de EE.UU. (revisado a mano: video general) — ¿El SAT es obligatorio para EEUU? | Admisiones Universitarias | Alumnos de Latinoamérica",
+    "ojtXzU1zlrY": "sin universidad de EE.UU. (revisado a mano: curso SAT, la universidad no queda clara) — Cómo el SAT me preparó para entrar a la universidad en EE.UU. | Curso SAT | Joshua de Panamá"
+  }
+}
