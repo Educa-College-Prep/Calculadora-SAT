@@ -1513,19 +1513,96 @@ html { scroll-behavior: smooth; }
 .contacto a { font-size: 17px; color: var(--brand); overflow-wrap: anywhere; }
 .contacto-enlaces { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0 8px; }
 
-/* Videos (Experiencia Educa): en tres columnas, el tour ocupa dos de ancho y dos filas de alto;
-   a su lado van dos testimonios (juntos miden casi lo mismo que el tour) y los demás siguen
-   debajo, de a tres. Así, con muchos testimonios no queda un hueco bajo el tour. Con un solo
-   video, una columna más angosta. En celular, carrusel (ver más abajo). */
-.videos { position: relative; display: grid; gap: 24px; align-items: start; }
-.videos-tour { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.videos-tour > .video-item:first-child { grid-column: span 2; grid-row: span 2; }
-.videos-uno { max-width: 760px; }
-.videos-varios { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-.video-item { margin: 0; }
+/* Videos (Experiencia Educa): el reproductor a la izquierda y la lista por tema a la derecha.
+   La lista va en una caja absoluta dentro de su celda: así mide exactamente lo mismo que la
+   columna del reproductor (video + título) y se desplaza por dentro, en vez de alargar la
+   banda cuando hay muchos videos. Con un solo video no hay lista y el reproductor es más
+   angosto. En celular la lista va debajo (ver más abajo). */
+.videos-sala {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+.videos-sala-uno { grid-template-columns: minmax(0, 760px); }
+.videos-lista { position: relative; min-height: 240px; }
+.videos-lista-caja {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  background: rgba(11, 16, 48, 0.35);
+  border-radius: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+.videos-grupo + .videos-grupo { margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.videos-grupo-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 10px 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.videos-grupo-titulo span { font-size: 12px; font-weight: 500; color: var(--tinta-suave); }
+.videos-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 8px;
+  font: inherit;
+  color: #fff;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.videos-item:hover { background: rgba(255, 255, 255, 0.07); }
+.videos-item.activo { background: rgba(255, 255, 255, 0.15); }
+.videos-item:focus-visible { outline: 2px solid var(--sun); outline-offset: -2px; }
+.videos-item-mini {
+  flex: 0 0 120px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #0b1030;
+  border-radius: 8px;
+}
+.videos-item-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.videos-item-sonando { font-size: 11px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; color: var(--sun); }
+.videos-item-titulo { font-size: 14px; font-weight: 700; line-height: 1.3; }
+.videos-item-detalle { font-size: 12.5px; line-height: 1.35; color: var(--tinta-suave); }
+.video-info { margin-top: 14px; }
+.video-detalle { margin: 4px 0 0; font-size: 14.5px; color: var(--tinta-suave); }
+/* Antes del play: la miniatura con un botón redondo encima (todo es un solo botón). */
+.video-portada { position: absolute; inset: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.video-portada img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.video-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: -36px 0 0 -36px;
+  color: var(--navy);
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 6px 24px rgba(10, 16, 40, 0.35);
+  transition: transform 0.15s ease;
+}
+.video-portada:hover .video-play { transform: scale(1.06); }
+.video-portada:focus-visible { outline: 3px solid var(--sun); outline-offset: -3px; border-radius: 16px; }
 .video-tipo {
   display: inline-block;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   padding: 3px 10px;
   font-size: 12px;
   font-weight: 800;
@@ -1543,8 +1620,7 @@ html { scroll-behavior: smooth; }
   border-radius: 16px;
 }
 .video-marco iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.video-titulo { margin: 12px 0 0; font-size: 17px; font-weight: 700; line-height: 1.35; }
-.videos-puntos { display: none; }
+.video-titulo { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; }
 
 /* Salarios de egresados: lista numerada "punto a punto". Cada carrera: nombre, crecimiento y
    graduados; el salario al 1.er año (gris) y a 4 años (negrita); y una línea con dos puntos
@@ -1693,9 +1769,11 @@ html { scroll-behavior: smooth; }
   .esencial:first-child { border-radius: var(--radio-casilla) 0 0 0; }
   .esencial:nth-child(2) { border-radius: 0 var(--radio-casilla) 0 0; }
   .sobre, .contacto { grid-template-columns: minmax(0, 1fr); }
-  /* El tour a lo ancho y los testimonios debajo, de a dos. */
-  .videos-tour { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .videos-tour > .video-item:first-child { grid-column: 1 / -1; grid-row: auto; }
+  /* Videos: la lista pasa debajo del reproductor, con un alto máximo y desplazamiento propio
+     (ya no puede medirse contra la columna de al lado). */
+  .videos-sala, .videos-sala-uno { grid-template-columns: minmax(0, 1fr); }
+  .videos-lista { min-height: 0; }
+  .videos-lista-caja { position: static; max-height: 360px; }
   .contacto { gap: 16px; }
 }
 @media (max-width: 640px) {
@@ -1741,22 +1819,9 @@ html { scroll-behavior: smooth; }
   .solo-ancho { display: none; }
   .solo-movil { display: inline; }
 
-  /* Videos: carrusel; cada video ocupa el 86% del ancho para que se asome el siguiente. */
-  .videos {
-    display: flex;
-    gap: 14px;
-    max-width: none;
-    margin-inline: calc(-1 * clamp(16px, 4vw, 48px));
-    padding-inline: clamp(16px, 4vw, 48px);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-  .videos::-webkit-scrollbar { display: none; }
-  .videos .video-item { flex: 0 0 86%; scroll-snap-align: center; }
-  .videos-puntos { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }
-  .videos-puntos span { width: 8px; height: 8px; background: rgba(255, 255, 255, 0.4); border-radius: 999px; transition: width 0.2s ease; }
-  .videos-puntos span.activo { width: 22px; background: var(--sun); }
+  /* Videos: miniaturas de la lista más chicas para que el título tenga lugar. */
+  .videos-item-mini { flex-basis: 104px; }
+  .video-play { width: 60px; height: 60px; margin: -30px 0 0 -30px; }
 
   /* Contacto: filas tocables y enlaces como botones a todo el ancho. */
   .contacto-enlaces .boton-enlace { justify-content: center; width: 100%; min-height: 48px; }
@@ -2201,7 +2266,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .ficha-panel-titulo { font-size: 16px; }
   .dato-fila { padding: 7px 0; font-size: 14.5px; }
   .contacto a { font-size: 15px; }
-  .video-titulo { font-size: 15px; }
+  .video-titulo { font-size: 17px; }
   .bloque-sol p { font-size: 15px; }
 }
 

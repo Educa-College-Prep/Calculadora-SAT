@@ -24,7 +24,7 @@ import { DemografiaAdmision } from './DemografiaAdmision';
 import { CostosFinanciamiento } from './CostosFinanciamiento';
 import { SobreUniversidad, ContactoUniversidad } from './InfoUniversidad';
 import { VideosEduca } from './VideoUniversidad';
-import { VIDEOS_UNIVERSIDADES, tieneVideos } from '../data/videosUniversidades';
+import { EVENTO_VER_TOUR, VIDEOS_UNIVERSIDADES, tieneVideos } from '../data/videosUniversidades';
 import { FECHAS_POSTULACION } from '../data/fechasPostulacion';
 import { SalarioPorCarrera } from './SalarioPorCarrera';
 import { useSalariosCarreras } from '../utils/salariosCarreras';
@@ -296,7 +296,11 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
               .filter(Boolean).join(' · ')}
           </p>
           <div className="hero-acciones" ref={accionesRef}>
-            {videos?.tour && <a className="boton-sol" href="#experiencia" onClick={e => irASeccion(e, 'experiencia')}>▶ Ver campus tour</a>}
+            {/* Baja a la banda y deja el tour sonando: un clic y ya se está viendo. */}
+            {videos?.tour && <a className="boton-sol" href="#experiencia" onClick={e => {
+              irASeccion(e, 'experiencia');
+              window.dispatchEvent(new Event(EVENTO_VER_TOUR));
+            }}>▶ Ver campus tour</a>}
             {guardar}
             {comparar}
           </div>
@@ -350,7 +354,7 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
       {conVideos && (
         <Banda id="experiencia" fondo="marca" titulo={`La experiencia Educa en ${uni.INSTNM}`}
           subtitulo="Recorre el campus y escucha a estudiantes que llegaron con Educa College Prep.">
-          <VideosEduca videos={videos} />
+          <VideosEduca key={uni.UNITID} videos={videos} />
         </Banda>
       )}
 
