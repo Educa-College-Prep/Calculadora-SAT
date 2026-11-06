@@ -1529,6 +1529,7 @@ html { scroll-behavior: smooth; }
 .videos-lista-caja {
   position: absolute;
   inset: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 6px;
@@ -1547,6 +1548,9 @@ html { scroll-behavior: smooth; }
   padding: 10px 10px 6px;
   font-size: 13px;
   font-weight: 700;
+  /* Blanco explícito: la regla general de h1–h4 los pinta de azul oscuro, que no se lee sobre
+     la banda azul. */
+  color: #fff;
 }
 .videos-grupo-titulo span { font-size: 12px; font-weight: 500; color: var(--tinta-suave); }
 .videos-item {
@@ -1567,8 +1571,13 @@ html { scroll-behavior: smooth; }
 .videos-item:hover { background: rgba(255, 255, 255, 0.07); }
 .videos-item.activo { background: rgba(255, 255, 255, 0.15); }
 .videos-item:focus-visible { outline: 2px solid var(--sun); outline-offset: -2px; }
+/* Ancho fijo, no solo flex-basis: en un flex, una imagen no se achica por debajo de su tamaño
+   natural (480px) si no tiene width/min-width propios, y empujaba el texto fuera de la caja. */
 .videos-item-mini {
-  flex: 0 0 120px;
+  flex: 0 0 auto;
+  width: 120px;
+  min-width: 0;
+  height: auto;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   background: #0b1030;
@@ -1620,7 +1629,7 @@ html { scroll-behavior: smooth; }
   border-radius: 16px;
 }
 .video-marco iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.video-titulo { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; }
+.video-titulo { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.3; color: #fff; }
 
 /* Salarios de egresados: lista numerada "punto a punto". Cada carrera: nombre, crecimiento y
    graduados; el salario al 1.er año (gris) y a 4 años (negrita); y una línea con dos puntos
@@ -1820,7 +1829,7 @@ html { scroll-behavior: smooth; }
   .solo-movil { display: inline; }
 
   /* Videos: miniaturas de la lista más chicas para que el título tenga lugar. */
-  .videos-item-mini { flex-basis: 104px; }
+  .videos-item-mini { width: 104px; }
   .video-play { width: 60px; height: 60px; margin: -30px 0 0 -30px; }
 
   /* Contacto: filas tocables y enlaces como botones a todo el ancho. */

@@ -10,7 +10,13 @@ interface VideoConTema {
   detalle: string;
 }
 
+/** Miniatura de 480×360: alcanza para la lista, donde se ve a 120px. */
 const miniatura = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+/**
+ * Miniatura grande (1280×720) para el reproductor, que mide ~800px: la de 480 se veía
+ * pixelada. No todos los videos la tienen (YouTube da 404); entonces se usa la de 480.
+ */
+const miniaturaGrande = (id: string) => `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
 const etiquetaDe = (tema: TemaVideo) => TEMAS.find(t => t.tema === tema)!.etiqueta;
 
 const movimientoReducido = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -73,7 +79,11 @@ export function VideosEduca({ videos }: { videos: VideosDeUniversidad }) {
               />
             ) : (
               <button type="button" className="video-portada" onClick={() => setSonando(true)}>
-                <img src={miniatura(actual.video.id)} alt="" />
+                <img key={actual.video.id} src={miniaturaGrande(actual.video.id)} alt=""
+                  onError={e => {
+                    const img = e.currentTarget;
+                    if (!img.src.includes('hqdefault')) img.src = miniatura(actual.video.id);
+                  }} />
                 <span className="video-play" aria-hidden="true">
                   <svg width="28" height="28" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
                 </span>

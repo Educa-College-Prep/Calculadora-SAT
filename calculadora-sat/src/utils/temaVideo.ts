@@ -51,6 +51,7 @@ export function temaDeVideo(titulo: string, esTour: boolean): TemaVideo {
  * el resto va debajo, más chico: así se leen de un vistazo en la lista.
  */
 export function partirTitulo(titulo: string): { titulo: string; detalle: string } {
-  const partes = titulo.split('|').map(p => p.trim()).filter(Boolean);
+  // "Campus Tour" suelto no se repite: ya lo dice la etiqueta del video.
+  const partes = titulo.split('|').map(p => p.trim()).filter(p => p && !/^campus tour$/i.test(p));
   return { titulo: partes[0] ?? titulo, detalle: partes.slice(1).join(' · ') };
 }
