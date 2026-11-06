@@ -8,6 +8,8 @@ import { SINONIMOS_CARRERAS } from '../data/carrerasEspanol';
 
 /** Cuántas carreras se ven de entrada: las mejor pagadas. El resto, con "Ver todas" o buscando. */
 const VISIBLES = 5;
+/** Cuántas de las que no publican salario se ven de entrada (son solo nombres, caben más). */
+const VISIBLES_SIN_SALARIO = 12;
 
 /** Palabras que se ofrecen cuando una búsqueda no encuentra nada (rellenan el buscador). */
 const SUGERENCIAS = ['Computación', 'Economía', 'Ingeniería', 'Biología'];
@@ -48,25 +50,38 @@ const crecimiento = (c: SalarioCarrera) =>
  * = 1.er año, lleno = 4 años), sobre una marca con la mediana de toda la universidad. De entrada
  * se ven las 5 mejor pagadas, pero lo que importa es la carrera que le interesa a cada
  * estudiante: el buscador filtra todas mientras se escribe.
+ *
+ * Debajo, "Sin dato de salarios": las carreras que la universidad ofrece pero cuyo salario
+ * Scorecard no publica (pocos graduados). Solo nombres: sirven para saber que la carrera está.
  */
 export function SalarioPorCarrera({ uni, carreras }: { uni: Universidad; carreras: SalarioCarrera[] }) {
   const [busqueda, setBusqueda] = useState('');
   const [verTodas, setVerTodas] = useState(false);
+  const [verTodasSin, setVerTodasSin] = useState(false);
   const anios = useFuentesDatos()?.scorecard.anios;
   const anio = anios?.salario_por_carrera ?? anios?.salario_4_anios;
   const prom1 = uni.MD_EARN_WNE_1YR ?? null;
   const prom4 = uni.MD_EARN_WNE_4YR ?? null;
 
+  // Vienen ordenadas: primero las que publican salario, al final las que no (useSalariosCarreras).
+  const conSalario = useMemo(() => carreras.filter(c => c.unAnio != null || c.cuatroAnios != null), [carreras]);
+  const sinSalario = useMemo(() => carreras.filter(c => c.unAnio == null && c.cuatroAnios == null), [carreras]);
+
   const buscada = normalizar(busqueda.trim());
   const encontradas = useMemo(
-    () => (buscada ? carreras.filter(c => textoBuscable(c).includes(buscada)) : carreras),
-    [carreras, buscada]
+    () => (buscada ? conSalario.filter(c => textoBuscable(c).includes(buscada)) : conSalario),
+    [conSalario, buscada]
+  );
+  const encontradasSin = useMemo(
+    () => (buscada ? sinSalario.filter(c => textoBuscable(c).includes(buscada)) : sinSalario),
+    [sinSalario, buscada]
   );
   const visibles = buscada || verTodas ? encontradas : encontradas.slice(0, VISIBLES);
+  const visiblesSin = buscada || verTodasSin ? encontradasSin : encontradasSin.slice(0, VISIBLES_SIN_SALARIO);
 
   // Escala común para todas las filas: el salario más alto de la universidad (o su mediana, si
   // es mayor), para que las líneas se puedan comparar entre sí.
-  const maximo = Math.max(...carreras.map(c => c.cuatroAnios ?? c.unAnio ?? 0), prom4 ?? 0);
+  const maximo = Math.max(...conSalario.map(c => c.cuatroAnios ?? c.unAnio ?? 0), prom4 ?? 0);
   const pct = (v: number) => `${((v / maximo) * 100).toFixed(1)}%`;
 
   // "En toda la universidad, la mediana es $X al primer año y $Y a los 4 años." Es una mediana,
@@ -80,7 +95,7 @@ export function SalarioPorCarrera({ uni, carreras }: { uni: Universidad; carrera
   return (
     <>
       <p className="salarios-intro">
-        Lo que gana al año quien se gradúa de {carreras.length > 0 ? 'cada carrera (bachiller) en ' : ''}{uni.INSTNM}.
+        Lo que gana al año quien se gradúa de {conSalario.length > 0 ? 'cada carrera (bachiller) en ' : ''}{uni.INSTNM}.
         {general}
       </p>
 
@@ -106,8 +121,15 @@ export function SalarioPorCarrera({ uni, carreras }: { uni: Universidad; carrera
             )}
           </div>
           <p className="salarios-estado" aria-live="polite">
-            {buscada ? `${encontradas.length} ${encontradas.length === 1 ? 'carrera encontrada' : 'carreras encontradas'}` : ''}
+            {buscada ? `${encontradas.length + encontradasSin.length} ${encontradas.length + encontradasSin.length === 1 ? 'carrera encontrada' : 'carreras encontradas'}` : ''}
           </p>
+
+          {conSalario.length === 0 && (
+            <p className="ayuda">
+              College Scorecard no publica el salario de ninguna carrera de esta universidad: lo oculta
+              cuando cada carrera tiene pocos graduados.
+            </p>
+          )}
 
           {visibles.length > 0 ? (
             <>
@@ -123,7 +145,7 @@ export function SalarioPorCarrera({ uni, carreras }: { uni: Universidad; carrera
                 </div>
                 {visibles.map(c => {
                   // El puesto es el de la lista completa, también al buscar: "Economía, 7.ª mejor pagada".
-                  const puesto = carreras.indexOf(c) + 1;
+                  const puesto = conSalario.indexOf(c) + 1;
                   const sube = crecimiento(c);
                   return (
                     <div key={c.cip} className={`sal-fila${puesto === 1 ? ' sal-fila-primera' : ''}`}>
@@ -155,7 +177,7 @@ export function SalarioPorCarrera({ uni, carreras }: { uni: Universidad; carrera
                 })}
               </div>
             </>
-          ) : (
+          ) : buscada && encontradasSin.length === 0 && (
             <div className="salarios-vacio">
               <p><strong>No hay datos de “{busqueda.trim()}” en {uni.INSTNM}.</strong></p>
               <p>Puede que no se ofrezca o que tenga muy pocos graduados para publicar salarios. Prueba con:</p>
@@ -167,23 +189,42 @@ export function SalarioPorCarrera({ uni, carreras }: { uni: Universidad; carrera
             </div>
           )}
 
-          {!buscada && carreras.length > VISIBLES && (
+          {!buscada && conSalario.length > VISIBLES && (
             <button type="button" className="boton salarios-ver" onClick={() => setVerTodas(!verTodas)}>
-              {verTodas ? `Ver solo las ${VISIBLES} mejor pagadas` : `Ver las ${carreras.length} carreras`}
+              {verTodas ? `Ver solo las ${VISIBLES} mejor pagadas` : `Ver las ${conSalario.length} carreras`}
             </button>
+          )}
+
+          {visiblesSin.length > 0 && (
+            <div className="salarios-sin">
+              <h4 className="salarios-sin-titulo">
+                Sin dato de salarios <span className="salarios-sin-cuenta numero">· {encontradasSin.length} {encontradasSin.length === 1 ? 'carrera' : 'carreras'}</span>
+              </h4>
+              <p className="ayuda">
+                {uni.INSTNM} también {encontradasSin.length === 1 ? 'ofrece esta carrera' : 'ofrece estas carreras'}, pero
+                con muy pocos graduados para que College Scorecard publique cuánto ganan.
+              </p>
+              <ul className="salarios-sin-lista">
+                {visiblesSin.map(c => <li key={c.cip}>{resaltar(c.nombre, buscada)}</li>)}
+              </ul>
+              {!buscada && sinSalario.length > VISIBLES_SIN_SALARIO && (
+                <button type="button" className="boton-enlace salarios-ver" onClick={() => setVerTodasSin(!verTodasSin)}>
+                  {verTodasSin ? 'Ver menos' : `Ver las ${sinSalario.length}`}
+                </button>
+              )}
+            </div>
           )}
         </>
       ) : (
         <p className="ayuda">
-          College Scorecard no publica el salario por carrera de esta universidad: lo oculta cuando
-          cada carrera tiene pocos graduados.
+          College Scorecard no registra las carreras de bachiller de esta universidad.
         </p>
       )}
 
       <p className="fuente">
         Mediana: la mitad gana más y la mitad menos. Solo cuenta a quienes trabajan y ya no estudian.
         {anio && ` Medido en ${anio.replace(/^medido en /, '')}.`}
-        {' '}Fuente: College Scorecard (Departamento de Educación de EE.UU.).{carreras.length > 0 && ' “—” = no publicado (pocos graduados).'}
+        {' '}Fuente: College Scorecard (Departamento de Educación de EE.UU.).{conSalario.length > 0 && ' “—” = no publicado (pocos graduados).'}
       </p>
     </>
   );

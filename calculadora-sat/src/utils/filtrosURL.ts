@@ -3,6 +3,8 @@
  * en un marcador y sobrevivir a una recarga:
  *
  *   ?sat=1250&estado=CA&nivel=alta,media&orden=salario&dir=desc
+ *   ?estados=TX,CA&carrera=1101,1107   (varios estados y carreras, desde los pasos de la portada)
+ *   ?sin=TX,FL                          (todo EE. UU. menos esos estados: "Dónde no quiero estudiar")
  *
  * Solo se escribe lo que no está en su valor por defecto, para que las URLs queden cortas.
  * Las vistas (ficha, "Mi lista") no van acá: siguen en history.state, como antes.
@@ -17,7 +19,13 @@ export const PRECIO_MAXIMO_SLIDER = 100000;
 export interface FiltrosURL {
   busqueda: string;
   estado: string;
+  /** Varios estados a la vez (desde los pasos de la portada). Con uno solo se usa `estado`. */
+  estados: string[];
+  /** Estados descartados ("Dónde no quiero estudiar"): quedan todos los demás. No se combina con `estados`. */
+  excluidos: string[];
   ciudad: string;
+  /** Códigos CIP de las carreras que le interesan (salarios_carreras.json). Quedan las que ofrecen alguna, ordenadas por salario. */
+  carreras: string[];
   puntajeMath: number;
   puntajeLectura: number;
   puntajeSoloTotal: number;
@@ -33,7 +41,10 @@ export interface FiltrosURL {
 export const FILTROS_URL_VACIOS: FiltrosURL = {
   busqueda: '',
   estado: 'todos',
+  estados: [],
+  excluidos: [],
   ciudad: 'todas',
+  carreras: [],
   puntajeMath: 0,
   puntajeLectura: 0,
   puntajeSoloTotal: 0,
@@ -65,7 +76,7 @@ const ORDEN_A_URL: Record<string, string> = {
 };
 const URL_A_ORDEN = new Map(Object.entries(ORDEN_A_URL).map(([orden, token]) => [token, orden]));
 
-const OPCIONES_POLITICA = ['requerido', 'opcional', 'no-considera'];
+const OPCIONES_POLITICA = ['requerido', 'opcional', 'no-considera', 'no-exige'];
 const TIPOS: TipoControl[] = ['publica', 'privada'];
 
 /** Número entero, o null si el texto no lo es. */
@@ -95,6 +106,19 @@ function listaDeTipos(valor: string | null): TipoControl[] {
     .filter((t): t is TipoControl => TIPOS.includes(t as TipoControl));
 }
 
+/** "TX,ca" → ['TX', 'CA']: códigos de dos letras, sin repetidos. Ya no hay tope: como mucho los 52 del mapa. */
+function listaDeEstados(valor: string | null): string[] {
+  if (!valor) return [];
+  return Array.from(new Set(valor.toUpperCase().split(',').map(t => t.trim())))
+    .filter(t => /^[A-Z]{2}$/.test(t)).slice(0, 60);
+}
+
+/** "1101,1107" → códigos CIP de 4 dígitos, sin repetidos. */
+function listaDeCarreras(valor: string | null): string[] {
+  if (!valor) return [];
+  return Array.from(new Set(valor.split(',').map(t => t.trim()))).filter(t => /^\d{4}$/.test(t)).slice(0, 20);
+}
+
 /**
  * Lee los filtros de la URL. Cualquier valor raro (fuera de rango, desconocido, mal escrito)
  * se ignora y queda en su valor por defecto: un enlace mal armado nunca rompe la página.
@@ -112,10 +136,19 @@ export function leerFiltrosDeURL(search: string): FiltrosURL {
   const lectura = enRango(p.get('lec'), 200, 800) ?? 0;
   const total = enRango(p.get('sat'), 400, 1600) ?? 0;
 
+  const estados = listaDeEstados(p.get('estados'));
+  // Elegir dónde y descartar dónde no se excluyen: si vienen los dos, manda el que elige.
+  const excluidos = estados.length > 0 || /^[A-Z]{2}$/.test(estado) ? [] : listaDeEstados(p.get('sin'));
+  // Uno solo en ?estados= es lo mismo que ?estado=: así la ciudad y el resumen del estado funcionan.
+  const unico = estados.length === 1 ? estados[0] : estado;
+
   return {
     busqueda: (p.get('q') ?? '').trim().slice(0, 100),
-    estado: /^[A-Z]{2}$/.test(estado) ? estado : FILTROS_URL_VACIOS.estado,
-    ciudad: ciudad && ciudad.length <= 80 ? ciudad : FILTROS_URL_VACIOS.ciudad,
+    estado: estados.length > 1 ? FILTROS_URL_VACIOS.estado : /^[A-Z]{2}$/.test(unico) ? unico : FILTROS_URL_VACIOS.estado,
+    estados: estados.length > 1 ? estados : [],
+    excluidos,
+    ciudad: estados.length <= 1 && ciudad && ciudad.length <= 80 ? ciudad : FILTROS_URL_VACIOS.ciudad,
+    carreras: listaDeCarreras(p.get('carrera')),
     puntajeMath: mate,
     puntajeLectura: lectura,
     puntajeSoloTotal: mate > 0 && lectura > 0 ? 0 : total,
@@ -136,7 +169,10 @@ export function urlDeFiltros(f: FiltrosURL): string {
 
   if (f.busqueda.trim()) p.set('q', f.busqueda.trim());
   if (f.estado !== 'todos') p.set('estado', f.estado);
+  if (f.estados.length > 0) p.set('estados', f.estados.join(','));
+  if (f.excluidos.length > 0) p.set('sin', f.excluidos.join(','));
   if (f.ciudad !== 'todas') p.set('ciudad', f.ciudad);
+  if (f.carreras.length > 0) p.set('carrera', f.carreras.join(','));
   if (f.puntajeMath > 0) p.set('mat', String(f.puntajeMath));
   if (f.puntajeLectura > 0) p.set('lec', String(f.puntajeLectura));
   if (f.puntajeSoloTotal > 0) p.set('sat', String(f.puntajeSoloTotal));

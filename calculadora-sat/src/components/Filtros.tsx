@@ -12,6 +12,7 @@ const EXPLICACION_POLITICA: Record<string, string> = {
   requerido: 'Tienes que enviar tu puntaje SAT (o ACT) para postular.',
   opcional: 'No es obligatorio, pero si lo envías lo toman en cuenta: un buen puntaje suma.',
   'no-considera': 'No lo piden y no lo miran aunque lo envíes: deciden con tus notas, ensayos y actividades.',
+  'no-exige': 'Puedes postular sin SAT: lo hacen opcional o no lo toman en cuenta.',
 };
 
 interface Props {
@@ -54,6 +55,13 @@ interface Props {
   onAbrirMapa?: () => void;
   /** false = el puntaje SAT no va en la hoja (la portada lo muestra en su banda de arriba). */
   conPuntaje?: boolean;
+  /**
+   * Los estados elegidos en el mapa cuando son varios ("Texas y California"): el selector los
+   * muestra en vez de decir "Todos los estados", que contradecía lo que se está viendo.
+   */
+  variosEstados?: string | null;
+  /** true = sin plegado en celular (la hoja ya se abre con su propio botón "Más filtros"). */
+  siempreAbierta?: boolean;
 }
 
 const SAT_MIN = 200;
@@ -433,6 +441,8 @@ export function Filtros({
   nivelesSAT, setNivelesSAT,
   onAbrirMapa,
   conPuntaje = true,
+  variosEstados = null,
+  siempreAbierta = false,
 }: Props) {
   // En celular, la hoja muestra solo el puntaje SAT; el resto se despliega con "Más filtros"
   // (en pantallas anchas siempre se ve todo: el CSS ignora esto).
@@ -442,7 +452,7 @@ export function Filtros({
   const hojaRef = useTopeSticky();
 
   return (
-    <aside ref={hojaRef} className={`hoja${plegada ? ' hoja-plegada' : ''}`} aria-label="Filtros">
+    <aside ref={hojaRef} className={`hoja${plegada && !siempreAbierta ? ' hoja-plegada' : ''}${siempreAbierta ? ' hoja-abierta' : ''}`} aria-label="Filtros">
       <div className="hoja-cabecera">
         <div className="hoja-cabecera-fila">
           <h2 className="titulo-seccion">Marca tus datos</h2>
@@ -466,12 +476,13 @@ export function Filtros({
         <label className="campo">
           <span className="campo-etiqueta">Estado</span>
           <select
-            value={estadoSeleccionado}
+            value={variosEstados ? 'varios' : estadoSeleccionado}
             onChange={(e) => {
               setEstadoSeleccionado(e.target.value);
               setCiudadSeleccionada('todas');
             }}
           >
+            {variosEstados && <option value="varios" disabled>{variosEstados}</option>}
             <option value="todos">Todos los estados</option>
             {estadosUnicos.map(estado => (
               <option key={estado} value={estado}>{nombresEstados[estado] ?? estado}</option>
@@ -493,7 +504,7 @@ export function Filtros({
           </select>
         </label>
 
-        {estadoSeleccionado !== 'todos' ? (
+        {estadoSeleccionado !== 'todos' || variosEstados ? (
           <button
             type="button"
             className="boton boton-ancho"
@@ -532,6 +543,7 @@ export function Filtros({
           onCambio={setExigirSAT}
           opciones={[
             { valor: 'todos', texto: 'Todos', cuenta: conteoPolitica.todos },
+            { valor: 'no-exige', texto: 'No lo exigen', cuenta: conteoPolitica['no-exige'] },
             { valor: 'requerido', texto: 'Obligatorio', cuenta: conteoPolitica.requerido },
             { valor: 'opcional', texto: 'Opcional', cuenta: conteoPolitica.opcional },
             { valor: 'no-considera', texto: 'No lo toman en cuenta', cuenta: conteoPolitica['no-considera'] },

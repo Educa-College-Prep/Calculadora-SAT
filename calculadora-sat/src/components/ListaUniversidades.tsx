@@ -29,6 +29,11 @@ interface Props {
   /** Texto del buscador: si no hay resultados por él, el vacío lo dice y ofrece borrarlo. */
   busqueda: string;
   onBorrarBusqueda: () => void;
+  /**
+   * La carrera elegida en los pasos: cada fila muestra lo que ganan sus egresados ahí, y la lista va
+   * primero con las que lo publican. Las que no la ofrecen ya se descartaron en App. null = sin carrera.
+   */
+  carrera?: { nombre: string; salario: (uni: Universidad) => number | null } | null;
 }
 
 const OPCIONES_POR_PAGINA = [25, 50, 100, 200];
@@ -58,6 +63,7 @@ const FilaUniversidad = memo(function FilaUniversidad({
   pideMasQue,
   ordenarPor,
   guardarConTexto,
+  carrera,
 }: {
   uni: Universidad;
   faltantes?: string[];
@@ -71,6 +77,8 @@ const FilaUniversidad = memo(function FilaUniversidad({
   ordenarPor: string;
   /** "Guardar" con texto mientras Mi lista está vacía: así se entiende qué hace la estrella. */
   guardarConTexto: boolean;
+  /** Salario de la carrera elegida en esta universidad (null = no lo publica); undefined = sin carrera. */
+  carrera?: { nombre: string; salario: number | null };
 }) {
   const incompleta = !!faltantes?.length;
   const ranking = posicionUSNews(uni);
@@ -124,6 +132,13 @@ const FilaUniversidad = memo(function FilaUniversidad({
             </span>
             <span className="dato-etiqueta">costo al año</span>
           </span>
+          {/* Con una carrera elegida, lo que ganan sus egresados aquí: es por lo que se ordena la lista. */}
+          {carrera && carrera.salario != null && (
+            <span className="dato dato-orden" title={`Salario mediano a los 4 años de graduarse en ${carrera.nombre} (College Scorecard)`}>
+              <span className="dato-valor numero">{formatDinero(carrera.salario)}</span>
+              <span className="dato-etiqueta">{carrera.nombre}</span>
+            </span>
+          )}
           {/* Ordenando por un dato que la fila no muestra, se agrega: así se ve por qué va aquí. */}
           {DATO_ORDEN[ordenarPor] && (
             <span className="dato dato-orden">
@@ -184,6 +199,7 @@ export function ListaUniversidades({
   puntajeSAT,
   busqueda,
   onBorrarBusqueda,
+  carrera = null,
 }: Props) {
   const [porPagina, setPorPagina] = useState<number>(50);
   const [pagina, setPagina] = useState<number>(1);
@@ -244,7 +260,10 @@ export function ListaUniversidades({
           </div>
           {ordenarPor === 'ninguno' && (
             <p className="ayuda orden-explicacion">
-              {puntajeSAT > 0
+              {/* Todas ofrecen la carrera (o no se sabe, y van marcadas): se dice por qué la lista empieza donde empieza. */}
+              {carrera
+                ? `Primero las ${universidadesFiltradas.filter(u => carrera.salario(u) != null).length.toLocaleString('en-US')} que publican cuánto ganan sus egresados de ${carrera.nombre}, de más a menos; después, las que la ofrecen sin publicar el salario.`
+                : puntajeSAT > 0
                 ? 'Primero donde tu probabilidad es alta, luego media y baja; en cada una, por ranking y salario.'
                 : 'Primero las del ranking U.S. News; luego por salario de egresados.'}
             </p>
@@ -258,6 +277,8 @@ export function ListaUniversidades({
         <p className="nota-info lista-aviso">
           {[...faltantesPorId.values()].every(f => f.length === 1 && f[0] === 'Sin datos SAT')
             ? `${faltantesPorId.size.toLocaleString('en-US')} no publican puntajes SAT: muchas no lo piden y deciden por tus notas, ensayos y actividades. Están al final de los resultados, marcadas.`
+            : [...faltantesPorId.values()].every(f => f.length === 1 && f[0] === 'Sin datos de carreras')
+            ? `${faltantesPorId.size.toLocaleString('en-US')} no reportan sus carreras a College Scorecard: puede que ofrezcan la que buscas. Están al final de los resultados, marcadas.`
             : `${faltantesPorId.size.toLocaleString('en-US')} no tienen alguno de los datos que piden tus filtros. Están al final de los resultados, marcadas.`}
         </p>
       )}
@@ -277,6 +298,7 @@ export function ListaUniversidades({
                 pideMasQue={puntajeSAT > 0 && alcanzable(uni, puntajeSAT) === false ? puntajeSAT : null}
                 ordenarPor={ordenarPor}
                 guardarConTexto={guardadas.size === 0}
+                carrera={carrera ? { nombre: carrera.nombre, salario: carrera.salario(uni) } : undefined}
               />
             ))}
           </ul>
