@@ -24,6 +24,13 @@ export interface VideosDeUniversidad {
 
 export const CANAL_EDUCA = 'https://www.youtube.com/@EducaCollegePrep';
 
+/**
+ * Evento que emite el botón "Ver campus tour" del hero: además de bajar hasta la banda, deja el
+ * tour sonando en el reproductor (es un clic del visitante, así que el navegador permite el
+ * autoplay).
+ */
+export const EVENTO_VER_TOUR = 'educa:ver-tour';
+
 /** ¿Tiene algún video? Sin videos no hay banda "Experiencia Educa" ni su pestaña en la ficha. */
 export const tieneVideos = (videos: VideosDeUniversidad | undefined): videos is VideosDeUniversidad =>
   !!videos && (videos.tour != null || (videos.testimonios?.length ?? 0) > 0);
