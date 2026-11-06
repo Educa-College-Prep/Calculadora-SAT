@@ -106,7 +106,7 @@ export const MapaCuadritos = memo(function MapaCuadritos({
     : (excluir ? 'toca para descartarlo' : 'toca para elegirlo');
   const pista = encima
     ? `${(conteo[encima] ?? 0).toLocaleString('en-US')} universidades · ${accion(encima)}`
-    : conMouse ? 'Pasa el mouse por el mapa. Mantén el clic y arrastra para marcar varios.' : 'Toca un estado';
+    : conMouse ? 'Pasa el mouse, o arrastra con el clic para marcar varios' : 'Toca un estado';
 
   // Mapa de calor: la raíz cuadrada del conteo, para que los estados chicos no queden todos
   // iguales de pálidos al lado de California (~250) o Nueva York (~200). El máximo es el de lo
@@ -129,7 +129,19 @@ export const MapaCuadritos = memo(function MapaCuadritos({
     <div className={`cuadritos cuadritos-${variante}${calor ? ' cuadritos-calor' : ''}${excluir ? ' cuadritos-excluir' : ''}${temblando ? ' cuadritos-temblando' : ''}`}>
       {/* Alto fijo y una sola línea: si cambiaba de alto al tocar, la grilla se movía bajo el dedo
           y el toque caía en el estado de al lado (o en ninguno). */}
-      {!chico && <p className="cuadritos-pista" aria-hidden="true">{pista}</p>}
+      {/* La ayuda y la leyenda del calor comparten una fila: cada línea que se ahorra es mapa. */}
+      {!chico && (
+        <div className="cuadritos-cabeza">
+          <p className="cuadritos-pista" aria-hidden="true">{pista}</p>
+          {calor && (
+            <div className="cuadritos-leyenda" aria-hidden="true">
+              <span>Menos</span>
+              <span className="cuadritos-leyenda-barra" />
+              <span>Más universidades</span>
+            </div>
+          )}
+        </div>
+      )}
       <div className="cuadritos-grilla" role="group" aria-label="Mapa de estados. Usa las flechas para moverte."
         onPointerLeave={() => setEncima(null)}>
         {CUADRITOS.map(([st, col, fila]) => {
@@ -168,13 +180,6 @@ export const MapaCuadritos = memo(function MapaCuadritos({
           );
         })}
       </div>
-      {calor && !chico && (
-        <div className="cuadritos-leyenda" aria-hidden="true">
-          <span>Menos</span>
-          <span className="cuadritos-leyenda-barra" />
-          <span>Más universidades que encajan contigo</span>
-        </div>
-      )}
     </div>
   );
 });

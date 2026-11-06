@@ -3187,13 +3187,17 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 
 /* Paso 2: el mapa sin marco, sobre el fondo, y la ficha del estado angosta, pegada a la derecha. */
 .flujo-donde { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px 40px; align-items: start; }
-.flujo-donde-mapa { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.flujo-donde-mapa { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+/* En el paso del mapa, menos aire arriba y abajo: ese alto va al mapa. */
+.flujo-cuerpo:has(> .flujo-donde) { padding-block: 16px; }
 .flujo-donde-mapa .flujo-subtitulo { margin-top: -4px; }
 .flujo-donde-cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; }
 /* El ancho del mapa sale del alto que queda libre (la grilla es 11×8): así la última fila (Texas,
    Florida) nunca queda tapada por la barra fija de abajo. --libre = la pantalla menos todo lo que
    no es mapa (barras de arriba y abajo, título, ayuda y leyenda), medido en el navegador. */
-.flujo-donde-mapa .cuadritos { --libre: calc(100vh - var(--alto-barra, 98px) - 300px); width: 100%; max-width: clamp(400px, calc(var(--libre) * 1.32), 1080px); }
+.flujo-donde-mapa .cuadritos { --libre: calc(100vh - var(--alto-barra, 98px) - 268px); width: 100%; max-width: clamp(400px, calc(var(--libre) * 1.32), 1080px); }
+/* Desde 1400px el título y los dos modos caben en una sola fila: queda más alto para el mapa. */
+@media (min-width: 1400px) { .flujo-donde-mapa .cuadritos { --libre: calc(100vh - var(--alto-barra, 98px) - 236px); } }
 @media (max-width: 960px) { .flujo-donde { grid-template-columns: minmax(0, 1fr); } }
 .flujo-donde-ficha {
   position: sticky; top: calc(var(--alto-barra, 0px) + 16px);
@@ -3270,6 +3274,9 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 }
 /* Lo que tiene el foco no puede quedar tapado por la barra fija de abajo. */
 html:has(.flujo) { scroll-padding-bottom: 120px; }
+/* #root mide toda la pantalla (100vh), pero arriba ya está la barra de Educa: en los pasos sobraba
+   su alto y se veía el plomo de la página debajo de la barra de abajo. El alto lo da .flujo. */
+#root:has(> .flujo) { min-height: 0; }
 .flujo-titulo:focus { outline: none; }
 /* Paso 4: una sola casilla en vez de cuatro opciones. */
 .flujo-interruptor {
@@ -3320,7 +3327,9 @@ html:has(.flujo) { scroll-padding-bottom: 120px; }
 }
 .cuadritos-calor .cuadrito-oscuro:not(.cuadrito-elegido, .cuadrito-excluido, .cuadrito-encima) { color: #fff; }
 .cuadritos-calor .cuadrito-vacio:not(.cuadrito-elegido, .cuadrito-excluido) { color: #9aa3bb; background: #f3f4f8; }
-.cuadritos-leyenda { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--grafito-suave); }
+.cuadritos-cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; }
+.cuadritos-cabeza .cuadritos-pista { flex: 1 1 280px; min-width: 0; }
+.cuadritos-leyenda { flex: none; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--grafito-suave); }
 .cuadritos-leyenda-barra { width: 96px; height: 8px; border-radius: 999px; background: linear-gradient(90deg, #eef1f8, color-mix(in srgb, var(--tinta) 78%, #eef1f8)); }
 
 /* "Dónde no quiero": lo descartado en rojo y tachado con una ✕; tiembla al marcarlo. */
