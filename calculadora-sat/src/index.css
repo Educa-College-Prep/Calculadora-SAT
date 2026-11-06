@@ -2980,6 +2980,8 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 }
 .flujo-pastilla:hover { border-color: var(--tinta); }
 .flujo-pastilla[aria-pressed='true'] { color: var(--tinta-fuerte); font-weight: 600; background: var(--tinta-fondo); border: 2px solid var(--tinta); }
+/* Elegida también con una marca, no solo con un borde más grueso. */
+.flujo-pastilla[aria-pressed='true']::before { content: '✓'; font-weight: 700; color: var(--tinta); }
 .flujo-pastilla-numero { font-size: 12px; font-weight: 500; color: var(--grafito-suave); }
 .flujo-pastilla[aria-pressed='true'] .flujo-pastilla-numero { color: var(--tinta); }
 .flujo-pastilla-nose { border-style: dashed; border-color: var(--grafito-suave); }
@@ -3043,16 +3045,36 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .flujo-botones { width: 100%; flex-wrap: wrap; justify-content: space-between; }
   .flujo-botones .boton-sol { flex: 1 1 100%; order: -1; }
   .flujo-cuenta-numero { font-size: 24px; }
+  /* El mapa usa casi todo el ancho y con menos espacio entre cuadritos: así cada uno se acerca a
+     los ~32px que pide un dedo, sin scroll de lado. */
+  .flujo-donde-mapa .cuadritos-grilla { gap: 3px; margin-inline: -8px; }
+  .cuadrito { border-radius: 7px; gap: 2px; }
+}
+/* Lo que tiene el foco no puede quedar tapado por la barra fija de abajo. */
+html:has(.flujo) { scroll-padding-bottom: 120px; }
+.flujo-titulo:focus { outline: none; }
+/* Paso 4: una sola casilla en vez de cuatro opciones. */
+.flujo-interruptor {
+  display: inline-flex; align-items: center; gap: 12px; align-self: flex-start; min-height: 48px; padding: 0 18px 0 14px;
+  font: inherit; font-size: 15px; font-weight: 500; color: var(--grafito); text-align: left;
+  background: var(--hoja); border: 1px solid var(--linea); border-radius: 12px; cursor: pointer;
+}
+.flujo-interruptor:hover { border-color: var(--tinta); }
+.flujo-interruptor-caja {
+  flex: none; width: 20px; height: 20px; border: 2px solid var(--grafito-suave); border-radius: 5px; background: var(--hoja);
+}
+.flujo-interruptor[aria-pressed='true'] { color: var(--tinta-fuerte); background: var(--tinta-fondo); border: 2px solid var(--tinta); }
+.flujo-interruptor[aria-pressed='true'] .flujo-interruptor-caja {
+  border-color: var(--tinta); background: var(--tinta) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center / 14px no-repeat;
 }
 
 /* ---------- Mapa de cuadritos ---------- */
 .cuadritos { display: flex; flex-direction: column; gap: 10px; }
-.cuadritos-pista { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: 40px; }
-.cuadritos-pista-nombre {
-  display: inline-flex; align-items: center; min-height: 36px; padding: 0 16px;
-  font-size: 18px; font-weight: 600; color: #fff; background: var(--tinta-fuerte); border-radius: 999px;
+/* Una línea de alto fijo: nunca empuja la grilla (ver MapaCuadritos). El nombre va en el globito. */
+.cuadritos-pista {
+  margin: 0; height: 22px; line-height: 22px; font-size: 14px; color: var(--grafito-suave);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.cuadritos-pista-detalle, .cuadritos-pista-vacia { font-size: 14px; color: var(--grafito-suave); }
 .cuadritos-grilla { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 6px; }
 .cuadrito {
   position: relative; aspect-ratio: 1; min-width: 0; padding: 0;
@@ -3060,8 +3082,8 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   font: inherit; color: #4d5878; background: #e2e6f2; border: 0; border-radius: 10px; cursor: pointer;
   transition: background-color 120ms, transform 120ms, box-shadow 120ms;
 }
-.cuadrito-sigla { font-size: clamp(10px, 1.1vw, 14px); font-weight: 600; line-height: 1; }
-.cuadrito-numero { font-size: clamp(9px, 0.85vw, 11px); line-height: 1; opacity: 0.8; }
+.cuadrito-sigla { font-size: clamp(11px, 1.1vw, 14px); font-weight: 600; line-height: 1; }
+.cuadrito-numero { font-size: clamp(10px, 0.85vw, 12px); line-height: 1; }
 .cuadrito-encima { z-index: 2; color: var(--tinta-fuerte); background: var(--tinta-suave); transform: scale(1.18); box-shadow: 0 6px 18px rgba(28, 44, 110, 0.3); }
 .cuadrito-elegido { color: var(--grafito); background: var(--resaltador); }
 .cuadrito-elegido.cuadrito-encima { background: var(--resaltador); }
@@ -3069,9 +3091,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .cuadrito:focus-visible { outline: 3px solid var(--tinta); outline-offset: 2px; }
 .cuadritos-chico .cuadritos-grilla { gap: 3px; }
 .cuadritos-chico .cuadrito { border-radius: 5px; }
-.cuadritos-chico .cuadrito-sigla { font-size: 9px; }
-.cuadritos-chico .cuadritos-pista { min-height: 32px; }
-.cuadritos-chico .cuadritos-pista-nombre { min-height: 30px; font-size: 15px; }
+.cuadritos-chico .cuadrito-sigla { font-size: 11px; }
 @media (prefers-reduced-motion: reduce) { .cuadrito { transition: none; } .cuadrito-encima { transform: none; } }
 
 /* ---------- Ficha de un estado ---------- */
@@ -3109,9 +3129,24 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .resultados-cabecera-lado { flex: 0 1 360px; display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
 .resultados-cabecera-lado .boton-mi-lista { margin-top: 0; align-self: flex-end; }
 .portada-resultados .resultados-cuerpo { padding-top: clamp(20px, 3vw, 32px); }
+/* "Más filtros": lo que los pasos no preguntaron (tipo, política del SAT, posibilidades). Se
+   distingue de los chips de respuestas: borde punteado, sin fondo. */
+.resultados-mas-filtros {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--tinta-fuerte);
+  background: var(--hoja); border: 1px dashed var(--tinta-suave); border-radius: 999px; cursor: pointer;
+}
+.resultados-mas-filtros:hover { border-color: var(--tinta); }
+.resultados-mas-filtros-abierto { border-style: solid; border-color: var(--tinta); background: var(--tinta-fondo); }
+.resultados-mas-filtros .contador { margin-left: 0; }
+/* Sin el panel, la lista toma todo el ancho. El envoltorio no cuenta para la grilla ni para lo
+   pegajoso de la hoja (si no, la hoja dejaría de quedarse fija al bajar). */
+.cuerpo.cuerpo-sin-hoja { grid-template-columns: minmax(0, 1fr); }
+.hoja-envoltorio { display: contents; }
+.hoja-abierta .hoja-mas-filtros { display: none !important; }
 
 /* ---------- Resultados: el mapa en una burbuja ---------- */
-.burbuja-mapa { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 1050; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.burbuja-mapa { /* El panel va después del botón en el HTML (orden del teclado) pero se ve encima. */ position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 1050; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
 .burbuja-mapa-boton {
   display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 20px 0 16px;
   font: inherit; color: #fff; background: var(--tinta-fuerte); border: 0; border-radius: 999px; cursor: pointer;
@@ -3130,6 +3165,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   box-shadow: 0 18px 48px rgba(28, 44, 110, 0.25);
   transform-origin: bottom right; animation: burbuja-abrir 160ms ease-out;
 }
+.burbuja-mapa-cabecera h2:focus { outline: none; }
 .burbuja-mapa-cabecera h2 { margin: 0; font-size: 18px; font-weight: 600; color: var(--tinta-fuerte); }
 .burbuja-mapa-cabecera span { font-size: 13px; color: var(--grafito-suave); }
 @keyframes burbuja-abrir { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }

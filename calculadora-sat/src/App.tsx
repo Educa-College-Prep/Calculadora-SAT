@@ -32,6 +32,8 @@ const POLITICA_SAT: Record<string, string> = {
   opcional: 'Considerado pero no requerido',
   'no-considera': 'Ni requerido ni recomendado',
 };
+/** "No lo exigen" (la pregunta del paso 4): las que lo hacen opcional más las que no lo miran. */
+const NO_EXIGEN_SAT = [POLITICA_SAT.opcional, POLITICA_SAT['no-considera']];
 
 
 /** Convierte "123" → 123; "PS" (Privacy Suppressed), vacío o texto raro → null. */
@@ -42,8 +44,6 @@ function aNumero(valor: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** Motivo con el que se marcan las que no publican datos de la carrera elegida (no se descartan). */
-const SIN_DATO_CARRERA = 'Sin dato de la carrera';
 
 export default function App() {
   const [universidades, setUniversidades] = useState<Universidad[]>([]);
@@ -59,10 +59,13 @@ export default function App() {
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>(inicial.estado);
   /** Varios estados a la vez (desde los pasos o la burbuja del mapa). Con uno solo se usa estadoSeleccionado. */
   const [estadosVarios, setEstadosVarios] = useState<string[]>(inicial.estados);
+  // En los resultados el panel de filtros empieza cerrado: los pasos ya preguntaron lo principal y,
+  // abierto, en celular tapaba toda la lista. Se abre con "Más filtros".
+  const [masFiltros, setMasFiltros] = useState(false);
   const [ciudadSeleccionada, setCiudadSeleccionada] = useState<string>(inicial.ciudad);
   /** Códigos CIP de las carreras que le interesan: ordenan la lista y marcan las que no tienen datos. */
   const [carreras, setCarreras] = useState<string[]>(inicial.carreras);
-  /** "Aún no lo rindo" en el paso del SAT: solo cambia cómo se resume, no filtra nada. */
+  /** "Aún no lo presento" en el paso del SAT: solo cambia cómo se resume, no filtra nada. */
   const [satNoRendido, setSatNoRendido] = useState(false);
 
   // "Cuéntanos de ti" en 4 pasos (1 a 4) y después los resultados (5). Quien llega con filtros en
@@ -252,9 +255,9 @@ export default function App() {
    */
   const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId, conteoNiveles, muyPorEncima, conteoPolitica } = useMemo(() => {
     const { estado, estados, ciudad, tipos, precio, politica, sat } = filtros;
-    // La carrera nunca descarta: que Scorecard no publique su salario no quiere decir que no la
-    // ofrezcan. Solo marca y manda al final (y espera a que llegue el archivo).
-    const filtroCarreraActivo = filtros.carreras.length > 0 && carrerasPorUnitid.size > 0;
+    // La carrera no filtra ni cuenta como "dato faltante": que Scorecard no publique su salario no
+    // quiere decir que no la ofrezcan. Solo ordena (ver universidadesOrdenadas). Si contara como
+    // faltante, "240 encajan" terminaba siendo "228 sin datos": el número dejaba de significar algo.
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
     const filtroSATActivo = sat > 0;
     const filtroPrecioActivo = precio < PRECIO_MAXIMO_SLIDER;
@@ -293,8 +296,6 @@ export default function App() {
         else porEncima = !entra;
       }
 
-      if (filtroCarreraActivo && salarioCarrera(uni) == null) falta.push(SIN_DATO_CARRERA);
-
       if (filtroPrecioActivo) {
         // Costo real al año (matrícula + vida), el mismo que muestra la fila.
         if (uni.COSTO_ANUAL == null) falta.push('Sin dato de costo');
@@ -303,7 +304,9 @@ export default function App() {
 
       // Las que no informan su política solo aparecen en "Todos": mostrarlas bajo
       // "Obligatorio" u "Opcional" haría creer que lo son.
-      const cumplePolitica = !filtroPoliticaActivo || uni.ADMCON7 === POLITICA_SAT[politica];
+      const cumplePolitica = !filtroPoliticaActivo || (politica === 'no-exige'
+        ? uni.ADMCON7 != null && NO_EXIGEN_SAT.includes(uni.ADMCON7)
+        : uni.ADMCON7 === POLITICA_SAT[politica]);
 
       if (cumplePolitica) (porEncima ? encimaSinUbicacion : sinUbicacion).push(uni);
       if (estado !== 'todos' && uni.STABBR !== estado) return false;
@@ -323,6 +326,7 @@ export default function App() {
       for (const [opcion, valor] of Object.entries(POLITICA_SAT)) {
         conteo[opcion] = lista.filter(u => u.ADMCON7 === valor).length;
       }
+      conteo['no-exige'] = conteo.opcional + conteo['no-considera'];
       return conteo;
     };
 
@@ -365,7 +369,7 @@ export default function App() {
       viendoMuyPorEncima,
       conteoPolitica: contarPolitica(viendoMuyPorEncima ? encimaSinPolitica : sinFiltroPolitica.filter(delNivel)),
     };
-  }, [universidades, resultadoBusqueda, filtros, verEncimaDe, carrerasPorUnitid, salarioCarrera]);
+  }, [universidades, resultadoBusqueda, filtros, verEncimaDe]);
 
 
   // Filtros activos, con nombre para explicar qué quita "Limpiar" (el puntaje SAT y
@@ -716,8 +720,13 @@ export default function App() {
       carreras.length ? nombreCarrerasElegidas : 'Cualquier carrera',
       lugar,
       precioMaximo < PRECIO_MAXIMO_SLIDER ? `Hasta $${precioMaximo.toLocaleString('en-US')} al año` : 'Cualquier presupuesto',
-      puntajeTotal > 0 ? `SAT ${puntajeTotal}` : satNoRendido ? 'Aún no rindo el SAT' : 'Sin SAT',
+      (puntajeTotal > 0 ? `SAT ${puntajeTotal}` : satNoRendido ? 'Aún no presento el SAT' : 'SAT: no lo diste')
+        + (exigirSAT === 'no-exige' ? ' · solo las que no lo exigen' : ''),
     ];
+
+    // Lo que solo se cambia en "Más filtros" (lo demás ya está en los chips de arriba).
+    const extrasActivos = filtrosActivos.filter(f =>
+      f === '¿piden el SAT?' || f === 'tus posibilidades de entrar' || f === 'tipo de universidad').length;
 
     return (
       <>
@@ -738,6 +747,12 @@ export default function App() {
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
                     </button>
                   ))}
+                  <button type="button" className={`resultados-mas-filtros${masFiltros ? ' resultados-mas-filtros-abierto' : ''}`}
+                    aria-expanded={masFiltros} aria-controls="hoja-filtros" onClick={() => setMasFiltros(m => !m)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+                    {masFiltros ? 'Ocultar filtros' : 'Más filtros'}
+                    {!masFiltros && extrasActivos > 0 && <span className="contador numero">{extrasActivos}</span>}
+                  </button>
                   {filtrosActivos.length > 0 && (
                     <button type="button" className="boton-limpiar boton-limpiar-enlace" onClick={limpiarFiltros}
                       title={`Quita: ${filtrosActivos.join(', ')}`}>Quitar filtros</button>
@@ -761,8 +776,8 @@ export default function App() {
           </section>
 
           <section className="banda banda-blanco resultados-cuerpo" aria-label="Resultados">
-            <div className="in cuerpo">
-              <Filtros
+            <div className={`in cuerpo${masFiltros ? '' : ' cuerpo-sin-hoja'}`}>
+              {masFiltros && <div id="hoja-filtros" className="hoja-envoltorio"><Filtros
                 estadoSeleccionado={estadoSeleccionado}
                 // Elegir un estado en el panel reemplaza a los varios que vengan de los pasos.
                 setEstadoSeleccionado={v => { setEstadosVarios([]); setEstadoSeleccionado(v); }}
@@ -779,8 +794,11 @@ export default function App() {
                 conteoNiveles={conteoNiveles}
                 conteoPolitica={conteoPolitica}
                 nivelesSAT={nivelesSAT} setNivelesSAT={setNivelesSAT}
-                conPuntaje
-              />
+                // El SAT ya está en los chips de arriba (y en su paso): aquí no se repite.
+                conPuntaje={false}
+                variosEstados={estadosVarios.length > 1 ? `${estadosVarios.length} estados: ${estadosVarios.map(st => NOMBRES_ESTADOS[st] ?? st).join(', ')}` : null}
+                siempreAbierta
+              /></div>}
               <main className="columna-principal">
                 <div ref={listaRef} className="lista-ancla">
                 <ListaUniversidades
@@ -794,7 +812,7 @@ export default function App() {
                   puntajeSAT={filtros.sat}
                   busqueda={busquedaNombre} onBorrarBusqueda={() => setBusquedaNombre('')}
                   carrera={filtros.carreras.length > 0 && conDatoCarrera != null
-                    ? { nombre: nombreCarrerasElegidas, salario: salarioCarrera, motivo: SIN_DATO_CARRERA } : null}
+                    ? { nombre: nombreCarrerasElegidas, salario: salarioCarrera, } : null}
                 />
                 </div>
               </main>

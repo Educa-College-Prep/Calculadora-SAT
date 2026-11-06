@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Universidad } from '../types';
 import type { ArchivoSalarios } from '../utils/salariosCarreras';
@@ -13,14 +13,6 @@ import { FichaEstado } from './FichaEstado';
 
 /** Opciones de presupuesto (costo al año: matrícula de fuera del estado + costo de vida). */
 const PRESUPUESTOS = [20000, 40000, 60000, 80000];
-
-/** Las mismas opciones de "¿Piden el SAT?" del panel de filtros, en palabras del paso. */
-const POLITICAS: { valor: string; texto: string }[] = [
-  { valor: 'todos', texto: 'Todas' },
-  { valor: 'opcional', texto: 'Las que lo hacen opcional' },
-  { valor: 'no-considera', texto: 'Las que no lo toman en cuenta' },
-  { valor: 'requerido', texto: 'Las que lo piden' },
-];
 
 
 const minusculasSinTildes = (texto: string) => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -67,6 +59,18 @@ export function FlujoPasos(props: Props) {
     exigirSAT, setExigirSAT, conteoPolitica, buscador } = props;
 
   const siguiente = () => (paso < 4 ? setPaso(paso + 1) : onTerminar());
+  // "Saltar" solo cuando el paso no tiene respuesta: con algo elegido hacía lo mismo que Siguiente
+  // pero conservando lo elegido, y eso engañaba.
+  const respondido = [carreras.length > 0, estados.length > 0, precio < PRECIO_MAXIMO_SLIDER,
+    satTotal > 0 || satNoRendido || exigirSAT !== 'todos'][paso - 1];
+
+  // Al cambiar de paso, el foco va a la pregunta nueva: así el lector de pantalla la anuncia y el
+  // teclado sigue desde ahí (no desde el botón "Siguiente", que quedaba abajo). No al entrar.
+  const primeraVez = useRef(true);
+  useEffect(() => {
+    if (primeraVez.current) { primeraVez.current = false; return; }
+    document.getElementById('paso-titulo')?.focus({ preventScroll: true });
+  }, [paso]);
   const textoSiguiente = ['Siguiente: dónde', 'Siguiente: presupuesto', 'Siguiente: tu SAT', 'Ver mis universidades'][paso - 1];
   const nombreElegidas = carreras.length
     ? [...new Set(carreras.map(c => CARRERAS_COMUNES.find(g => g.cips.includes(c))?.nombre ?? nombreCarrera(c, archivoCarreras)))].join(' o ')
@@ -113,7 +117,7 @@ export function FlujoPasos(props: Props) {
           </p>
           <div className="flujo-botones">
             {paso > 1 && <button type="button" className="boton" onClick={() => setPaso(paso - 1)}>Atrás</button>}
-            <button type="button" className="boton-limpiar boton-limpiar-enlace flujo-saltar" onClick={siguiente}>Saltar este paso</button>
+            {!respondido && <button type="button" className="boton-limpiar boton-limpiar-enlace flujo-saltar" onClick={siguiente}>Saltar este paso</button>}
             <button type="button" className="boton-sol" onClick={siguiente}>
               {textoSiguiente}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
@@ -165,7 +169,7 @@ function PasoCarrera({ carreras, setCarreras, archivoCarreras }: { carreras: str
 
   return (
     <section className="flujo-tarjeta" aria-labelledby="paso-titulo">
-      <h1 id="paso-titulo" className="flujo-titulo">¿Qué quieres estudiar?</h1>
+      <h1 id="paso-titulo" className="flujo-titulo" tabIndex={-1}>¿Qué quieres estudiar?</h1>
       <p className="flujo-subtitulo">Elige una o varias. Te mostraremos cuánto ganan sus egresados en cada universidad.</p>
       <div className="flujo-opciones">
         {CARRERAS_COMUNES.map((g, i) => (
@@ -247,12 +251,12 @@ function PasoDonde({ estados, setEstados, universidades }: { estados: string[]; 
   return (
     <div className="flujo-donde">
       <div className="flujo-donde-mapa">
-        <h1 id="paso-titulo" className="flujo-titulo">¿Dónde te gustaría estudiar?</h1>
+        <h1 id="paso-titulo" className="flujo-titulo" tabIndex={-1}>¿Dónde te gustaría estudiar?</h1>
         <p className="flujo-subtitulo">Toca los estados que te interesan, hasta {TOPE_ESTADOS}. Si te da igual, salta este paso.</p>
         {aviso && <p className="flujo-aviso" role="status">{aviso}</p>}
         <MapaCuadritos conteo={conteo} seleccion={estados} foco={enFoco} onTocar={tocar} />
       </div>
-      <aside className="flujo-donde-ficha" aria-live="polite" aria-label="Ficha del estado">
+      <aside className="flujo-donde-ficha" aria-label="Ficha del estado">
         {enFoco ? (
           <>
             <div className="flujo-chips">
@@ -284,7 +288,7 @@ function PasoPresupuesto({ precio, setPrecio, universidades }: { precio: number;
   const entran = useMemo(() => PRESUPUESTOS.map(p => universidades.filter(u => u.COSTO_ANUAL != null && u.COSTO_ANUAL <= p).length), [universidades]);
   return (
     <section className="flujo-tarjeta" aria-labelledby="paso-titulo">
-      <h1 id="paso-titulo" className="flujo-titulo">¿Cuánto podría pagar tu familia al año?</h1>
+      <h1 id="paso-titulo" className="flujo-titulo" tabIndex={-1}>¿Cuánto podría pagar tu familia al año?</h1>
       <p className="flujo-subtitulo">Sin presión: lo puedes cambiar cuando quieras, y en cada ficha verás cuánta beca suelen dar.</p>
       <div className="flujo-presupuestos">
         {PRESUPUESTOS.map((p, i) => (
@@ -322,7 +326,7 @@ function PasoSAT({ satTotal, setSatTotal, satNoRendido, setSatNoRendido, exigirS
 
   return (
     <section className="flujo-tarjeta" aria-labelledby="paso-titulo">
-      <h1 id="paso-titulo" className="flujo-titulo">¿Ya rendiste el SAT?</h1>
+      <h1 id="paso-titulo" className="flujo-titulo" tabIndex={-1}>¿Ya presentaste el SAT?</h1>
       <p className="flujo-subtitulo">Es un dato más: muchas universidades no lo piden.</p>
       <div className="flujo-opciones">
         <label className="flujo-caja flujo-caja-fila" data-elegida={!satNoRendido && texto !== ''}>
@@ -333,22 +337,21 @@ function PasoSAT({ satTotal, setSatTotal, satNoRendido, setSatNoRendido, exigirS
         </label>
         <button type="button" className="flujo-caja flujo-caja-fila" aria-pressed={satNoRendido}
           onClick={() => { setSatNoRendido(true); setTexto(''); setSatTotal(0); }}>
-          <span className="flujo-caja-titulo">Aún no lo rindo</span>
+          <span className="flujo-caja-titulo">Aún no lo presento</span>
         </button>
       </div>
       {fueraDeRango && <p className="flujo-aviso" role="status">El SAT va de 400 a 1600.</p>}
-      <fieldset className="flujo-grupo">
-        <legend>¿Qué universidades te mostramos?</legend>
-        <div className="flujo-opciones">
-          {POLITICAS.map(o => (
-            <button key={o.valor} type="button" className="flujo-pastilla" aria-pressed={exigirSAT === o.valor} onClick={() => setExigirSAT(o.valor)}>
-              {o.texto}
-              {conteoPolitica[o.valor] != null && <span className="flujo-pastilla-numero numero">{conteoPolitica[o.valor].toLocaleString('en-US')}</span>}
-            </button>
-          ))}
-        </div>
-        <p className="flujo-nota">Las que no publican su política sobre el SAT solo aparecen en "Todas".</p>
-      </fieldset>
+      {/* Una sola decisión más, y opcional: antes eran 4 opciones técnicas ("Las que lo piden" dejaba
+          casi sin resultados). Las demás siguen en "Más filtros" de los resultados. */}
+      <button type="button" className="flujo-interruptor" aria-pressed={exigirSAT === 'no-exige'}
+        onClick={() => setExigirSAT(exigirSAT === 'no-exige' ? 'todos' : 'no-exige')}>
+        <span className="flujo-interruptor-caja" aria-hidden="true" />
+        <span>
+          Mostrar solo las que no exigen el SAT
+          {conteoPolitica['no-exige'] != null && <span className="flujo-pastilla-numero numero"> · {conteoPolitica['no-exige'].toLocaleString('en-US')}</span>}
+        </span>
+      </button>
+      <p className="flujo-nota">Lo hacen opcional o no lo toman en cuenta. Las que no publican su política sobre el SAT no aparecen con esta opción.</p>
     </section>
   );
 }

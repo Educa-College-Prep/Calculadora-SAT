@@ -24,9 +24,12 @@ export function BurbujaMapa({ conteo, universidades, seleccion, onTocar }: Props
   const [foco, setFoco] = useState<string | null>(null);
   const zonaRef = useRef<HTMLDivElement>(null);
   const botonRef = useRef<HTMLButtonElement>(null);
+  const tituloRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     if (!abierta) return;
+    // Al abrir, el foco entra al panel: si no, quien usa teclado o lector no se entera de que se abrió.
+    tituloRef.current?.focus();
     const alTocarFuera = (e: PointerEvent) => {
       if (zonaRef.current && !zonaRef.current.contains(e.target as Node)) setAbierta(false);
     };
@@ -52,16 +55,6 @@ export function BurbujaMapa({ conteo, universidades, seleccion, onTocar }: Props
 
   return (
     <div className={`burbuja-mapa${abierta ? ' burbuja-mapa-abierta' : ''}`} ref={zonaRef}>
-      {abierta && (
-        <div className="burbuja-mapa-panel" role="dialog" aria-label="Elige en el mapa">
-          <div className="burbuja-mapa-cabecera">
-            <h2>¿Dónde?</h2>
-            <span>Toca un estado para sumarlo o quitarlo de tu búsqueda</span>
-          </div>
-          <MapaCuadritos conteo={conteo} seleccion={seleccion} foco={enFoco} onTocar={tocar} variante="chico" />
-          {enFoco && <FichaEstado estado={enFoco} universidades={universidades} compacta />}
-        </div>
-      )}
       <button ref={botonRef} type="button" className="burbuja-mapa-boton" aria-expanded={abierta} onClick={() => setAbierta(a => !a)}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z" /><path d="M9 4v14M15 6v14" /></svg>
         <span className="burbuja-mapa-texto">
@@ -69,6 +62,16 @@ export function BurbujaMapa({ conteo, universidades, seleccion, onTocar }: Props
           <span className="burbuja-mapa-resumen">{resumen}</span>
         </span>
       </button>
+      {abierta && (
+        <div className="burbuja-mapa-panel" role="dialog" aria-label="Elige en el mapa">
+          <div className="burbuja-mapa-cabecera">
+            <h2 ref={tituloRef} tabIndex={-1}>¿Dónde?</h2>
+            <span>Toca un estado para sumarlo o quitarlo de tu búsqueda</span>
+          </div>
+          <MapaCuadritos conteo={conteo} seleccion={seleccion} foco={enFoco} onTocar={tocar} variante="chico" />
+          {enFoco && <FichaEstado estado={enFoco} universidades={universidades} compacta />}
+        </div>
+      )}
     </div>
   );
 }

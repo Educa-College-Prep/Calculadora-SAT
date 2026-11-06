@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react';
 import type { Universidad } from '../types';
 import { NOMBRES_ESTADOS } from '../utils/estados';
 import { formatDinero } from '../utils/formatters';
-import { posicionUSNews, textoPuesto, EDICION_USNEWS } from '../data/rankingUSNews';
+import { posicionUSNews, textoPuesto, ayudaPuesto, EDICION_USNEWS } from '../data/rankingUSNews';
 
 /** Mediana redondeada como en ResumenEstado: lo "típico" sin que una universidad carísima lo mueva. */
 function mediana(valores: number[]): number | null {
@@ -83,7 +83,7 @@ export const FichaEstado = memo(function FichaEstado({ estado, universidades, co
               const p = posicionUSNews(u);
               return (
                 <li key={u._id}>
-                  {p && <span className="ficha-estado-puesto">{textoPuesto(p)}</span>}
+                  {p && <span className="ficha-estado-puesto" title={ayudaPuesto(p)}>{textoPuesto(p)}</span>}
                   <span>{u.INSTNM}</span>
                 </li>
               );

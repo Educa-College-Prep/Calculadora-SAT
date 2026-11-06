@@ -72,7 +72,7 @@ const ORDEN_A_URL: Record<string, string> = {
 };
 const URL_A_ORDEN = new Map(Object.entries(ORDEN_A_URL).map(([orden, token]) => [token, orden]));
 
-const OPCIONES_POLITICA = ['requerido', 'opcional', 'no-considera'];
+const OPCIONES_POLITICA = ['requerido', 'opcional', 'no-considera', 'no-exige'];
 const TIPOS: TipoControl[] = ['publica', 'privada'];
 
 /** Número entero, o null si el texto no lo es. */
