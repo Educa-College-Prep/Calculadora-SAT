@@ -21,12 +21,12 @@ export const NOMBRE_LISTA: Record<ListaUSNews, string> = {
 };
 
 /**
- * Nombre corto de cada lista para las insignias ("#12 Nacional", "#3 LAC"). Hace falta porque
+ * Nombre corto de cada lista para las insignias ("#12 Nacional", "#3 Artes liberales"; antes decía "LAC", que nadie entendía). Hace falta porque
  * un #3 de liberal arts no es lo mismo que un #3 nacional: son dos rankings distintos.
  */
 export const SIGLA_LISTA: Record<ListaUSNews, string> = {
   'nacional': 'Nacional',
-  'liberal-arts': 'LAC',
+  'liberal-arts': 'Artes liberales',
 };
 
 // [nombre en la base, estado, puesto]
@@ -158,10 +158,10 @@ export function posicionUSNews(uni: Pick<Universidad, 'INSTNM' | 'STABBR'>): Pos
 }
 
 /**
- * Texto corto para insignias: "#7 Nacional" o "#3 LAC". Los empates no se marcan: si dos
+ * Texto corto para insignias: "#7 Nacional" o "#3 Artes liberales". Los empates no se marcan: si dos
  * universidades muestran el mismo número, ya se entiende que comparten el puesto.
  */
-/** Qué significa la sigla del chip ("#34 LAC"): muchos estudiantes no conocen estas categorías. */
+/** Qué significa la sigla del chip ("#34 Artes liberales"): muchos estudiantes no conocen estas categorías. */
 const AYUDA_LISTA: Record<ListaUSNews, string> = {
   'nacional': 'Universidad nacional: ofrece pregrado, posgrado e investigación.',
   'liberal-arts': 'Liberal arts college: universidad pequeña centrada en el pregrado.',

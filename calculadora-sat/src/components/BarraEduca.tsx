@@ -12,6 +12,9 @@ export const EVENTO_INICIO = 'college-finder:inicio';
 /** Lo escucha App: abre Mi lista desde la estrella de la barra. */
 export const EVENTO_MI_LISTA = 'college-finder:mi-lista';
 
+/** Id del hueco de la barra donde App pone el buscador de universidades (con un portal). */
+export const ID_BUSCADOR_BARRA = 'barra-buscador';
+
 /** Clic normal → se queda en la app. Con Cmd/Ctrl (nueva pestaña) se deja al navegador. */
 function irAlInicio(e: MouseEvent<HTMLAnchorElement>) {
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
@@ -20,10 +23,11 @@ function irAlInicio(e: MouseEvent<HTMLAnchorElement>) {
 }
 
 /**
- * Barra de Educa College Prep, como la de su web: logo, nombre de la herramienta y
- * "Contáctanos". Queda fija arriba al bajar por la página. En celular suma Mi lista, que así
- * queda al alcance en todas las vistas; ahí "College Finder" cede su lugar (el logo sigue).
- * Va fuera de #root (ver main.tsx) para ocupar todo el ancho de la pantalla.
+ * Barra de Educa College Prep: logo, nombre de la herramienta, el buscador de universidades (para
+ * quien ya sabe a cuál quiere ir: antes ocupaba una franja entera en los pasos) y "Mi lista y
+ * comparar", en el lugar del botón de "Contáctanos" (que pasó al pie). Queda fija arriba al bajar.
+ * Va fuera de #root (ver main.tsx) para ocupar todo el ancho; por eso el buscador lo pone App con
+ * un portal en el hueco #barra-buscador (solo en los pasos y los resultados: la ficha tiene el suyo).
  */
 export function BarraEduca() {
   const ref = useRef<HTMLElement>(null);
@@ -51,17 +55,15 @@ export function BarraEduca() {
         <a className="barra-educa-producto" href={inicio} onClick={irAlInicio} tabIndex={-1} aria-hidden="true">
           College Finder
         </a>
+        <div id={ID_BUSCADOR_BARRA} className="barra-educa-buscador" />
+        {/* La misma estrella que "Guardar" en cada universidad: es donde terminan las guardadas. */}
         <button type="button" className="barra-educa-lista" onClick={() => window.dispatchEvent(new Event(EVENTO_MI_LISTA))}
-          aria-label={`Mi lista: ${cantidad} ${cantidad === 1 ? 'universidad guardada' : 'universidades guardadas'}`}>
-          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
-          <span className="barra-educa-lista-texto">Mi lista</span>
+          aria-label={`Mi lista y comparar: ${cantidad} ${cantidad === 1 ? 'universidad guardada' : 'universidades guardadas'}`}>
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
+          <span className="barra-educa-lista-texto">Mi lista<span className="barra-educa-lista-largo"> y comparar</span></span>
           {/* La key reinicia la animación: como la barra siempre se ve, guardar se nota al instante. */}
           <span key={cantidad} className="contador numero">{cantidad}</span>
         </button>
-        <a className="barra-educa-contacto" href={CONTACTO} target="_blank" rel="noopener noreferrer">
-          Contáctanos
-          <span className="visualmente-oculto"> (se abre en otra pestaña)</span>
-        </a>
       </div>
     </header>
   );

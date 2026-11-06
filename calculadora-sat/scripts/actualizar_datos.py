@@ -19,7 +19,8 @@ se gradúa de cada carrera en cada universidad.
 
 Escribe:
   public/universidades.json      la base de la web (Scorecard + IPEDS en un solo archivo).
-  public/salarios_carreras.json  salario por carrera (bachiller) de cada universidad; lo carga la ficha.
+  public/salarios_carreras.json  carreras de bachiller de cada universidad, con su salario si se publica;
+                                 lo usan la ficha y el filtro de carrera de la portada.
   public/fuentes_datos.json      de dónde sale cada dato y de qué año (lo muestra la web).
 
 Uso (desde calculadora-sat/):
@@ -256,15 +257,19 @@ def existe(url):
         return False
 
 
-def archivos_en_pagina(html):
-    """{fecha de publicación: enlace} de los archivos por universidad que enlaza la página de
-    datos de Scorecard. El nombre trae la fecha como MMDDAAAA."""
+def archivos_en_pagina(html, tipo='Institution'):
+    """{fecha de publicación: enlace} de los archivos de un tipo ('Institution' = por universidad,
+    'Field-of-Study' = por carrera) que enlaza la página de datos de Scorecard. El nombre trae la
+    fecha como MMDDAAAA."""
     return {datetime.date(int(f[4:]), int(f[:2]), int(f[2:4])): u
-            for u, f in re.findall(r'(https://[^"\'\s]+/Most-Recent-Cohorts-Institution_(\d{8})\.zip)', html)}
+            for u, f in re.findall(rf'(https://[^"\'\s]+/Most-Recent-Cohorts-{tipo}_(\d{{8}})\.zip)', html)}
 
 
 def ultimo_scorecard():
-    """El archivo por universidad más reciente que enlaza la página de datos de Scorecard."""
+    """Los archivos más recientes que enlaza la página de datos de Scorecard: (enlace por
+    universidad, su fecha, enlace por carrera). Cada uno se busca por su lado: no siempre se
+    republican juntos (en noviembre de 2026 salió uno nuevo por universidad y el de carreras
+    siguió siendo el de octubre)."""
     try:
         with urllib.request.urlopen(urllib.request.Request(PAGINA_SCORECARD, headers=AGENTE), timeout=60) as r:
             html = r.read().decode('utf-8', 'replace')
@@ -275,7 +280,10 @@ def ultimo_scorecard():
     if not enlaces:
         sys.exit('No encontré el archivo de Scorecard en su página: ¿cambió de nombre o de sitio?')
     fecha = max(enlaces)
-    return enlaces[fecha], fecha
+    carreras = archivos_en_pagina(html, 'Field-of-Study')
+    if not carreras:
+        sys.exit('No encontré el archivo por carrera de Scorecard en su página: ¿cambió de nombre o de sitio?')
+    return enlaces[fecha], fecha, carreras[max(carreras)]
 
 
 def copia_fresca_en_archive(url, intentos=4):
@@ -377,14 +385,17 @@ def salarios_por_carrera(filas, unitids):
     """Lo que se escribe en salarios_carreras.json:
       carreras:      {código CIP: nombre (en inglés, tal como lo publica Scorecard)}
       universidades: {UNITID: [[código CIP, salario a 1 año, a 4 años, graduados], ...]}
-    Solo las carreras con algún salario publicado (Scorecard los oculta cuando hay pocos
-    graduados) y de las universidades de la web. En cada universidad, de más a menos graduados.
-    El nombre de la carrera se guarda una sola vez: se repite en miles de universidades."""
+    Todas las carreras de bachiller de las universidades de la web, publiquen salario o no
+    (Scorecard lo oculta cuando hay pocos graduados: ahí van los dos salarios en null). Las sin
+    salario hacen falta igual: dicen que la universidad OFRECE la carrera, y con eso el filtro de
+    carrera de la portada descarta las que no la ofrecen en vez de mezclarlas con las que sí.
+    En cada universidad, de más a menos graduados. El nombre de la carrera se guarda una sola
+    vez: se repite en miles de universidades."""
     carreras, por_uni = {}, {}
     for f in filas:
         unitid = numero(f['UNITID'])
         a_1, a_4 = numero(f['EARN_MDN_1YR']), numero(f['EARN_MDN_4YR'])
-        if unitid not in unitids or (a_1 is None and a_4 is None):
+        if unitid not in unitids:
             continue
         cip = str(f['CIPCODE']).zfill(4)
         carreras.setdefault(cip, texto(f['CIPDESC']).rstrip('.'))
@@ -603,9 +614,7 @@ def main():
         archivo_scorecard = archivo_carreras = 'api'
         print('  Scorecard: desde su API')
     else:
-        url_scorecard, fecha_scorecard = ultimo_scorecard()
-        # El archivo por carrera se publica junto con el de universidades, con la misma fecha.
-        url_carreras = url_scorecard.replace('Most-Recent-Cohorts-Institution_', 'Most-Recent-Cohorts-Field-of-Study_')
+        url_scorecard, fecha_scorecard, url_carreras = ultimo_scorecard()
         archivo_scorecard, archivo_carreras = os.path.basename(url_scorecard), os.path.basename(url_carreras)
         print(f'  Scorecard: archivo del {fecha_scorecard}')
     adm = ultimo_ipeds('ADM', str, hoy.year)

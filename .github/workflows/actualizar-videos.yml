@@ -1,0 +1,42 @@
+name: Actualizar videos
+
+# Cada mañana revisa el canal de YouTube de Educa. Si hay videos nuevos de una universidad
+# de EE.UU. (campus tour o testimonio), abre un PR que los agrega a su ficha; al mergearlo,
+# se publican. El PR avisa qué videos no supo ubicar con seguridad.
+# Si no hay nada nuevo, termina sin hacer cambios.
+on:
+  schedule:
+    - cron: '0 13 * * *'   # todos los días, 8:00 de Lima
+  workflow_dispatch:        # botón "Run workflow" para revisar a mano (por ej. recién subido un video)
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: calculadora-sat
+    steps:
+      - uses: actions/checkout@v4
+
+      # Solo usa la biblioteca estándar de Python. Con la clave de la API de YouTube (en
+      # Settings → Secrets and variables → Actions) lee el canal completo; sin ella, el feed
+      # RSS, que solo trae los últimos 15 videos y YouTube tiene caído a ratos.
+      - id: videos
+        run: python3 scripts/actualizar_videos.py
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+
+      - if: steps.videos.outputs.hay_videos_nuevos == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: videos-automaticos
+          delete-branch: true
+          add-paths: calculadora-sat/src/data/videos_universidades.json
+          commit-message: 'videos: nuevos videos del canal de Educa en la ficha de cada universidad'
+          title: 'Videos nuevos del canal de Educa'
+          # Lo escribe el script: videos agregados, los dudosos y los que no son de una universidad.
+          body-path: calculadora-sat/scripts/.cache/resumen_videos_pr.md
