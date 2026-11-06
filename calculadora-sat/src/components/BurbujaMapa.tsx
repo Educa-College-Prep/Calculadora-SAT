@@ -10,8 +10,10 @@ interface Props {
   /** Todas las universidades: para la ficha del estado. */
   universidades: Universidad[];
   seleccion: string[];
-  /** Suma o quita un estado de la búsqueda (App aplica el tope). */
-  onTocar: (estado: string) => void;
+  /** Los estados descartados ("Dónde no quiero estudiar"). Si hay, el mapa sigue en ese modo. */
+  excluidos: string[];
+  onElegir: (estados: string[]) => void;
+  onExcluir: (estados: string[]) => void;
 }
 
 /**
@@ -19,7 +21,7 @@ interface Props {
  * vive en una burbuja flotante abajo a la derecha. Al tocarla se abre; al tocar fuera de ella o con
  * Escape se vuelve a cerrar sola, sin buscar un botón de "cerrar".
  */
-export function BurbujaMapa({ conteo, universidades, seleccion, onTocar }: Props) {
+export function BurbujaMapa({ conteo, universidades, seleccion, excluidos, onElegir, onExcluir }: Props) {
   const [abierta, setAbierta] = useState(false);
   const [foco, setFoco] = useState<string | null>(null);
   const zonaRef = useRef<HTMLDivElement>(null);
@@ -44,12 +46,16 @@ export function BurbujaMapa({ conteo, universidades, seleccion, onTocar }: Props
     };
   }, [abierta]);
 
-  const enFoco = foco && seleccion.includes(foco) ? foco : seleccion[seleccion.length - 1] ?? null;
-  const tocar = (st: string) => {
-    if (!seleccion.includes(st)) setFoco(st);
-    onTocar(st);
+  // Con estados descartados el mapa sigue en "dónde no quiero": tocar uno lo descarta o lo vuelve a sumar.
+  const excluir = excluidos.length > 0;
+  const marcados = excluir ? excluidos : seleccion;
+  const enFoco = foco ?? marcados[marcados.length - 1] ?? null;
+  const cambiar = (lista: string[], st: string) => {
+    setFoco(st);
+    (excluir ? onExcluir : onElegir)(lista);
   };
-  const resumen = seleccion.length === 0 ? 'Todo EE. UU.'
+  const resumen = excluir ? `Todo EE. UU. menos ${excluidos.length === 1 ? NOMBRES_ESTADOS[excluidos[0]] ?? excluidos[0] : `${excluidos.length} estados`}`
+    : seleccion.length === 0 ? 'Todo EE. UU.'
     : seleccion.length === 1 ? NOMBRES_ESTADOS[seleccion[0]] ?? seleccion[0]
     : `${seleccion.length} estados`;
 
@@ -66,9 +72,9 @@ export function BurbujaMapa({ conteo, universidades, seleccion, onTocar }: Props
         <div className="burbuja-mapa-panel" role="dialog" aria-label="Elige en el mapa">
           <div className="burbuja-mapa-cabecera">
             <h2 ref={tituloRef} tabIndex={-1}>¿Dónde?</h2>
-            <span>Toca un estado para sumarlo o quitarlo de tu búsqueda</span>
+            <span>{excluir ? 'Toca un estado para descartarlo o volver a incluirlo' : 'Toca un estado para sumarlo o quitarlo de tu búsqueda'}</span>
           </div>
-          <MapaCuadritos conteo={conteo} seleccion={seleccion} foco={enFoco} onTocar={tocar} variante="chico" />
+          <MapaCuadritos conteo={conteo} seleccion={marcados} foco={enFoco} onCambiar={cambiar} modo={excluir ? 'excluir' : 'incluir'} variante="chico" />
           {enFoco && <FichaEstado estado={enFoco} universidades={universidades} compacta />}
         </div>
       )}

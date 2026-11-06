@@ -17,5 +17,3 @@ export const CUADRITOS: [string, number, number][] = [
   ['HI', 0, 7], ['TX', 3, 7], ['FL', 8, 7], ['PR', 10, 7],
 ];
 
-/** Cuántos estados se pueden elegir a la vez: más que eso ya es "me da igual el lugar". */
-export const TOPE_ESTADOS = 6;

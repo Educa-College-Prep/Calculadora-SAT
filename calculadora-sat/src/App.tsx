@@ -16,7 +16,6 @@ import { ListaUniversidades } from './components/ListaUniversidades';
 import { FlujoPasos } from './components/FlujoPasos';
 import { CARRERAS_COMUNES, TITULOS_PASOS } from './data/pasos';
 import { BurbujaMapa } from './components/BurbujaMapa';
-import { TOPE_ESTADOS } from './utils/cuadritos';
 import { useArchivoCarreras, nombreCarrera } from './utils/salariosCarreras';
 import { DetalleUniversidad } from './components/DetalleUniversidad';
 import { ComparadorUniversidades } from './components/ComparadorUniversidades';
@@ -24,7 +23,10 @@ import type { AvisoLista } from './components/ComparadorUniversidades';
 import { alcanzable, clasificar } from './utils/nivelSAT';
 import type { Nivel } from './utils/nivelSAT';
 import { AvisoFuentes } from './components/AvisoFuentes';
-import { EVENTO_INICIO, EVENTO_MI_LISTA } from './components/BarraEduca';
+import { EVENTO_INICIO, EVENTO_MI_LISTA, ID_BUSCADOR_BARRA } from './components/BarraEduca';
+import { createPortal } from 'react-dom';
+import type { Sugerencia } from './components/FlujoPasos';
+import { PRESUPUESTOS } from './data/pasos';
 
 /** Opción del filtro "¿Piden el SAT?" → valor de ADMCON7 (política de puntajes de IPEDS). */
 const POLITICA_SAT: Record<string, string> = {
@@ -59,6 +61,8 @@ export default function App() {
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>(inicial.estado);
   /** Varios estados a la vez (desde los pasos o la burbuja del mapa). Con uno solo se usa estadoSeleccionado. */
   const [estadosVarios, setEstadosVarios] = useState<string[]>(inicial.estados);
+  /** "Dónde no quiero estudiar": estados descartados; quedan todos los demás. */
+  const [estadosExcluidos, setEstadosExcluidos] = useState<string[]>(inicial.excluidos);
   // En los resultados el panel de filtros empieza cerrado: los pasos ya preguntaron lo principal y,
   // abierto, en celular tapaba toda la lista. Se abre con "Más filtros".
   const [masFiltros, setMasFiltros] = useState(false);
@@ -97,6 +101,7 @@ export default function App() {
     setBusquedaNombre(f.busqueda);
     setEstadoSeleccionado(f.estado);
     setEstadosVarios(f.estados);
+    setEstadosExcluidos(f.excluidos);
     setCiudadSeleccionada(f.ciudad);
     setCarreras(f.carreras);
     setPuntajeMath(f.puntajeMath);
@@ -118,6 +123,7 @@ export default function App() {
       busqueda: busquedaNombre,
       estado: estadoSeleccionado,
       estados: estadosVarios,
+      excluidos: estadosExcluidos,
       ciudad: ciudadSeleccionada,
       carreras,
       puntajeMath,
@@ -131,7 +137,7 @@ export default function App() {
       ordenDireccion,
     }), 300);
     return () => clearTimeout(espera);
-  }, [busquedaNombre, estadoSeleccionado, estadosVarios, ciudadSeleccionada, carreras, puntajeMath, puntajeLectura,
+  }, [busquedaNombre, estadoSeleccionado, estadosVarios, estadosExcluidos, ciudadSeleccionada, carreras, puntajeMath, puntajeLectura,
       puntajeSoloTotal, exigirSAT, nivelesSAT, tiposUniversidad, precioMaximo, ordenarPor, ordenDireccion]);
 
   // El texto que se usa para filtrar va "un paso atrás" del que se ve en el input.
@@ -227,6 +233,7 @@ export default function App() {
   const filtros = useDeferredValue(useMemo(() => ({
     estado: estadoSeleccionado,
     estados: estadosVarios,
+    excluidos: estadosExcluidos,
     ciudad: ciudadSeleccionada,
     carreras,
     tipos: tiposUniversidad,
@@ -234,7 +241,7 @@ export default function App() {
     politica: exigirSAT,
     sat: puntajeTotal,
     niveles: nivelesSAT,
-  }), [estadoSeleccionado, estadosVarios, ciudadSeleccionada, carreras, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal, nivelesSAT]));
+  }), [estadoSeleccionado, estadosVarios, estadosExcluidos, ciudadSeleccionada, carreras, tiposUniversidad, precioMaximo, exigirSAT, puntajeTotal, nivelesSAT]));
 
   /** Salario de la carrera elegida en esta universidad (el mayor si eligió varias); null = no lo publica. */
   const salarioCarrera = useCallback((uni: Universidad): number | null => {
@@ -271,7 +278,7 @@ export default function App() {
    * y no se puede saber (se queda, pero marcada y ordenada al final).
    */
   const { universidadesFiltradas, universidadesSinUbicacion, faltantesPorId, conteoNiveles, muyPorEncima, conteoPolitica } = useMemo(() => {
-    const { estado, estados, ciudad, tipos, precio, politica, sat } = filtros;
+    const { estado, estados, excluidos, ciudad, tipos, precio, politica, sat } = filtros;
     // Un filtro solo "empuja al final" cuando el usuario realmente lo activó.
     const filtroSATActivo = sat > 0;
     // La carrera filtra por si la universidad la OFRECE, no por si publica su salario: si no,
@@ -335,6 +342,7 @@ export default function App() {
       if (cumplePolitica) (porEncima ? encimaSinUbicacion : sinUbicacion).push(uni);
       if (estado !== 'todos' && uni.STABBR !== estado) return false;
       if (estados.length > 0 && !estados.includes(uni.STABBR)) return false;
+      if (excluidos.length > 0 && excluidos.includes(uni.STABBR)) return false;
       if (ciudad !== 'todas' && uni.CITY !== ciudad) return false;
       (porEncima ? encimaSinPolitica : sinFiltroPolitica).push(uni);
       if (!cumplePolitica) return false;
@@ -400,7 +408,7 @@ export default function App() {
   // estado+ciudad cuentan como uno cada uno).
   const filtrosActivos = ([
     [puntajeMath > 0 || puntajeLectura > 0 || puntajeSoloTotal > 0, 'puntaje SAT'],
-    [estadoSeleccionado !== 'todos' || estadosVarios.length > 0, 'estado'],
+    [estadoSeleccionado !== 'todos' || estadosVarios.length > 0 || estadosExcluidos.length > 0, 'estado'],
     [carreras.length > 0, 'carrera'],
     [exigirSAT !== 'todos', '¿piden el SAT?'],
     // Marcar los tres niveles equivale a no filtrar.
@@ -420,7 +428,7 @@ export default function App() {
   }, [filtrosAntes]);
   const limpiarFiltros = () => {
     setFiltrosAntes({
-      busqueda: busquedaNombre, estado: estadoSeleccionado, estados: estadosVarios, ciudad: ciudadSeleccionada, carreras,
+      busqueda: busquedaNombre, estado: estadoSeleccionado, estados: estadosVarios, excluidos: estadosExcluidos, ciudad: ciudadSeleccionada, carreras,
       puntajeMath, puntajeLectura, puntajeSoloTotal, exigirSAT, niveles: nivelesSAT,
       tipos: tiposUniversidad, precio: precioMaximo, ordenarPor, ordenDireccion,
     });
@@ -430,6 +438,7 @@ export default function App() {
     setPuntajeSoloTotal(0);
     setEstadoSeleccionado('todos');
     setEstadosVarios([]);
+    setEstadosExcluidos([]);
     setCiudadSeleccionada('todas');
     setCarreras([]);
     setSatNoRendido(false);
@@ -496,24 +505,98 @@ export default function App() {
     () => (estadosVarios.length > 0 ? estadosVarios : estadoSeleccionado !== 'todos' ? [estadoSeleccionado] : []),
     [estadosVarios, estadoSeleccionado],
   );
-  /** Fija la lista de estados: con uno solo se usa el filtro de siempre, así funcionan la ciudad y su resumen. */
+  /**
+   * Fija la lista de estados: con uno solo se usa el filtro de siempre, así funcionan la ciudad y su
+   * resumen. Elegir dónde borra los descartados: son dos modos que no se mezclan.
+   */
   const elegirEstados = useCallback((lista: string[]) => {
     setCiudadSeleccionada('todas');
+    setEstadosExcluidos([]);
     if (lista.length === 1) { setEstadoSeleccionado(lista[0]); setEstadosVarios([]); }
     else { setEstadoSeleccionado('todos'); setEstadosVarios(lista); }
   }, []);
-  /** Tocar un estado en la burbuja del mapa: lo suma o lo quita. Pasado el tope, sale el primero que se eligió. */
-  const alternarEstado = useCallback((st: string) => {
-    elegirEstados(seleccionEstados.includes(st)
-      ? seleccionEstados.filter(x => x !== st)
-      : [...seleccionEstados, st].slice(-TOPE_ESTADOS));
-  }, [seleccionEstados, elegirEstados]);
+  /** "Dónde no quiero estudiar": fija los descartados y borra lo elegido en el otro modo. */
+  const excluirEstados = useCallback((lista: string[]) => {
+    setCiudadSeleccionada('todas');
+    setEstadoSeleccionado('todos');
+    setEstadosVarios([]);
+    setEstadosExcluidos(lista);
+  }, []);
   // Universidades por estado con tus filtros (sin contar el lugar): el número de cada estado en la burbuja.
   const conteoPorEstado = useMemo(() => {
     const conteo: Record<string, number> = {};
     for (const u of universidadesSinUbicacion) if (u.STABBR) conteo[u.STABBR] = (conteo[u.STABBR] ?? 0) + 1;
     return conteo;
   }, [universidadesSinUbicacion]);
+
+  /**
+   * Cuando en los pasos quedan pocas (10 o menos), una salida: qué respuesta cambiar y cuántas
+   * encajarían, con un botón que lo hace. Se prueba cada respuesta por separado y se ofrece la que
+   * más suma. Mismo criterio que el filtro de arriba para los casos que importan aquí (lo que no se
+   * sabe se queda), sin la búsqueda por nombre ni los niveles, que no son parte de los pasos.
+   */
+  const sugerencia = useMemo((): Sugerencia | null => {
+    if (!enPasos || universidades.length === 0 || universidadesFiltradas.length > 10) return null;
+    type Prueba = Pick<typeof filtros, 'estado' | 'estados' | 'excluidos' | 'carreras' | 'precio' | 'politica' | 'sat'>;
+    const encaja = (u: Universidad, f: Prueba) => {
+      if (filtros.tipos.length > 0) {
+        const tipo = tipoControl(u.CONTROL);
+        if (tipo == null || !filtros.tipos.includes(tipo)) return false;
+      }
+      if (f.sat > 0 && alcanzable(u, f.sat) === false) return false;
+      if (f.precio < PRECIO_MAXIMO_SLIDER && u.COSTO_ANUAL != null && u.COSTO_ANUAL > f.precio) return false;
+      if (f.politica !== 'todos' && !(f.politica === 'no-exige'
+        ? u.ADMCON7 != null && NO_EXIGEN_SAT.includes(u.ADMCON7)
+        : u.ADMCON7 === POLITICA_SAT[f.politica])) return false;
+      if (f.estado !== 'todos' && u.STABBR !== f.estado) return false;
+      if (f.estados.length > 0 && !f.estados.includes(u.STABBR)) return false;
+      if (f.excluidos.length > 0 && f.excluidos.includes(u.STABBR)) return false;
+      if (f.carreras.length > 0 && carrerasPorUnitid.size > 0) {
+        const deUni = u.UNITID != null ? carrerasPorUnitid.get(u.UNITID) : undefined;
+        if (deUni ? !f.carreras.some(c => deUni.has(c)) : !(u.HIGHDEG === 'Bachiller' || u.HIGHDEG === 'Posgrado')) return false;
+      }
+      return true;
+    };
+    const contar = (cambio: Partial<Prueba>) => {
+      const f = { ...filtros, ...cambio };
+      let n = 0;
+      for (const u of universidades) if (encaja(u, f)) n++;
+      return n;
+    };
+
+    const opciones: { n: number; texto: string; boton: string; aplicar: () => void }[] = [];
+    if (filtros.precio < PRECIO_MAXIMO_SLIDER) {
+      const mayor = PRESUPUESTOS.find(p => p > filtros.precio);
+      const precio = mayor ?? PRECIO_MAXIMO_SLIDER;
+      const n = contar({ precio });
+      opciones.push({ n, texto: mayor ? `Si subes el presupuesto a $${mayor.toLocaleString('en-US')}, encajan ${n.toLocaleString('en-US')}.`
+        : `Sin límite de presupuesto, encajan ${n.toLocaleString('en-US')}.`,
+        boton: mayor ? 'Subirlo' : 'Quitar el límite', aplicar: () => setPrecioMaximo(precio) });
+    }
+    if (filtros.estado !== 'todos' || filtros.estados.length > 0) {
+      const n = contar({ estado: 'todos', estados: [] });
+      opciones.push({ n, texto: `En todo EE. UU., encajan ${n.toLocaleString('en-US')}.`, boton: 'Ver todo EE. UU.', aplicar: () => elegirEstados([]) });
+    }
+    if (filtros.excluidos.length > 0) {
+      const n = contar({ excluidos: [] });
+      opciones.push({ n, texto: `Sin descartar estados, encajan ${n.toLocaleString('en-US')}.`, boton: 'Volver a incluirlos', aplicar: () => excluirEstados([]) });
+    }
+    if (filtros.carreras.length > 0) {
+      const n = contar({ carreras: [] });
+      opciones.push({ n, texto: `Con cualquier carrera, encajan ${n.toLocaleString('en-US')}.`, boton: 'Quitar la carrera', aplicar: () => setCarreras([]) });
+    }
+    if (filtros.politica !== 'todos') {
+      const n = contar({ politica: 'todos' });
+      opciones.push({ n, texto: `Sumando las que piden el SAT, encajan ${n.toLocaleString('en-US')}.`, boton: 'Sumarlas', aplicar: () => setExigirSAT('todos') });
+    }
+    const mejor = opciones.filter(o => o.n > universidadesFiltradas.length).sort((a, b) => b.n - a.n)[0];
+    if (!mejor) return null;
+    return {
+      texto: `${universidadesFiltradas.length === 0 ? 'Ninguna encaja por ahora.' : '¿Quieres más opciones?'} ${mejor.texto}`,
+      boton: mejor.boton,
+      aplicar: mejor.aplicar,
+    };
+  }, [enPasos, universidades, universidadesFiltradas.length, filtros, carrerasPorUnitid, elegirEstados, excluirEstados]);
 
   // Para "Por ahora encajan": de las que encajan (todas ofrecen la carrera, o no se sabe), cuántas publican su salario.
   const conDatoCarrera = useMemo(() => {
@@ -713,20 +796,13 @@ export default function App() {
           encajan={universidadesFiltradas.length} conCarrera={conDatoCarrera}
           carreras={carreras} setCarreras={setCarreras} archivoCarreras={archivoCarreras}
           estados={seleccionEstados} setEstados={elegirEstados}
+          excluidos={estadosExcluidos} setExcluidos={excluirEstados}
+          conteoEstados={conteoPorEstado} sugerencia={sugerencia}
           precio={precioMaximo} setPrecio={setPrecioMaximo}
           satTotal={puntajeTotal}
           setSatTotal={total => { setPuntajeMath(0); setPuntajeLectura(0); setPuntajeSoloTotal(total); }}
           satNoRendido={satNoRendido} setSatNoRendido={setSatNoRendido}
           exigirSAT={exigirSAT} setExigirSAT={setExigirSAT} conteoPolitica={conteoPolitica}
-          buscador={
-            <Buscador
-              busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
-              mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
-              sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
-              onSeleccionar={seleccionarUniversidad}
-              etiqueta="¿Ya sabes a cuál quieres ir? Búscala directo" compacto conservarTexto={false}
-            />
-          }
         />
       );
     }
@@ -738,8 +814,10 @@ export default function App() {
     };
 
     // Lo que contó en los pasos, en una frase por paso: cada una lleva de vuelta a su paso para cambiarla.
-    const lugar = seleccionEstados.length === 0 ? 'Todo EE. UU.'
-      : seleccionEstados.map(st => NOMBRES_ESTADOS[st] ?? st).join(', ') + (ciudadSeleccionada !== 'todas' ? ` (${ciudadSeleccionada})` : '');
+    const nombres = (lista: string[]) => lista.length > 3 ? `${lista.length} estados` : lista.map(st => NOMBRES_ESTADOS[st] ?? st).join(', ');
+    const lugar = estadosExcluidos.length > 0 ? `Todo EE. UU. menos ${nombres(estadosExcluidos)}`
+      : seleccionEstados.length === 0 ? 'Todo EE. UU.'
+      : nombres(seleccionEstados) + (ciudadSeleccionada !== 'todas' ? ` (${ciudadSeleccionada})` : '');
     const respuestas = [
       carreras.length ? nombreCarrerasElegidas : 'Cualquier carrera',
       lugar,
@@ -783,19 +861,6 @@ export default function App() {
                   )}
                 </div>
               </div>
-              <div className="resultados-cabecera-lado">
-                <Buscador
-                  busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
-                  mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
-                  sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
-                  onSeleccionar={seleccionarUniversidad} compacto
-                />
-                <button type="button" className="boton boton-mi-lista" onClick={abrirMiLista}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8L12 3.2z" /></svg>
-                  Mi lista y comparar
-                  <span className="contador numero">{universidadesGuardadas.length}</span>
-                </button>
-              </div>
             </div>
           </section>
 
@@ -804,7 +869,7 @@ export default function App() {
               {masFiltros && <div id="hoja-filtros" className="hoja-envoltorio"><Filtros
                 estadoSeleccionado={estadoSeleccionado}
                 // Elegir un estado en el panel reemplaza a los varios que vengan de los pasos.
-                setEstadoSeleccionado={v => { setEstadosVarios([]); setEstadoSeleccionado(v); }}
+                setEstadoSeleccionado={v => { setEstadosVarios([]); setEstadosExcluidos([]); setEstadoSeleccionado(v); }}
                 ciudadSeleccionada={ciudadSeleccionada} setCiudadSeleccionada={setCiudadSeleccionada}
                 estadosUnicos={estadosUnicos} ciudadesUnicas={ciudadesUnicas}
                 puntajeMath={puntajeMath} setPuntajeMath={setPuntajeMath}
@@ -857,15 +922,37 @@ export default function App() {
           </div>
         </div>
 
-        <BurbujaMapa conteo={conteoPorEstado} universidades={universidades} seleccion={seleccionEstados} onTocar={alternarEstado} />
+        <BurbujaMapa conteo={conteoPorEstado} universidades={universidades} seleccion={seleccionEstados}
+          excluidos={estadosExcluidos} onElegir={elegirEstados} onExcluir={excluirEstados} />
       </>
     );
   })();
 
+  // El buscador de universidades va en la barra de arriba (fuera de #root: ver BarraEduca), en los
+  // pasos y en los resultados. La ficha y Mi lista tienen su propio buscador.
+  const huecoBuscador = typeof document !== 'undefined' ? document.getElementById(ID_BUSCADOR_BARRA) : null;
+  const conBuscadorArriba = !universidadSeleccionada && !viendoMiLista;
+
   return (
     <>
       {vista}
-      <AvisoFuentes />
+      {/* En los pasos no hay pie: la barra de "Por ahora encajan" va pegada al borde de abajo. */}
+      {!(enPasos && !universidadSeleccionada && !viendoMiLista) && <AvisoFuentes />}
+      {huecoBuscador && conBuscadorArriba && createPortal(
+        <Buscador
+          busquedaNombre={busquedaNombre} setBusquedaNombre={setBusquedaNombre}
+          mostrarSugerencias={mostrarSugerencias} setMostrarSugerencias={setMostrarSugerencias}
+          sugerencias={sugerencias} sonAproximadas={resultadoBusqueda?.aproximado ?? false}
+          onSeleccionar={seleccionarUniversidad}
+          id="buscador-barra"
+          etiqueta="¿Ya sabes a cuál quieres ir? Búscala" etiquetaOculta
+          placeholder="¿Ya sabes a cuál quieres ir? Búscala"
+          compacto
+          // En los pasos el nombre no queda escrito: no es un filtro de los pasos y movía el contador.
+          conservarTexto={!enPasos}
+        />,
+        huecoBuscador,
+      )}
     </>
   );
 }

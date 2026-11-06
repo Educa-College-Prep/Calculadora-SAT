@@ -2109,31 +2109,44 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 @media (max-width: 350px) {
   .barra-educa-producto { display: none; }
 }
-/* Mi lista en la barra: solo en celular, donde el botón de la portada queda lejos al bajar.
-   Ahí reemplaza a ese botón y a "College Finder", que no cabrían los tres. */
-.barra-educa-lista { display: none; }
+/* El buscador de universidades (lo pone App con un portal) y "Mi lista y comparar", que ocupa el
+   lugar que tenía "Contáctanos": el mismo botón azul de la web de Educa. */
+.barra-educa-buscador { flex: 0 1 440px; min-width: 0; margin-left: auto; }
+.barra-educa-buscador:empty { display: none; }
+.barra-educa-buscador .buscador { margin: 0; }
+.barra-educa-buscador:empty + .barra-educa-lista { margin-left: auto; }
+.barra-educa-lista {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 18px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  background: var(--educa);
+  border: 0;
+  border-radius: 10px;
+  box-shadow: 0 10px 22px rgba(32, 63, 145, 0.25);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.barra-educa-lista:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(17, 29, 63, 0.2); }
+.barra-educa-lista .contador { color: var(--educa); background: #fff; animation: contador-mi-lista 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+/* Ya está en la barra: el botón de los resultados sobraba. */
+.boton-mi-lista { display: none; }
+@media (max-width: 900px) {
+  .barra-educa-lista-largo { display: none; }
+}
+/* Celular: el buscador baja a una segunda fila, de lado a lado. */
 @media (max-width: 640px) {
-  .barra-educa-producto, .boton-mi-lista { display: none; }
-  .barra-educa-lista {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    gap: 5px;
-    min-height: 44px;
-    margin-left: auto;
-    padding: 0 10px;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--educa);
-    white-space: nowrap;
-    background: #fff;
-    border: 1.5px solid #d9deea;
-    border-radius: 999px;
-    cursor: pointer;
-  }
-  .barra-educa-contacto { min-height: 44px; margin-left: 0; }
-  .barra-educa-lista .contador { animation: contador-mi-lista 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+  .barra-educa-interior { flex-wrap: wrap; }
+  .barra-educa-producto { display: none; }
+  .barra-educa-lista { min-height: 44px; margin-left: auto; padding: 0 14px; font-size: 13px; }
+  .barra-educa-buscador { order: 3; flex: 1 1 100%; margin-left: 0; }
 }
 /* Pantallas angostas: la estrella y el contador bastan; el nombre lo lee el lector de pantalla. */
 @media (max-width: 379px) {
@@ -2142,8 +2155,8 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 @keyframes contador-mi-lista { from { transform: scale(1.35); } to { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) {
   .barra-educa-lista .contador { animation: none; }
-  .barra-educa-contacto { transition: none; }
-  .barra-educa-contacto:hover { transform: none; }
+  .barra-educa-contacto, .barra-educa-lista { transition: none; }
+  .barra-educa-contacto:hover, .barra-educa-lista:hover { transform: none; }
 }
 
 /* ── Aviso de fuentes (pie de todas las vistas) ───────────────── */
@@ -2156,6 +2169,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   max-width: 900px;
 }
 .aviso-fuentes p { margin: 0; }
+.aviso-fuentes p + p { margin-top: 6px; }
 .aviso-fuentes a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 
 /* =========================================================
@@ -2945,7 +2959,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
    ========================================================================== */
 
 /* --navy y --sun los usa .boton-sol: fuera de .portada no están definidos. */
-.flujo { --navy: var(--tinta-fuerte); --sun: var(--resaltador); display: flex; flex-direction: column; min-height: calc(100vh - 72px); background: var(--papel); }
+.flujo { --navy: var(--tinta-fuerte); --sun: var(--resaltador); display: flex; flex-direction: column; min-height: calc(100vh - var(--alto-barra, 72px)); background: var(--papel); }
 
 /* Arriba: en qué paso va (chico, para que no compita con la pregunta) y el buscador, para quien
    ya sabe a cuál quiere ir. */
@@ -2960,8 +2974,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 }
 .flujo-raya::after { content: ''; position: absolute; inset: -14px 0; }
 .flujo-raya-hecha { background: var(--tinta); }
-.flujo-buscador { flex: 0 1 380px; }
-.flujo-buscador .buscador-etiqueta, .flujo-buscador label { font-size: 13px; color: var(--grafito-suave); }
 
 /* Las barras de arriba y abajo van de borde a borde (#root suelta su ancho, como en la portada);
    el contenido se centra en .in, un poco más ancho aquí para que el mapa y la ficha respiren. */
@@ -2975,6 +2987,8 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .flujo-titulo { margin: 0; font-size: clamp(26px, 3.2vw, 34px); line-height: 1.2; font-weight: 600; color: var(--tinta-fuerte); letter-spacing: -0.01em; }
 .flujo-subtitulo { margin: -12px 0 0; font-size: 15px; color: var(--grafito-suave); }
 .flujo-nota { margin: 0; font-size: 13px; color: var(--grafito-suave); }
+.flujo-nota a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.flujo-notas { display: flex; flex-direction: column; gap: 8px; }
 .flujo-aviso {
   margin: 0; padding: 8px 12px; font-size: 14px; color: var(--alerta);
   background: var(--alerta-fondo); border: 1px solid var(--alerta-borde); border-radius: var(--radio-chico);
@@ -3012,14 +3026,19 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .flujo-grupo { margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 10px; }
 .flujo-grupo legend { padding: 0 0 10px; font-size: 15px; font-weight: 600; }
 
-/* Paso 2: el mapa sin marco, sobre el fondo, y la ficha del estado al lado. */
-.flujo-donde { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
-/* El ancho sale del alto de la pantalla (la grilla es 11×8, ~1.4 de ancho por alto): en pantallas
-   altas el mapa crece; en las bajas no empuja la barra de abajo fuera de la vista. */
-.flujo-donde-mapa { flex: 999 1 560px; min-width: 0; max-width: clamp(520px, calc((100vh - 460px) * 1.3), 900px); display: flex; flex-direction: column; gap: 12px; }
+/* Paso 2: el mapa sin marco, sobre el fondo, y la ficha del estado angosta, pegada a la derecha. */
+.flujo-donde { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px 40px; align-items: start; }
+.flujo-donde-mapa { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .flujo-donde-mapa .flujo-subtitulo { margin-top: -4px; }
+.flujo-donde-cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; }
+/* El ancho del mapa sale del alto que queda libre (la grilla es 11×8): así la última fila (Texas,
+   Florida) nunca queda tapada por la barra fija de abajo. --libre = la pantalla menos todo lo que
+   no es mapa (barras de arriba y abajo, título, ayuda y leyenda), medido en el navegador. */
+.flujo-donde-mapa .cuadritos { --libre: calc(100vh - var(--alto-barra, 98px) - 300px); width: 100%; max-width: clamp(400px, calc(var(--libre) * 1.32), 1080px); }
+@media (max-width: 960px) { .flujo-donde { grid-template-columns: minmax(0, 1fr); } }
 .flujo-donde-ficha {
-  flex: 1 1 320px; display: flex; flex-direction: column; gap: 14px; padding: 22px 24px;
+  position: sticky; top: calc(var(--alto-barra, 0px) + 16px);
+  display: flex; flex-direction: column; gap: 14px; padding: 20px 22px;
   background: var(--hoja); border: 1px solid var(--linea); border-radius: var(--radio);
   box-shadow: 0 8px 24px rgba(28, 44, 110, 0.06);
 }
@@ -3029,6 +3048,39 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .flujo-chip button:first-child { padding-left: 12px; }
 .flujo-chip button:last-child { width: 32px; display: inline-flex; align-items: center; justify-content: center; }
 .flujo-chip-activo { background: var(--resaltador); border-color: var(--resaltador); }
+.flujo-chip-excluido { color: #8f2219; background: #fdecea; border-color: #f2b8b1; }
+.flujo-chip-excluido.flujo-chip-activo { color: #fff; background: #c8382c; border-color: #c8382c; }
+.flujo-marcados { display: flex; flex-direction: column; gap: 8px; padding-bottom: 14px; border-bottom: 1px solid var(--linea); }
+.flujo-marcados-titulo { margin: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 600; color: var(--grafito-suave); white-space: nowrap; }
+.flujo-marcados-titulo .boton-enlace { font-size: 13px; }
+
+/* Los dos modos del mapa: "Dónde quiero" / "Dónde no quiero". Lo marcado no se mezcla entre ellos. */
+.flujo-modo { display: inline-flex; align-self: flex-start; padding: 4px; gap: 4px; background: var(--hoja); border: 1px solid var(--linea); border-radius: 999px; }
+.flujo-modo button {
+  min-height: 38px; padding: 0 16px; font: inherit; font-size: 14px; font-weight: 600; color: var(--grafito-suave);
+  background: none; border: 0; border-radius: 999px; cursor: pointer;
+}
+.flujo-modo button:hover { color: var(--tinta-fuerte); }
+.flujo-modo button[aria-pressed='true'] { color: #fff; background: var(--tinta); }
+.flujo-modo button:last-child[aria-pressed='true'] { background: #c8382c; }
+
+/* La lista de estados con buscador: solo en celular, donde el noreste es chico para el dedo. */
+.flujo-donde-lista { display: none; flex-direction: column; gap: 10px; }
+@media (max-width: 640px) { .flujo-donde-lista { display: flex; } }
+.flujo-pastilla-excluir[aria-pressed='true'] { color: #8f2219; background: #fdecea; border-color: #c8382c; }
+.flujo-pastilla-excluir[aria-pressed='true']::before { content: '✕'; color: #c8382c; }
+
+/* Cuando quedan pocas: qué cambiar para que encajen más, con un botón que lo hace. */
+.flujo-cuenta-zona { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.flujo-sugerencia { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 14px; color: var(--grafito); }
+.flujo-sugerencia .boton-enlace { font: inherit; font-weight: 700; color: var(--tinta); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Cada paso entra con un fundido y un desplazamiento corto, desde el lado hacia el que se va. */
+.flujo-paso-adelante { animation: paso-entra-adelante 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+.flujo-paso-atras { animation: paso-entra-atras 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes paso-entra-adelante { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+@keyframes paso-entra-atras { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .flujo-paso-adelante, .flujo-paso-atras { animation: none; } }
 
 /* Abajo, fija: cuántas encajan por ahora y los botones para avanzar. */
 .flujo-barra {
@@ -3048,7 +3100,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .flujo-saltar { min-height: 44px; padding-inline: 8px; }
 
 @media (max-width: 640px) {
-  .flujo-buscador { flex-basis: 100%; }
   .flujo-barra-in { gap: 8px; }
   .flujo-botones { width: 100%; flex-wrap: wrap; justify-content: space-between; }
   .flujo-botones .boton-sol { flex: 1 1 100%; order: -1; }
@@ -3083,7 +3134,8 @@ html:has(.flujo) { scroll-padding-bottom: 120px; }
   margin: 0; height: 22px; line-height: 22px; font-size: 14px; color: var(--grafito-suave);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.cuadritos-grilla { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 6px; }
+/* Sin seleccionar texto al arrastrar el mouse para marcar varios estados. */
+.cuadritos-grilla { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 6px; user-select: none; -webkit-user-select: none; }
 .cuadrito {
   position: relative; aspect-ratio: 1; min-width: 0; padding: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
@@ -3101,6 +3153,32 @@ html:has(.flujo) { scroll-padding-bottom: 120px; }
 .cuadritos-chico .cuadrito { border-radius: 5px; }
 .cuadritos-chico .cuadrito-sigla { font-size: 11px; }
 @media (prefers-reduced-motion: reduce) { .cuadrito { transition: none; } .cuadrito-encima { transform: none; } }
+
+/* Mapa de calor: --calor va de 0 a 1 (MapaCuadritos). Lo elegido, lo descartado y lo que está bajo
+   el mouse mandan sobre el calor. */
+.cuadritos-calor .cuadrito:not(.cuadrito-elegido, .cuadrito-excluido, .cuadrito-encima) {
+  background: color-mix(in srgb, var(--tinta) calc(var(--calor) * 78%), #eef1f8);
+}
+.cuadritos-calor .cuadrito-oscuro:not(.cuadrito-elegido, .cuadrito-excluido, .cuadrito-encima) { color: #fff; }
+.cuadritos-calor .cuadrito-vacio:not(.cuadrito-elegido, .cuadrito-excluido) { color: #9aa3bb; background: #f3f4f8; }
+.cuadritos-leyenda { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--grafito-suave); }
+.cuadritos-leyenda-barra { width: 96px; height: 8px; border-radius: 999px; background: linear-gradient(90deg, #eef1f8, color-mix(in srgb, var(--tinta) 78%, #eef1f8)); }
+
+/* "Dónde no quiero": lo descartado en rojo y tachado con una ✕; tiembla al marcarlo. */
+.cuadrito-excluido { color: #8f2219; background: #fdecea; box-shadow: inset 0 0 0 2px #c8382c; animation: cuadrito-tiembla 380ms ease-in-out; }
+.cuadrito-excluido::after {
+  content: '✕'; position: absolute; top: 3px; right: 5px; font-size: 10px; font-weight: 700; line-height: 1; color: #c8382c;
+}
+.cuadrito-excluido.cuadrito-encima { background: #fbd9d5; }
+.cuadritos-temblando .cuadrito { animation: cuadrito-tiembla 380ms ease-in-out; }
+@keyframes cuadrito-tiembla {
+  0%, 100% { translate: 0; }
+  20% { translate: -3px 0; }
+  40% { translate: 3px 0; }
+  60% { translate: -2px 0; }
+  80% { translate: 2px 0; }
+}
+@media (prefers-reduced-motion: reduce) { .cuadrito-excluido, .cuadritos-temblando .cuadrito { animation: none; } }
 
 /* ---------- Ficha de un estado ---------- */
 .ficha-estado { display: flex; flex-direction: column; gap: 12px; }
