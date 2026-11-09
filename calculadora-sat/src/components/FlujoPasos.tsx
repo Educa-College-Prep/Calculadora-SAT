@@ -270,9 +270,9 @@ function PasoCarrera({ carreras, setCarreras, archivoCarreras }: { carreras: str
         <p className="flujo-nota">No encontramos “{texto.trim()}”. Prueba con otra palabra, en español o en inglés.</p>
       )}
       <div className="flujo-notas">
-        <p className="flujo-nota">El número es cuántas universidades ofrecen esa carrera (bachiller), según los graduados que reporta cada una a College Scorecard. Las que no la ofrecen salen de la lista; las que no reportan sus carreras se quedan, al final y marcadas.</p>
-        {/* La nota de fuentes del pie, aquí: en los pasos no hay pie (la barra de abajo va pegada al borde). */}
-        <p className="flujo-nota"><TextoFuentes /></p>
+        <p className="flujo-nota">El número: cuántas universidades ofrecen la carrera (bachiller). Las que no lo informan se quedan, al final.</p>
+        {/* La nota de fuentes del pie, en corto: en los pasos no hay pie (la barra de abajo va pegada al borde). */}
+        <p className="flujo-nota"><TextoFuentes corto /></p>
       </div>
     </section>
   );
