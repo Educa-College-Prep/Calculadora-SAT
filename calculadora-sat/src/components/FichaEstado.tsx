@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import type { Universidad } from '../types';
-import { NOMBRES_ESTADOS } from '../utils/estados';
+import { NOMBRES_ESTADOS, CODIGO_ISLAS, TERRITORIOS_EEUU, enLugares } from '../utils/estados';
 import { formatDinero } from '../utils/formatters';
 import { posicionUSNews, textoPuesto, ayudaPuesto, EDICION_USNEWS } from '../data/rankingUSNews';
 
@@ -26,7 +26,8 @@ interface Props {
  */
 export const FichaEstado = memo(function FichaEstado({ estado, universidades, compacta = false }: Props) {
   const datos = useMemo(() => {
-    const del = universidades.filter(u => u.STABBR === estado);
+    // enLugares: "Otras islas" junta las universidades de sus siete islas.
+    const del = universidades.filter(u => enLugares([estado], u.STABBR));
     const publicas = del.filter(u => u.CONTROL === 'Pública').length;
     const sats = del.map(u => u.SAT_AVG).filter((v): v is number => v != null);
     const ciudades = new Map<string, number>();
@@ -46,6 +47,7 @@ export const FichaEstado = memo(function FichaEstado({ estado, universidades, co
   }, [estado, universidades]);
 
   const nombre = NOMBRES_ESTADOS[estado] ?? estado;
+  const islas = estado === CODIGO_ISLAS;
   if (datos.total === 0) return null;
 
   return (
@@ -72,11 +74,19 @@ export const FichaEstado = memo(function FichaEstado({ estado, universidades, co
       <p className="ficha-estado-nota">
         Matrícula para quien viene de fuera del estado. SAT: solo {datos.conSat} de {datos.total} lo informan.
       </p>
+      {/* Sin esto, el estudiante no sabe qué está eligiendo: el grupo mezcla territorios de EE. UU.
+          con países que no lo son. */}
+      {islas && (
+        <p className="ficha-estado-nota">
+          <strong>Territorios de EE. UU.:</strong> {[...TERRITORIOS_EEUU].map(st => NOMBRES_ESTADOS[st]).join(', ')}.{' '}
+          <strong>Países asociados a EE. UU.</strong> (independientes; aparecen en College Scorecard porque reciben ayuda federal para estudiantes): Micronesia, Palaos e Islas Marshall.
+        </p>
+      )}
       {datos.ciudades.length > 0 && (
         <p className="ficha-estado-ciudades"><strong>Ciudades con más universidades:</strong> {datos.ciudades.join(', ')}</p>
       )}
       <div className="ficha-estado-mejores">
-        <h3>Las mejores de {nombre}</h3>
+        <h3>{islas ? 'Las mejores de estas islas' : `Las mejores de ${nombre}`}</h3>
         {datos.mejores.length > 0 ? (
           <ul>
             {datos.mejores.map(u => {

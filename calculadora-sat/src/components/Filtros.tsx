@@ -299,7 +299,7 @@ function InputSeccionSAT({ id, etiqueta, valor, setValor, onUsarComoTotal }: {
  * `enVivo` aplica el total en cuanto es válido. Solo lo usa la portada: en la ficha y en
  * Mi lista el campo desaparece al recibir un puntaje, y se iría mientras todavía se escribe.
  */
-export function InputTotalSAT({ total, setSoloTotal, onEscribir, id = 'sat-total', etiqueta = 'Total', autoFocus = false, enVivo = false }: {
+export function InputTotalSAT({ total, setSoloTotal, onEscribir, id = 'sat-total', etiqueta = 'Total', autoFocus = false, enVivo = false, placeholder = '—' }: {
   total: number;
   setSoloTotal: (v: number) => void;
   onEscribir: () => void;
@@ -307,6 +307,8 @@ export function InputTotalSAT({ total, setSoloTotal, onEscribir, id = 'sat-total
   etiqueta?: string;
   autoFocus?: boolean;
   enVivo?: boolean;
+  /** Lo que se ve con el campo vacío. En Mi lista, un puntaje de ejemplo en gris. */
+  placeholder?: string;
 }) {
   const [texto, setTexto] = useState(total ? String(total) : '');
   const [salio, setSalio] = useState(false);
@@ -344,7 +346,7 @@ export function InputTotalSAT({ total, setSoloTotal, onEscribir, id = 'sat-total
           type="text"
           inputMode="numeric"
           autoComplete="off"
-          placeholder="—"
+          placeholder={placeholder}
           value={texto}
           onChange={(e) => {
             const nuevo = e.target.value.replace(/\D/g, '').slice(0, 4);

@@ -70,12 +70,21 @@ export function BurbujaMapa({ conteo, universidades, seleccion, excluidos, onEle
       </button>
       {abierta && (
         <div className="burbuja-mapa-panel" role="dialog" aria-label="Elige en el mapa">
-          <div className="burbuja-mapa-cabecera">
-            <h2 ref={tituloRef} tabIndex={-1}>¿Dónde?</h2>
-            <span>{excluir ? 'Toca un estado para descartarlo o volver a incluirlo' : 'Toca un estado para sumarlo o quitarlo de tu búsqueda'}</span>
+          {/* La ficha va arriba y el mapa abajo, pegado a la burbuja. El panel está anclado abajo:
+              cuando la ficha cambia de alto (cada estado tiene más o menos datos), crece hacia
+              arriba y el mapa no se mueve bajo el dedo. Si no cabe, se desplaza solo la ficha. */}
+          {enFoco && (
+            <div className="burbuja-mapa-ficha">
+              <FichaEstado estado={enFoco} universidades={universidades} compacta />
+            </div>
+          )}
+          <div className="burbuja-mapa-fijo">
+            <div className="burbuja-mapa-cabecera">
+              <h2 ref={tituloRef} tabIndex={-1}>¿Dónde?</h2>
+              <span>{excluir ? 'Toca un estado para descartarlo o volver a incluirlo' : 'Toca un estado para sumarlo o quitarlo de tu búsqueda'}</span>
+            </div>
+            <MapaCuadritos conteo={conteo} seleccion={marcados} foco={enFoco} onCambiar={cambiar} modo={excluir ? 'excluir' : 'incluir'} variante="chico" />
           </div>
-          <MapaCuadritos conteo={conteo} seleccion={marcados} foco={enFoco} onCambiar={cambiar} modo={excluir ? 'excluir' : 'incluir'} variante="chico" />
-          {enFoco && <FichaEstado estado={enFoco} universidades={universidades} compacta />}
         </div>
       )}
     </div>

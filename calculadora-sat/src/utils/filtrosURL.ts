@@ -11,6 +11,7 @@
  */
 import type { Nivel } from './nivelSAT';
 import type { TipoControl } from './tipoControl';
+import { CODIGO_ISLAS } from './estados';
 
 /** Tope del deslizador de costo. En ese valor el filtro se considera inactivo. */
 export const PRECIO_MAXIMO_SLIDER = 100000;
@@ -136,7 +137,9 @@ export function leerFiltrosDeURL(search: string): FiltrosURL {
   const lectura = enRango(p.get('lec'), 200, 800) ?? 0;
   const total = enRango(p.get('sat'), 400, 1600) ?? 0;
 
-  const estados = listaDeEstados(p.get('estados'));
+  // "Otras islas" (IS) no es un estado: aunque venga en ?estado= o sola en ?estados=, va como lista.
+  const estados = estado === CODIGO_ISLAS ? [CODIGO_ISLAS] : listaDeEstados(p.get('estados'));
+  const comoLista = estados.length > 1 || estados[0] === CODIGO_ISLAS;
   // Elegir dónde y descartar dónde no se excluyen: si vienen los dos, manda el que elige.
   const excluidos = estados.length > 0 || /^[A-Z]{2}$/.test(estado) ? [] : listaDeEstados(p.get('sin'));
   // Uno solo en ?estados= es lo mismo que ?estado=: así la ciudad y el resumen del estado funcionan.
@@ -144,10 +147,10 @@ export function leerFiltrosDeURL(search: string): FiltrosURL {
 
   return {
     busqueda: (p.get('q') ?? '').trim().slice(0, 100),
-    estado: estados.length > 1 ? FILTROS_URL_VACIOS.estado : /^[A-Z]{2}$/.test(unico) ? unico : FILTROS_URL_VACIOS.estado,
-    estados: estados.length > 1 ? estados : [],
+    estado: comoLista ? FILTROS_URL_VACIOS.estado : /^[A-Z]{2}$/.test(unico) ? unico : FILTROS_URL_VACIOS.estado,
+    estados: comoLista ? estados : [],
     excluidos,
-    ciudad: estados.length <= 1 && ciudad && ciudad.length <= 80 ? ciudad : FILTROS_URL_VACIOS.ciudad,
+    ciudad: !comoLista && ciudad && ciudad.length <= 80 ? ciudad : FILTROS_URL_VACIOS.ciudad,
     carreras: listaDeCarreras(p.get('carrera')),
     puntajeMath: mate,
     puntajeLectura: lectura,

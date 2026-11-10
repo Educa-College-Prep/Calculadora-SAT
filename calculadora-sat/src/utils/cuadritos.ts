@@ -4,6 +4,9 @@
  * Island, Delaware o D. C. casi no se pueden tocar, y Puerto Rico (59 universidades) no aparece.
  * Aquí todos se tocan igual de fácil, también con el teclado.
  *
+ * "IS" no es un estado: es "Otras islas" (Guam, Islas Vírgenes, Micronesia…, ver OTRAS_ISLAS en
+ * estados.ts). Va junto a Hawái porque casi todas están en el Pacífico.
+ *
  * [estado, columna, fila] en una grilla de 11 × 8.
  */
 export const CUADRITOS: [string, number, number][] = [
@@ -14,6 +17,6 @@ export const CUADRITOS: [string, number, number][] = [
   ['CA', 0, 4], ['UT', 1, 4], ['CO', 2, 4], ['NE', 3, 4], ['MO', 4, 4], ['KY', 5, 4], ['WV', 6, 4], ['VA', 7, 4], ['MD', 8, 4], ['DE', 9, 4],
   ['AZ', 1, 5], ['NM', 2, 5], ['KS', 3, 5], ['AR', 4, 5], ['TN', 5, 5], ['NC', 6, 5], ['SC', 7, 5], ['DC', 8, 5],
   ['OK', 3, 6], ['LA', 4, 6], ['MS', 5, 6], ['AL', 6, 6], ['GA', 7, 6],
-  ['HI', 0, 7], ['TX', 3, 7], ['FL', 8, 7], ['PR', 10, 7],
+  ['HI', 0, 7], ['IS', 1, 7], ['TX', 3, 7], ['FL', 8, 7], ['PR', 10, 7],
 ];
 

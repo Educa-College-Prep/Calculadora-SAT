@@ -120,6 +120,18 @@ input:focus, select:focus {
   box-shadow: 0 0 0 2px var(--tinta);
 }
 select:disabled { color: var(--grafito-suave); background: var(--papel); cursor: not-allowed; }
+/* Flecha propia: la del navegador quedaba pegada al borde derecho (y en las píldoras, casi
+   afuera). Esta va a 16px del borde, con el texto sin pisarla. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 42px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c2c6e' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px;
+  cursor: pointer;
+}
 
 .boton {
   display: inline-flex;
@@ -807,10 +819,7 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .migas .in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-block: 10px; }
 .migas-ruta { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 auto; }
 
-/* Buscar otra universidad desde la ficha: a la derecha de la miga. En escritorio, el campo
-   siempre a la vista; en celular, un botón con lupa que lo despliega a todo el ancho. */
-.migas-buscar { flex: 0 1 340px; margin-left: auto; }
-.migas-buscar-boton { display: none; }
+/* Buscador compacto (el de la barra de arriba, en todas las vistas). */
 .buscador-compacto .buscador-icono { left: 12px; }
 .buscador-compacto .buscador-campo input {
   min-height: 40px;
@@ -822,27 +831,6 @@ select:disabled { color: var(--grafito-suave); background: var(--papel); cursor:
 .buscador-compacto .buscador-borrar { width: 32px; height: 32px; font-size: 20px; }
 .buscador-compacto .sugerencias { left: auto; width: min(420px, calc(100vw - 32px)); }
 @media (max-width: 640px) {
-  .migas-buscar-boton {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    gap: 6px;
-    min-height: 44px;
-    margin-block: -6px;
-    padding: 0 4px;
-    font: inherit;
-    font-weight: 700;
-    color: var(--brand);
-    background: none;
-    border: 0;
-    cursor: pointer;
-  }
-  .migas-buscar { flex: none; }
-  .migas-buscar-campo { display: none; }
-  /* Abierto: toma toda la fila, con el campo a lo ancho y "Cerrar" a su derecha. */
-  .migas-buscar-abierto { display: flex; flex: 1 1 100%; align-items: center; gap: 10px; }
-  .migas-buscar-abierto .migas-buscar-campo { display: block; flex: 1 1 auto; min-width: 0; order: -1; }
-  .migas-buscar-abierto .migas-buscar-boton svg { display: none; }
   .buscador-compacto .sugerencias { left: 0; width: auto; }
 }
 .migas-ruta a { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--brand); text-decoration: none; }
@@ -2561,15 +2549,17 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   justify-content: space-between;
   gap: 16px 24px;
 }
+.mi-lista-cabecera {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--linea);
+}
+
 .mi-lista-titulo { font-size: clamp(36px, 5vw, 56px); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
 .mi-lista-titulo-fila .banda-subtitulo { max-width: 62ch; margin-top: 10px; }
-.mi-lista-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.mi-lista-acciones { display: flex; flex-wrap: wrap; align-items: center; align-self: center; gap: 8px; }
 .mi-lista-acciones .boton-enlace { gap: 6px; }
 
 /* Agregar desde aquí: el buscador de la portada, con su propio texto. */
-.mi-lista-agregar { max-width: 520px; margin-top: 28px; }
-.mi-lista-agregar .buscador-etiqueta { font-size: 13px; font-weight: 600; color: var(--grafito-suave); }
-.mi-lista-agregar .sugerencias { left: 0; width: 100%; }
 
 /* Lista vacía: cómo se llena, y el camino de vuelta a explorar. */
 .mi-lista-vacia {
@@ -2636,7 +2626,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .segmento input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
 .segmento label:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
 .perfil-estado { display: inline-flex; align-items: center; gap: 4px; }
-.perfil-estado select, .mi-lista-orden select { width: auto; height: 50px; min-height: 50px; border-radius: 999px; padding-inline: 16px; }
+.perfil-estado select, .mi-lista-orden select { width: auto; height: 50px; min-height: 50px; border-radius: 999px; padding-left: 20px; padding-right: 46px; background-position: right 18px center; }
 .mi-lista-orden { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 
 /* La tabla. Bordes separados (no colapsados): con la columna de datos fija al correr la tabla
@@ -2852,7 +2842,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .comparar-nombre { font-size: 15px; }
   .comparar-grupo th > span { left: 12px; font-size: 15px; }
   .comparar-pegada-celda, .comparar-pegada-esquina { padding: 0 12px; font-size: 13px; }
-  .mi-lista-agregar { max-width: none; }
   .comparar-ancho > span { max-width: calc(100vw - 200px); }
   /* El aviso, de borde a borde (con margen): centrado con max-content se salía de la pantalla. */
   .aviso-lista-zona { left: 16px; right: 16px; width: auto; max-width: none; transform: none; }
@@ -2873,7 +2862,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 /* Imprimir o guardar en PDF: solo la lista y la tabla entera, sin botones ni lo que flota. */
 @media print {
   @page { size: landscape; margin: 12mm; }
-  #barra, .migas, .mi-lista-acciones, .mi-lista-agregar, .mi-lista-controles, .aviso-lista-zona,
+  #barra, .migas, .mi-lista-acciones, .mi-lista-controles, .aviso-lista-zona,
   .comparar-pegada, .comparar-quitar, .comparar-foto, .mi-lista .banda-contacto, .mi-lista .ayuda-tooltip,
   body, .mi-lista, .mi-lista .banda-gris { background: #fff; }
   /* Los controles no se imprimen: el PDF es la lista con sus datos. */
@@ -2912,14 +2901,19 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .mi-lista-puntaje .total-sat.total-sat-error:focus-within { border-color: var(--error); }
 /* "Tu SAT" ya va arriba, como en los demás controles: la etiqueta de adentro solo la lee el lector. */
 .mi-lista-puntaje .total-sat label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.mi-lista-puntaje .total-sat input { width: 4.5ch; height: 40px; margin-left: 0; padding: 0; font-size: 18px; font-weight: 700; text-align: left; }
-.mi-lista-puntaje .total-sat .total-sat-escala { flex: none; white-space: nowrap; }
+/* Vacía (para escribir): el ejemplo y "/ 1600" con aire a los dos lados. */
+.mi-lista-puntaje .total-sat:not(.mi-lista-puntaje-listo) { padding: 0 20px; gap: 6px; }
+.mi-lista-puntaje .total-sat input { width: 4.5ch; height: 40px; margin-left: 0; padding: 0; font-size: 18px; font-weight: 700; text-align: right; color: var(--tinta-fuerte); }
+/* El ejemplo ("1250") se ve claramente como ejemplo: gris y fino. Antes era un "—" en negrita. */
+.mi-lista-puntaje .total-sat input::placeholder { color: var(--grafito-suave); opacity: 0.55; font-weight: 500; }
+.mi-lista-puntaje .total-sat .total-sat-escala { flex: none; white-space: nowrap; font-size: 15px; }
 /* El aviso va debajo de la píldora; "Cancelar" sigue a su lado, no después del aviso. */
 .mi-lista-puntaje .casilla-error { order: 2; flex-basis: 100%; width: 0; min-width: 100%; margin: 0; }
 .mi-lista-puntaje .casilla-error:empty { display: none; }
 
-/* Con puntaje: el número en grande y "Cambiar" como botoncito ovalado. */
-.mi-lista-puntaje-listo { justify-content: space-between; min-width: 150px; }
+/* Con puntaje: el número en grande y "Cambiar" como botoncito ovalado, encajado en la punta
+   derecha de la píldora con el mismo margen arriba, abajo y a la derecha (unos 5px). */
+.mi-lista-puntaje-listo { justify-content: space-between; min-width: 150px; padding: 0 5px 0 20px; }
 .mi-lista-puntaje-valor { font-size: 18px; font-variant-numeric: tabular-nums; }
 .mi-lista-puntaje-cambiar {
   flex: none;
@@ -2927,7 +2921,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
+  min-height: 38px;
   padding: 0 14px;
   font: inherit;
   font-size: 13px;
@@ -2945,7 +2939,6 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
 .mi-lista-titulo-fila { align-items: center; }
 .mi-lista-titulo { font-size: clamp(28px, 3.2vw, 40px); }
 .mi-lista-titulo-fila .banda-subtitulo { margin-top: 4px; font-size: 15px; }
-.mi-lista-agregar { margin-top: 12px; }
 .mi-lista-controles { gap: 10px 20px; margin-bottom: 12px; }
 .comparar-foto { max-width: 200px; margin-bottom: 10px; }
 .comparar-uni { padding-block: 12px 14px; }
@@ -3001,8 +2994,7 @@ html { scroll-padding-top: calc(var(--alto-barra, 0px) + var(--alto-niveles, 0px
   .mi-lista-orden { grid-area: orden; }
   .mi-lista-puntaje .total-sat { width: 100%; }
   .mi-lista-puntaje-listo { min-width: 0; }
-  /* Menos relleno a la izquierda: la flecha del selector ya ocupa ~20px a la derecha. */
-  .mi-lista-orden select { width: 100%; padding-inline: 12px; }
+  .mi-lista-orden select { width: 100%; padding-left: 16px; }
   .perfil { gap: 6px; }
   .segmento { width: 100%; }
   .segmento label { flex: 1; font-size: 13px; line-height: 1.2; text-align: center; white-space: nowrap; }
@@ -3310,6 +3302,8 @@ html:has(.flujo) { scroll-padding-bottom: 120px; }
 }
 .cuadrito-sigla { font-size: clamp(11px, 1.1vw, 14px); font-weight: 600; line-height: 1; }
 .cuadrito-numero { font-size: clamp(10px, 0.85vw, 12px); line-height: 1; }
+/* "Islas" (5 letras) tiene que caber en el mismo cuadrito que "TX". */
+.cuadrito-sigla-larga { font-size: clamp(10px, 0.95vw, 13px); }
 .cuadrito-encima { z-index: 2; color: var(--tinta-fuerte); background: var(--tinta-suave); transform: scale(1.18); box-shadow: 0 6px 18px rgba(28, 44, 110, 0.3); }
 .cuadrito-elegido { color: var(--grafito); background: var(--resaltador); }
 .cuadrito-elegido.cuadrito-encima { background: var(--resaltador); }
@@ -3318,6 +3312,7 @@ html:has(.flujo) { scroll-padding-bottom: 120px; }
 .cuadritos-chico .cuadritos-grilla { gap: 3px; }
 .cuadritos-chico .cuadrito { border-radius: 5px; }
 .cuadritos-chico .cuadrito-sigla { font-size: 11px; }
+.cuadritos-chico .cuadrito-sigla-larga { font-size: 9px; }
 @media (prefers-reduced-motion: reduce) { .cuadrito { transition: none; } .cuadrito-encima { transform: none; } }
 
 /* Mapa de calor: --calor va de 0 a 1 (MapaCuadritos). Lo elegido, lo descartado y lo que está bajo
@@ -3382,17 +3377,26 @@ html:has(.flujo) { scroll-padding-bottom: 120px; }
 .resultados-respuesta:hover { border-color: var(--tinta); }
 .resultados-cabecera-lado { flex: 0 1 360px; display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
 .resultados-cabecera-lado .boton-mi-lista { margin-top: 0; align-self: flex-end; }
-.portada-resultados .resultados-cuerpo { padding-top: clamp(20px, 3vw, 32px); }
-/* "Más filtros": lo que los pasos no preguntaron (tipo, política del SAT, posibilidades). Se
-   distingue de los chips de respuestas: borde punteado, sin fondo. */
+/* Espacio alrededor de la caja de resultados: con padding (por dentro) y no con margin, para
+   que se pinte del blanco de la sección y no asome el fondo de la página. Con tres clases para
+   ganarle a ".portada .banda-blanco + .banda-blanco" (padding-top: 0), que si no la pegaba a la
+   línea de la cabecera. */
+.portada.portada-resultados .resultados-cuerpo { padding-top: clamp(15px, 1vw, 45px); padding-bottom: clamp(32px, 4vw, 56px); }
+/* "Más filtros": lo que los pasos no preguntaron (tipo, política del SAT, posibilidades).
+   Relleno azul Educa con letra blanca: entre los chips celestes de las respuestas pasaba
+   desapercibido y casi nadie lo abría. Abierto ("Ocultar filtros") vuelve a ser un chip claro,
+   porque ya cumplió su función y no tiene que competir con el panel. */
 .resultados-mas-filtros {
-  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
-  font: inherit; font-size: 14px; font-weight: 600; color: var(--tinta-fuerte);
-  background: var(--hoja); border: 1px dashed var(--tinta-suave); border-radius: 999px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 18px;
+  font: inherit; font-size: 14px; font-weight: 600; color: #fff;
+  background: var(--tinta); border: 1px solid var(--tinta); border-radius: 999px; cursor: pointer;
+  box-shadow: 0 1px 3px rgba(28, 44, 110, 0.25);
 }
-.resultados-mas-filtros:hover { border-color: var(--tinta); }
-.resultados-mas-filtros-abierto { border-style: solid; border-color: var(--tinta); background: var(--tinta-fondo); }
-.resultados-mas-filtros .contador { margin-left: 0; }
+.resultados-mas-filtros:hover { background: var(--tinta-fuerte); border-color: var(--tinta-fuerte); }
+.resultados-mas-filtros-abierto { color: var(--tinta-fuerte); background: var(--hoja); border-color: var(--tinta); box-shadow: none; }
+.resultados-mas-filtros-abierto:hover { background: var(--tinta-fondo); border-color: var(--tinta); }
+/* Sobre el azul, el contador se invierte (blanco con número azul) para que no se pierda. */
+.resultados-mas-filtros .contador { margin-left: 0; color: var(--tinta-fuerte); background: #fff; }
 /* Sin el panel, la lista toma todo el ancho. El envoltorio no cuenta para la grilla ni para lo
    pegajoso de la hoja (si no, la hoja dejaría de quedarse fija al bajar). */
 .cuerpo.cuerpo-sin-hoja { grid-template-columns: minmax(0, 1fr); }
@@ -3413,7 +3417,8 @@ html:has(.flujo) { scroll-padding-bottom: 120px; }
 .burbuja-mapa-abierta .burbuja-mapa-boton { background: var(--tinta); }
 .burbuja-mapa-panel {
   /* Debajo de la barra de Educa (fija arriba) y encima de la burbuja. */
-  width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 190px); overflow-y: auto;
+  /* Sin scroll propio: si no cabe, se desplaza solo la ficha (.burbuja-mapa-ficha), nunca el mapa. */
+  width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 190px); overflow: hidden;
   display: flex; flex-direction: column; gap: 12px; padding: 18px 20px;
   background: var(--hoja); border: 1px solid var(--linea); border-radius: var(--radio);
   box-shadow: 0 18px 48px rgba(28, 44, 110, 0.25);
@@ -3425,6 +3430,10 @@ html:has(.flujo) { scroll-padding-bottom: 120px; }
 @keyframes burbuja-abrir { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .burbuja-mapa-panel { animation: none; } }
 .burbuja-mapa-cabecera { display: flex; flex-direction: column; gap: 2px; }
+/* Arriba, la ficha del estado: es la que se encoge y se desplaza cuando el panel no cabe. */
+.burbuja-mapa-ficha { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 12px; border-bottom: 1px solid var(--linea); }
+/* Abajo, el título y el mapa: siempre enteros y en el mismo lugar, junto a la burbuja. */
+.burbuja-mapa-fijo { flex: none; display: flex; flex-direction: column; gap: 12px; }
 /* Globito con el nombre del estado, sobre el cuadrito que tiene el mouse (o el foco del teclado). */
 .cuadrito-globo {
   position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);

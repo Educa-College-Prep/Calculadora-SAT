@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
-import { NOMBRES_ESTADOS } from '../utils/estados';
+import { NOMBRES_ESTADOS, CODIGO_ISLAS } from '../utils/estados';
 import { CUADRITOS } from '../utils/cuadritos';
 
 interface Props {
@@ -174,7 +174,10 @@ export const MapaCuadritos = memo(function MapaCuadritos({
                   {NOMBRES_ESTADOS[st] ?? st}
                 </span>
               )}
-              <span className="cuadrito-sigla">{st}</span>
+              {/* "IS" no se entiende como sigla: el cuadrito de las islas dice "Islas". */}
+              {st === CODIGO_ISLAS
+                ? <span className="cuadrito-sigla cuadrito-sigla-larga">Islas</span>
+                : <span className="cuadrito-sigla">{st}</span>}
               {!chico && <span className="cuadrito-numero numero">{n.toLocaleString('en-US')}</span>}
             </button>
           );

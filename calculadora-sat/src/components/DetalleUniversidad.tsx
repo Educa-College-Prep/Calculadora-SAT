@@ -258,8 +258,8 @@ export function DetalleUniversidad({ uni, onVolver, guardada, onAlternarGuardada
             <span aria-hidden="true">/</span>
             <span aria-current="page">{uni.INSTNM}</span>
           </nav>
-          {/* Para saltar a otra universidad sin volver a la lista. La key lo limpia al
-              cambiar de ficha. */}
+          {/* Para saltar a otra universidad sin volver a la lista. Se dibuja en la barra de
+              arriba (ver BuscadorFicha); la key lo limpia al cambiar de ficha. */}
           <BuscadorFicha key={uni._id} indice={indiceBusqueda} onSeleccionar={onSeleccionar} />
         </div>
       </div>

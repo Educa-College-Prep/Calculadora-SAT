@@ -18,7 +18,8 @@ import { EtiquetaNivel } from './EtiquetaNivel';
 import { FotoUniversidad } from './FotoUniversidad';
 import { Buscador } from './Buscador';
 import { InputTotalSAT } from './Filtros';
-import { CONTACTO } from './BarraEduca';
+import { CONTACTO, ID_BUSCADOR_BARRA } from './BarraEduca';
+import { createPortal } from 'react-dom';
 
 /** Un aviso arriba de la pantalla ("Quitaste Yale"). Con `antes`, ofrece deshacer. */
 export interface AvisoLista {
@@ -86,9 +87,9 @@ const ORDENES: { id: Orden; texto: string }[] = [
   { id: 'admision', texto: 'Admiten más' },
 ];
 
-/** Estados para elegir dónde vives, por nombre (sin los territorios chicos del Pacífico). */
+/** Estados para elegir dónde vives, por nombre (sin los territorios chicos del Pacífico ni el grupo "Otras islas" del mapa). */
 const ESTADOS = Object.entries(NOMBRES_ESTADOS)
-  .filter(([sigla]) => !['AS', 'FM', 'GU', 'MH', 'MP', 'PW'].includes(sigla))
+  .filter(([sigla]) => !['AS', 'FM', 'GU', 'MH', 'MP', 'PW', 'IS'].includes(sigla))
   .sort((a, b) => a[1].localeCompare(b[1], 'es'));
 
 const AYUDA_RESIDENTE = 'Para pagar la matrícula del estado y recibir ayuda del gobierno de EE. UU. normalmente hay que ser ciudadano o residente permanente y vivir en ese estado, en general desde hace al menos un año. Cada universidad decide quién cuenta como residente.';
@@ -380,15 +381,18 @@ export function ComparadorUniversidades({
     : n === 1 ? 'Tienes 1 universidad. Agrega otra para compararlas: en cada fila marcaremos la mejor.'
     : `Tienes ${n} universidades, guardadas en este navegador. En cada fila marcamos la mejor.`;
 
-  const buscador = (
-    <div className="mi-lista-agregar">
-      <Buscador id="mi-lista-buscador" etiqueta="Agrega una universidad" compacto
-        placeholder="Nombre o sigla: Harvard, MIT, UCLA…" conservarTexto={false}
-        busquedaNombre={texto} setBusquedaNombre={setTexto}
-        mostrarSugerencias={sugerir} setMostrarSugerencias={setSugerir}
-        sugerencias={sugerencias} sonAproximadas={resultado?.aproximado ?? false}
-        onSeleccionar={agregar} />
-    </div>
+  // En el mismo hueco de la barra de arriba que el buscador de los pasos, los resultados y la
+  // ficha: debajo del título parecía otra cosa y no se entendía para qué era. Aquí, elegir una
+  // universidad la agrega a la lista (lo dice el texto de adentro).
+  const huecoBarra = document.getElementById(ID_BUSCADOR_BARRA);
+  const buscador = huecoBarra && createPortal(
+    <Buscador id="mi-lista-buscador" etiqueta="Agrega una universidad a tu lista" etiquetaOculta compacto
+      placeholder="Agrega una universidad a tu lista" conservarTexto={false}
+      busquedaNombre={texto} setBusquedaNombre={setTexto}
+      mostrarSugerencias={sugerir} setMostrarSugerencias={setSugerir}
+      sugerencias={sugerencias} sonAproximadas={resultado?.aproximado ?? false}
+      onSeleccionar={agregar} />,
+    huecoBarra,
   );
 
   return (
@@ -452,8 +456,8 @@ export function ComparadorUniversidades({
           {n === 0 ? (
             <div className="mi-lista-vacia">
               <p>
-                También puedes tocar la <strong>estrella</strong> en cualquier universidad de los resultados
-                o en su ficha para guardarla aquí. La lista se guarda en este navegador: no hace falta crear una cuenta.
+                Búscala en el buscador de arriba para agregarla, o toca la <strong>estrella</strong> en
+                cualquier universidad de los resultados o en su ficha. La lista se guarda en este navegador: no hace falta crear una cuenta.
               </p>
               <button type="button" className="boton-marino" onClick={onVolver}>Explorar universidades</button>
             </div>
@@ -478,7 +482,7 @@ export function ComparadorUniversidades({
                     </div>
                   ) : (
                     <>
-                      <InputTotalSAT id="sat-total-lista" etiqueta="Tu SAT" total={0} autoFocus={cambiandoPuntaje}
+                      <InputTotalSAT id="sat-total-lista" etiqueta="Tu SAT" total={0} autoFocus={cambiandoPuntaje} placeholder="1250"
                         onEscribir={() => {}} setSoloTotal={v => { if (v > 0) { onCambiarPuntajeSAT(v); setCambiandoPuntaje(false); } }} />
                       {cambiandoPuntaje && <button type="button" className="mi-lista-puntaje-cambiar" onClick={() => setCambiandoPuntaje(false)}>Cancelar</button>}
                     </>

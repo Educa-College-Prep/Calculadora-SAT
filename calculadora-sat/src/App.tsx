@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useDeferredValue, useRef } from 'react';
 import type { Universidad } from './types';
-import { NOMBRES_ESTADOS } from './utils/estados';
+import { NOMBRES_ESTADOS, OTRAS_ISLAS, CODIGO_ISLAS, enLugares } from './utils/estados';
 import { crearIndiceBusqueda, buscarUniversidades } from './utils/busqueda';
 
 import { Buscador } from './components/Buscador';
@@ -342,8 +342,9 @@ export default function App() {
 
       if (cumplePolitica) (porEncima ? encimaSinUbicacion : sinUbicacion).push(uni);
       if (estado !== 'todos' && uni.STABBR !== estado) return false;
-      if (estados.length > 0 && !estados.includes(uni.STABBR)) return false;
-      if (excluidos.length > 0 && excluidos.includes(uni.STABBR)) return false;
+      // enLugares: el cuadrito "Otras islas" (IS) vale por las siete islas que agrupa.
+      if (estados.length > 0 && !enLugares(estados, uni.STABBR)) return false;
+      if (excluidos.length > 0 && enLugares(excluidos, uni.STABBR)) return false;
       if (ciudad !== 'todas' && uni.CITY !== ciudad) return false;
       (porEncima ? encimaSinPolitica : sinFiltroPolitica).push(uni);
       if (!cumplePolitica) return false;
@@ -515,7 +516,8 @@ export default function App() {
   const elegirEstados = useCallback((lista: string[]) => {
     setCiudadSeleccionada('todas');
     setEstadosExcluidos([]);
-    if (lista.length === 1) { setEstadoSeleccionado(lista[0]); setEstadosVarios([]); }
+    // "Otras islas" no es un estado: no tiene ciudades ni resumen, así que va siempre como lista.
+    if (lista.length === 1 && lista[0] !== CODIGO_ISLAS) { setEstadoSeleccionado(lista[0]); setEstadosVarios([]); }
     else { setEstadoSeleccionado('todos'); setEstadosVarios(lista); }
   }, []);
   /** "Dónde no quiero estudiar": fija los descartados y borra lo elegido en el otro modo. */
@@ -528,7 +530,12 @@ export default function App() {
   // Universidades por estado con tus filtros (sin contar el lugar): el número de cada estado en la burbuja.
   const conteoPorEstado = useMemo(() => {
     const conteo: Record<string, number> = {};
-    for (const u of universidadesSinUbicacion) if (u.STABBR) conteo[u.STABBR] = (conteo[u.STABBR] ?? 0) + 1;
+    for (const u of universidadesSinUbicacion) {
+      if (!u.STABBR) continue;
+      conteo[u.STABBR] = (conteo[u.STABBR] ?? 0) + 1;
+      // Las islas también suman en su cuadrito común.
+      if (OTRAS_ISLAS.has(u.STABBR)) conteo[CODIGO_ISLAS] = (conteo[CODIGO_ISLAS] ?? 0) + 1;
+    }
     return conteo;
   }, [universidadesSinUbicacion]);
 
@@ -552,8 +559,8 @@ export default function App() {
         ? u.ADMCON7 != null && NO_EXIGEN_SAT.includes(u.ADMCON7)
         : u.ADMCON7 === POLITICA_SAT[f.politica])) return false;
       if (f.estado !== 'todos' && u.STABBR !== f.estado) return false;
-      if (f.estados.length > 0 && !f.estados.includes(u.STABBR)) return false;
-      if (f.excluidos.length > 0 && f.excluidos.includes(u.STABBR)) return false;
+      if (f.estados.length > 0 && !enLugares(f.estados, u.STABBR)) return false;
+      if (f.excluidos.length > 0 && enLugares(f.excluidos, u.STABBR)) return false;
       if (f.carreras.length > 0 && carrerasPorUnitid.size > 0) {
         const deUni = u.UNITID != null ? carrerasPorUnitid.get(u.UNITID) : undefined;
         if (deUni ? !f.carreras.some(c => deUni.has(c)) : !(u.HIGHDEG === 'Bachiller' || u.HIGHDEG === 'Posgrado')) return false;

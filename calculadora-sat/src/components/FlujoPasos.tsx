@@ -3,12 +3,13 @@ import type { Universidad } from '../types';
 import type { ArchivoSalarios } from '../utils/salariosCarreras';
 import { nombreCarrera } from '../utils/salariosCarreras';
 import { SINONIMOS_CARRERAS } from '../data/carrerasEspanol';
-import { NOMBRES_ESTADOS } from '../utils/estados';
+import { NOMBRES_ESTADOS, OTRAS_ISLAS } from '../utils/estados';
 import { PRECIO_MAXIMO_SLIDER } from '../utils/filtrosURL';
 import { MapaCuadritos } from './MapaCuadritos';
 import { CARRERAS_COMUNES, PRESUPUESTOS, TITULOS_PASOS } from '../data/pasos';
 import { FichaEstado } from './FichaEstado';
 import { TextoFuentes } from './AvisoFuentes';
+import { InfoTooltip } from './InfoTooltip';
 
 const minusculasSinTildes = (texto: string) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const dinero = (n: number) => `$${n.toLocaleString('en-US')}`;
@@ -320,7 +321,9 @@ function PasoDonde({ estados, setEstados, excluidos, setExcluidos, conteo, unive
   const buscado = minusculasSinTildes(texto.trim());
   const encontrados = buscado
     ? Object.entries(NOMBRES_ESTADOS)
-      .filter(([st, nombre]) => conteo[st] != null && minusculasSinTildes(`${nombre} ${st}`).includes(buscado))
+      // Las islas sueltas no: se eligen juntas en "Otras islas" (buscar "Guam" lleva ahí).
+      .filter(([st, nombre]) => conteo[st] != null && !OTRAS_ISLAS.has(st)
+        && minusculasSinTildes(`${nombre} ${st}${st === 'IS' ? ' ' + [...OTRAS_ISLAS].map(i => NOMBRES_ESTADOS[i]).join(' ') : ''}`).includes(buscado))
       .slice(0, 6)
     : [];
   const alternar = (st: string) => cambiar(marcados.includes(st) ? marcados.filter(x => x !== st) : [...marcados, st], st);
@@ -422,6 +425,9 @@ function PasoPresupuesto({ precio, setPrecio, universidades }: { precio: number;
 
 /* ---------------------------------------------------------------- Paso 4 */
 
+/** Qué es el SAT, para quien nunca lo escuchó (la "?" del título del paso 4). */
+const AYUDA_SAT = 'El SAT es un examen de matemática y de lectura y redacción, en inglés, que piden muchas universidades de EE. UU. para admitir estudiantes. El puntaje va de 400 a 1600 y se puede dar varias veces, también desde fuera de EE. UU. Hoy muchas universidades lo dejan opcional o no lo toman en cuenta.';
+
 function PasoSAT({ satTotal, setSatTotal, satNoRendido, setSatNoRendido, exigirSAT, setExigirSAT, conteoPolitica }: {
   satTotal: number; setSatTotal: (t: number) => void; satNoRendido: boolean; setSatNoRendido: (v: boolean) => void;
   exigirSAT: string; setExigirSAT: (v: string) => void; conteoPolitica: Record<string, number>;
@@ -439,7 +445,12 @@ function PasoSAT({ satTotal, setSatTotal, satNoRendido, setSatNoRendido, exigirS
 
   return (
     <section className="flujo-tarjeta" aria-labelledby="paso-titulo">
-      <h1 id="paso-titulo" className="flujo-titulo" tabIndex={-1}>¿Ya presentaste el SAT?</h1>
+      {/* Muchos estudiantes de Latinoamérica nunca oyeron del SAT: la "?" lo explica en corto,
+          sin sacarlos del paso. */}
+      <h1 id="paso-titulo" className="flujo-titulo" tabIndex={-1}>
+        ¿Ya presentaste el SAT?{' '}
+        <InfoTooltip sobre="el SAT" texto={AYUDA_SAT} />
+      </h1>
       <p className="flujo-subtitulo">Es un dato más: muchas universidades no lo piden.</p>
       <div className="flujo-opciones">
         <label className="flujo-caja flujo-caja-fila" data-elegida={!satNoRendido && texto !== ''}>
